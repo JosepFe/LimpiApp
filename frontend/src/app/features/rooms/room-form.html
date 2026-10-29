@@ -1,0 +1,35 @@
+<la-sheet screen="room-form" [title]="roomId() ? 'Editar habitación' : 'Nueva habitación'" [full]="true" (closed)="closed.emit()">
+  <div class="field" [class.invalid]="nameMissing()"><label for="rf-name">Nombre</label>
+    <input id="rf-name" class="input" [attr.placeholder]="roomId() || nameMissing() ? null : 'Ej.: Cocina'" maxlength="40" data-testid="room-name" [attr.aria-invalid]="nameMissing() || null"
+           [value]="name()" (input)="name.set($any($event.target).value)">
+    @if (nameMissing()) {<span class="err">El nombre es obligatorio.</span>}</div>
+  <div class="field"><span class="lbl">Icono</span><div class="emoji-grid" data-testid="room-emoji">
+    @for (e of emojis; track e) {<button type="button" [class.sel]="e === emoji()" [attr.aria-label]="'Icono ' + e" [attr.aria-pressed]="e === emoji()" (click)="emoji.set(e)">{{ e }}</button>}
+  </div></div>
+  <div class="field"><span class="lbl">Color</span><div class="swatches" data-testid="room-color">
+    @for (c of colors; track c) {<button type="button" class="sw" [class.sel]="c === color()" [style.background]="'var(--rc-' + c + ')'" [attr.aria-label]="'Color ' + c" [attr.aria-pressed]="c === color()" (click)="color.set(c)"></button>}
+  </div></div>
+  <div class="form-section"><span class="form-section-title">Zonas</span><span style="font-size:12px;color:var(--text-3)">opcional</span></div>
+  <div data-testid="room-zones-editor">
+    @for (z of zones(); track z.key) {
+      <div class="rep-row"><span style="color:var(--text-3)"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-drag" /></svg></span><input class="input" aria-label="Zona" maxlength="60" [value]="z.name" (input)="renameZone(z.key, $any($event.target).value)"><button type="button" class="rm" aria-label="Quitar zona" (click)="removeZone(z.key)"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-x" /></svg></button></div>
+    }
+  </div>
+  <button type="button" class="add-link" data-testid="room-add-zone" (click)="addZone()"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-plus" /></svg> Añadir zona</button>
+  @if (!roomId()) {
+    @if (template(); as t) {
+      <div>
+        <div class="form-section"><span class="form-section-title">Plantilla</span></div>
+        <button type="button" class="check" [class.done]="fromTemplate()" [attr.aria-pressed]="fromTemplate()" data-testid="room-from-template" (click)="fromTemplate.set(!fromTemplate())"><span class="box"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-check" /></svg></span><span class="lab" style="flex:1">Rellenar con tareas sugeridas ({{ t.name }}: {{ t.taskCount }} tareas)</span></button>
+      </div>
+    }
+  } @else {
+    <div>
+      <div class="form-section"><span class="form-section-title">Zona de peligro</span></div>
+      <button type="button" class="btn btn-danger btn-block" data-testid="room-archive" (click)="archive()"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-archive" /></svg> Archivar habitación</button>
+      <p class="help" style="margin-top:6px;font-size:12px;color:var(--text-3)">Sus tareas dejarán de aparecer en Hoy. Puedes restaurarla cuando quieras.</p>
+    </div>
+  }
+  <div class="sheet-foot" sheet-foot><button type="button" class="btn btn-secondary" data-testid="room-cancel" (click)="closed.emit()">Cancelar</button>
+    <button type="button" class="btn btn-primary" data-testid="room-save" [disabled]="saving()" (click)="save()">Guardar</button></div>
+</la-sheet>

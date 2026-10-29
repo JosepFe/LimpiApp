@@ -1,10 +1,11 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { HouseholdApi } from '../../core/household-api';
 import { HealthRing } from '../../shared/health-ring';
 import { ErrorState, LoadState, SkeletonList } from '../../shared/states';
+import { RoomForm } from './room-form';
 import { plural, RoomsResponse } from './rooms.model';
 
 /**
@@ -13,7 +14,7 @@ import { plural, RoomsResponse } from './rooms.model';
  */
 @Component({
   selector: 'la-rooms',
-  imports: [RouterOutlet, HealthRing, SkeletonList, ErrorState],
+  imports: [RouterOutlet, HealthRing, SkeletonList, ErrorState, RoomForm],
   templateUrl: './rooms.html',
   styles: `
     @media (max-width: 1023px) {
@@ -36,6 +37,11 @@ export class Rooms implements OnInit {
     { initialValue: this.detailOpen() },
   );
 
+  /** The room form opens over the list: `?sheet=room-new` or `?sheet=room-edit&room=<id>` (from the detail). */
+  private readonly query = toSignal(inject(ActivatedRoute).queryParamMap);
+  protected readonly sheet = () => this.query()?.get('sheet') ?? null;
+  protected readonly editRoom = () => this.query()?.get('room') ?? null;
+
   ngOnInit(): void {
     void this.load();
   }
@@ -56,6 +62,16 @@ export class Rooms implements OnInit {
 
   protected newRoom(): void {
     void this.router.navigate([], { queryParams: { sheet: 'room-new' } });
+  }
+
+  protected closeSheet(): void {
+    void this.router.navigate([], { queryParams: { sheet: null, room: null }, queryParamsHandling: 'merge', replaceUrl: true });
+  }
+
+  protected async roomChanged(change: { archived: boolean }): Promise<void> {
+    if (change.archived) await this.router.navigate(['/rooms'], { replaceUrl: true });
+    else this.closeSheet();
+    await this.load();
   }
 
   private detailOpen(): boolean {

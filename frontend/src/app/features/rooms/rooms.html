@@ -38,3 +38,8 @@
     <aside class="pane-detail" aria-label="Detalle">@if (!hasDetail()) {<div class="pane-empty"><div style="font-size:40px">🏠</div><p>Selecciona una habitación para ver sus tareas</p></div>}<router-outlet /></aside>
   </div>
 </section>
+@if (sheet() === 'room-new') {
+  <la-room-form (closed)="closeSheet()" (changed)="roomChanged($event)" />
+} @else if (sheet() === 'room-edit' && editRoom()) {
+  <la-room-form [roomId]="editRoom()" (closed)="closeSheet()" (changed)="roomChanged($event)" />
+}
