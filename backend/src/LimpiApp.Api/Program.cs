@@ -11,6 +11,7 @@ using LimpiApp.Api.Features.Households;
 using LimpiApp.Api.Features.Photos;
 using LimpiApp.Api.Features.Products;
 using LimpiApp.Api.Features.Rooms;
+using LimpiApp.Api.Features.Stats;
 using LimpiApp.Api.Features.Tasks;
 using LimpiApp.Api.Features.Templates;
 using LimpiApp.Api.Features.Today;
@@ -74,6 +75,7 @@ app.MapToday();
 app.MapCompletions();
 app.MapPhotos();
 app.MapHistory();
+app.MapStats();
 
 await app.RunAsync();
 
