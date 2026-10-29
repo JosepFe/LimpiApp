@@ -111,3 +111,19 @@ export async function expectParity(page: Page, options: ParityOptions): Promise<
     .poll(async () => compareParity(expected, await collect(page, appRoot, options.all)), { message: `parity with the prototype in ${label}` })
     .toEqual([]);
 }
+
+/**
+ * Like expectParity, for a region that has no data-testid of its own (the shell navigation): `region` is a CSS
+ * selector looked up in the prototype screen page and in the app page.
+ */
+export async function expectRegionParity(page: Page, options: { screen: string; region: string }): Promise<void> {
+  const proto = await page.context().newPage();
+  await proto.goto(prototypeUrl(options.screen));
+  const expected = await collect(proto, options.region, true);
+  await proto.close();
+  await expect
+    .poll(async () => compareParity(expected, await collect(page, options.region, true)), {
+      message: `parity with the prototype in ${options.screen} [${options.region}]`,
+    })
+    .toEqual([]);
+}

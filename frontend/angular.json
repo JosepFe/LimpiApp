@@ -37,7 +37,8 @@
               "node_modules/@fontsource/inter/500.css",
               "node_modules/@fontsource/inter/600.css",
               "node_modules/@fontsource/inter/700.css",
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/styles/prototype.css"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [

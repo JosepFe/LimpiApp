@@ -2,3 +2,19 @@
 // Each story adds the data of its screens here, copied from the prototype, never invented.
 export const FIXED_NOW = '2026-10-14T09:00:00+02:00'; // Wednesday 14 October 2026, 09:00 in Madrid
 export const TODAY = '2026-10-14';
+
+/** GET /auth/me: Josep, in «Casa Pau y Josep» (owner, 3 members) and «Casa de la playa» (member, 2). */
+export const ME = {
+  id: 'u-josep',
+  email: 'josep@example.com',
+  name: 'Josep',
+  avatarColor: 'teal',
+  theme: 'system',
+  households: [
+    { id: 'h-casa', name: 'Casa Pau y Josep', role: 'owner', memberCount: 3 },
+    { id: 'h-playa', name: 'Casa de la playa', role: 'member', memberCount: 2 },
+  ],
+};
+
+/** GET /households/h-casa/today, the part the shell uses: «Hoy 6» in the navigation. Completed by E04/US-001. */
+export const TODAY_SUMMARY = { summary: { pendingToday: 6 } };

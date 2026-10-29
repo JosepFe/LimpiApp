@@ -2,7 +2,7 @@
 // It is automatic: every test importing this `test` has it, used or not. Any /api request the test did not mock
 // answers 501 and fails the test at the end.
 import { test as base, expect, type Page, type Route } from '@playwright/test';
-import { FIXED_NOW } from './prototype-data';
+import { FIXED_NOW, ME, TODAY_SUMMARY } from './prototype-data';
 
 export type Handler = unknown | ((route: Route, body: unknown) => unknown);
 
@@ -58,3 +58,8 @@ export const test = base.extend<{ api: MockApi }>({
 });
 
 export { expect };
+
+/** What the shell asks for on any screen: the session and the «Hoy» counter of the active household. */
+export function mockShell(api: MockApi, me: object = ME): MockApi {
+  return api.on('GET', '/auth/me', me).on('GET', '/households/h-casa/today', TODAY_SUMMARY);
+}
