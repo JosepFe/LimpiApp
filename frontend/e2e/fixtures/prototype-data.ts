@@ -60,3 +60,24 @@ export const ROOMS = {
     room('r-terraza', 'Terraza', '🌿', 'rose', health(34, 'Urgente', 'bad'), 3, 3, ['En 6 d', 'Barrer']),
   ],
 };
+
+export const JOSEP = { id: 'u-josep', name: 'Josep', avatarColor: 'teal' };
+export const PAU = { id: 'u-pau', name: 'Pau', avatarColor: 'violet' };
+export const MARTA = { id: 'u-marta', name: 'Marta', avatarColor: 'amber' };
+
+type Kind = 'overdue' | 'today' | 'soon' | 'ok';
+/** A task row of the prototype (GET /tasks). */
+export const taskRow = (id: string, title: string, room: [string, string, string], zone: [string, string] | null, minutes: number,
+  due: [Kind, string], assignee: typeof JOSEP | null, nextDue = TODAY) => ({
+  id, title, roomId: room[0], roomName: room[1], roomEmoji: room[2], zone: zone ? { id: zone[0], name: zone[1] } : null,
+  estimatedMinutes: minutes, nextDue, due: { kind: due[0], label: due[1] }, assignee,
+});
+const COCINA: [string, string, string] = ['r-cocina', 'Cocina', '🍳'];
+
+/** GET /households/h-casa/tasks?room=r-cocina: #screen-room-detail (Nevera, Horno, Sin zona). */
+export const KITCHEN_TASKS = [
+  taskRow('t-horno', 'Limpiar horno', COCINA, ['z-horno', 'Horno'], 45, ['overdue', 'Atrasada 6 d'], PAU, '2026-10-08'),
+  taskRow('t-nevera', 'Limpiar nevera por dentro', COCINA, ['z-nevera', 'Nevera'], 30, ['overdue', 'Atrasada 3 d'], JOSEP, '2026-10-11'),
+  taskRow('t-fregar', 'Fregar suelo', COCINA, null, 20, ['today', 'Hoy'], JOSEP),
+  taskRow('t-fregadero', 'Limpiar fregadero', COCINA, null, 5, ['soon', 'En 2 d'], JOSEP, '2026-10-16'),
+];

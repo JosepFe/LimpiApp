@@ -10,12 +10,12 @@ public static class DueRules
         Overdue,
         Today,
         Soon,
-        Later,
+        Ok,
     }
 
     public sealed record Due(DueKind Kind, string Label, int Days);
 
-    /// <summary>«Atrasada 6 d», «Hoy», «Mañana», «En 2 d», «En 2 sem».</summary>
+    /// <summary>«Atrasada 6 d», «Hoy», «Mañana», «En 2 d», «En 2 sem»; the kind is the badge class (soon up to 3 days).</summary>
     public static Due Of(DateOnly nextDue, DateOnly today)
     {
         var days = nextDue.DayNumber - today.DayNumber;
@@ -24,8 +24,9 @@ public static class DueRules
             < 0 => new Due(DueKind.Overdue, $"Atrasada {-days} d", days),
             0 => new Due(DueKind.Today, "Hoy", days),
             1 => new Due(DueKind.Soon, "Mañana", days),
-            < 14 => new Due(DueKind.Later, $"En {days} d", days),
-            _ => new Due(DueKind.Later, $"En {days / 7} sem", days),
+            <= 3 => new Due(DueKind.Soon, $"En {days} d", days),
+            < 14 => new Due(DueKind.Ok, $"En {days} d", days),
+            _ => new Due(DueKind.Ok, $"En {days / 7} sem", days),
         };
     }
 

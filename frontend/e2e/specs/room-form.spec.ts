@@ -1,6 +1,6 @@
 // E03/US-006 · criterion 4: «Guardar» and «Archivar habitación» go back to the updated list.
 import type { Route } from '@playwright/test';
-import { ROOMS, TEMPLATES } from '../fixtures/prototype-data';
+import { KITCHEN_TASKS, ROOMS, TEMPLATES } from '../fixtures/prototype-data';
 import { expect, mockShell, test } from '../fixtures/test';
 
 test('a new room with suggested tasks is created, filled from its template, and the list reloads', async ({ page, api }) => {
@@ -39,6 +39,7 @@ test('editing keeps the zone ids; archiving goes back to the list', async ({ pag
     .on('GET', '/households/h-casa/rooms', ROOMS)
     .on('GET', '/households/h-casa/rooms/r-cocina', ROOMS.rooms[0])
     .on('PATCH', '/households/h-casa/rooms/r-cocina', ROOMS.rooms[0])
+    .on('GET', '/households/h-casa/tasks?room=r-cocina', KITCHEN_TASKS)
     .on('DELETE', '/households/h-casa/rooms/r-cocina', async (route: Route) => route.fulfill({ status: 204, body: '' }));
   await page.goto('/rooms?sheet=room-edit&room=r-cocina');
   await expect(page.getByTestId('room-name')).toHaveValue('Cocina');

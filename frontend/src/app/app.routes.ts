@@ -25,11 +25,12 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'today' },
       placeholder('today', 'today', 'Hoy'),
+      // Replaced by the task detail in E03/US-009.
+      placeholder('tasks/:id', 'task-detail', 'Detalle de tarea'),
       {
         path: 'rooms',
         loadComponent: () => import('./features/rooms/rooms').then((m) => m.Rooms),
-        // Replaced by the room detail in E03/US-007.
-        children: [{ path: ':id', component: Placeholder, data: { screen: 'room-detail', title: 'Habitación' } }],
+        children: [{ path: ':id', loadComponent: () => import('./features/rooms/room-detail').then((m) => m.RoomDetail) }],
       },
       placeholder('history', 'history', 'Actividad'),
       placeholder('stats', 'stats', 'Actividad'),

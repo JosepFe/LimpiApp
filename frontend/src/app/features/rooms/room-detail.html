@@ -1,0 +1,45 @@
+<section class="screen active" data-screen="screen-room-detail" data-testid="screen-room-detail">
+  <div data-testid="room-detail-body">
+    <header class="page-header">
+      <a class="icon-btn hide-desktop" routerLink="/rooms" aria-label="Volver" data-testid="back"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-back" /></svg></a>
+      <h1 class="ph-title">{{ room() ? room()!.emoji + ' ' + room()!.name : '' }}</h1>
+      <div class="ph-actions">
+        <button type="button" class="btn btn-primary btn-sm hide-mobile" data-testid="add-task-desktop" (click)="addTask()"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-plus" /></svg> Añadir tarea</button>
+        <button type="button" class="icon-btn" aria-label="Editar habitación" data-testid="room-edit" (click)="edit()"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-edit" /></svg></button>
+      </div>
+    </header>
+    <div class="content" style="padding-top:var(--s4)">
+      @switch (state()) {
+        @case ('loading') {
+          <div data-testid="room-loading"><div class="skel" style="height:104px;margin-bottom:16px"></div><div class="list">
+            @for (r of [1, 2, 3, 4]; track r) {<div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div>}
+          </div></div>
+        }
+        @case ('error') {
+          <div data-testid="room-error"><la-error-state (retry)="load()" /></div>
+        }
+        @default {
+          @let r = room()!;
+          <div>
+            <div class="card card-pad" style="display:flex;gap:var(--s4);align-items:center" data-testid="room-health">
+              <span><la-health-ring [health]="tasks().length ? r.health : null" size="lg" /></span>
+              <div><div style="font-weight:600;font-size:17px"><span>{{ tasks().length ? r.health?.label : 'Sin tareas' }}</span></div>
+                <div class="sub" style="font-size:13px;color:var(--text-2)"><span>{{ tasks().length ? plural(r.overdueCount, 'atrasada', 'atrasadas') + ' · ' + plural(r.activeTaskCount, 'tarea activa', 'tareas activas') : 'Añade tareas para medir la limpieza' }}</span></div></div>
+            </div>
+          </div>
+          @if (tasks().length) {
+            <div data-testid="room-zones">
+              @for (g of groups(); track g.name) {
+                <div class="group-h">{{ g.name }} <span class="count">{{ g.tasks.length }}</span></div>
+                <div class="list">@for (t of g.tasks; track t.id) {<la-task-row [task]="t" (opened)="openTask(t)" />}</div>
+              }
+            </div>
+          } @else {
+            <div data-testid="room-empty"><div class="empty"><div class="big" aria-hidden="true">🧹</div><h3>Esta habitación no tiene tareas</h3><p>Añade una tarea o usa las sugeridas de la plantilla.</p><button type="button" class="btn btn-primary" (click)="addTask()">Añadir tarea</button></div></div>
+          }
+        }
+      }
+    </div>
+    <button type="button" class="fab hide-desktop" aria-label="Añadir tarea" data-testid="fab-add-task" (click)="addTask()"><svg class="ic lg" aria-hidden="true"><use href="icons.svg#i-plus" /></svg></button>
+  </div>
+</section>

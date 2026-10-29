@@ -1,6 +1,14 @@
 // E03/US-005 · criterion 3: a room card opens its detail: in the right pane on desktop, instead of the list on phones.
-import { ROOMS } from '../fixtures/prototype-data';
+import { KITCHEN_TASKS, ROOMS } from '../fixtures/prototype-data';
 import { expect, mockShell, test } from '../fixtures/test';
+
+test.beforeEach(({ api }) => {
+  api
+    .on('GET', '/households/h-casa/rooms/r-cocina', ROOMS.rooms[0])
+    .on('GET', '/households/h-casa/tasks?room=r-cocina', KITCHEN_TASKS)
+    .on('GET', '/households/h-casa/rooms/r-bano', ROOMS.rooms[1])
+    .on('GET', '/households/h-casa/tasks?room=r-bano', []);
+});
 
 test('desktop: the detail opens in the right pane, next to the list', async ({ page, api }) => {
   mockShell(api).on('GET', '/households/h-casa/rooms', ROOMS);
