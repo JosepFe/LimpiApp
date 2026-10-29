@@ -1,0 +1,38 @@
+<section class="screen active" data-screen="screen-join" data-testid="screen-join">
+  <div class="content" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;max-width:420px">
+    <div style="text-align:center;margin-bottom:var(--s6)"><div class="logo-mark" aria-hidden="true">✨</div></div>
+    @if (invite(); as i) {
+      @switch (i.status) {
+        @case ('valid') {
+          <div data-testid="join-valid">
+            <div class="card card-pad" style="text-align:center">
+              <p style="color:var(--text-3);font-size:13px">{{ i.inviterName }} te invita a unirte a</p>
+              <h1 style="font-size:24px;font-weight:700;margin:4px 0 var(--s4)">{{ i.householdName }}</h1>
+              <div style="display:flex;justify-content:center;margin-bottom:var(--s2)">
+                @for (m of i.members; track $index) {
+                  @if ($first) {
+                    <span class="avatar lg" [class]="m.avatarColor" [title]="m.name" [attr.aria-label]="m.name">{{ initial(m.name) }}</span>
+                  } @else {
+                    <span style="margin-left:-8px"><span class="avatar lg" [class]="m.avatarColor" [title]="m.name" [attr.aria-label]="m.name">{{ initial(m.name) }}</span></span>
+                  }
+                }
+              </div>
+              <p style="color:var(--text-2);font-size:14px">{{ counts(i) }}</p>
+            </div>
+            <button type="button" class="btn btn-primary btn-block" style="margin-top:var(--s4)" data-testid="join-accept" [disabled]="busy()" (click)="accept()">Unirme al hogar</button>
+            <button type="button" class="btn btn-ghost btn-block" (click)="notNow()">Ahora no</button>
+          </div>
+        }
+        @case ('expired') {
+          <div class="empty" data-testid="join-expired"><div class="big">⌛</div><h3>Invitación caducada</h3><p>Esta invitación ha caducado o se ha revocado. Pide un enlace nuevo.</p><button type="button" class="btn btn-secondary" (click)="goToHousehold()">Ir a mis hogares</button></div>
+        }
+        @case ('already-member') {
+          <div class="empty" data-testid="join-already"><div class="big">🏠</div><h3>Ya eres miembro</h3><p>Ya formas parte de <b>{{ i.householdName }}</b>.</p><button type="button" class="btn btn-primary" (click)="goToHousehold()">Ir a Hoy</button></div>
+        }
+        @default {
+          <div class="empty" data-testid="join-invalid"><div class="big">🔗</div><h3>Enlace no válido</h3><p>Este enlace de invitación no existe o se ha escrito mal. Pide uno nuevo a quien te invitó.</p><button type="button" class="btn btn-secondary" (click)="goToHousehold()">Ir a mis hogares</button></div>
+        }
+      }
+    }
+  </div>
+</section>

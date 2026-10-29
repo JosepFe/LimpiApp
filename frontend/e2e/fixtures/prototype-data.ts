@@ -198,3 +198,16 @@ export const MEMBERS = [
   { ...PAU, role: 'owner', joinedOn: '2026-03-02' },
   { ...MARTA, role: 'member', joinedOn: '2026-04-18' },
 ];
+
+/** GET /invites/k3Jx9QmZ2vLpA8: #screen-join (Pau invites; the prototype says 6 rooms here). */
+export const INVITE_CODE = 'k3Jx9QmZ2vLpA8';
+export const INVITE_PREVIEW = {
+  status: 'valid',
+  householdId: 'h-casa',
+  householdName: 'Casa Pau y Josep',
+  inviterName: 'Pau',
+  members: [JOSEP, PAU, MARTA].map(({ name, avatarColor }) => ({ name, avatarColor })),
+  memberCount: 3,
+  roomCount: 6,
+};
+export const INVITE_NOTHING = { status: 'invalid', householdId: null, householdName: null, inviterName: null, members: null, memberCount: 0, roomCount: 0 };

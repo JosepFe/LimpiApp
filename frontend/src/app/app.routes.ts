@@ -13,6 +13,7 @@ const placeholder = (path: string, screen: string, title: string) => ({
 
 export const routes: Routes = [
   { path: 'login', loadComponent: () => import('./features/login/login').then((m) => m.Login) },
+  { path: 'join/:code', loadComponent: () => import('./features/join/join').then((m) => m.Join) },
   {
     path: 'onboarding',
     canActivate: [authGuard],
