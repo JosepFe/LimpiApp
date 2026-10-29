@@ -17,6 +17,8 @@ public class HouseholdAccessTests(ApiFactory factory) : IntegrationTest(factory)
 
         var mine = await josep.GetFromJsonAsync<JsonElement>($"/households/{id}", Ct);
         Assert.Equal(("Casa Pau y Josep", "Europe/Madrid", 1, 1), (mine.GetProperty("name").GetString(), mine.GetProperty("timeZone").GetString(), mine.GetProperty("memberCount").GetInt32(), mine.GetProperty("roomCount").GetInt32()));
+        var member = Assert.Single(mine.GetProperty("members").EnumerateArray());
+        Assert.Equal(("Josep", "teal"), (member.GetProperty("name").GetString(), member.GetProperty("avatarColor").GetString()));
 
         var stranger = await Factory.SignedInAsync("intruso@example.com");
         Assert.Equal(HttpStatusCode.NotFound, (await stranger.GetAsync($"/households/{id}", Ct)).StatusCode);

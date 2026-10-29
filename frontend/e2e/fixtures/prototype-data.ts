@@ -81,3 +81,18 @@ export const KITCHEN_TASKS = [
   taskRow('t-fregar', 'Fregar suelo', COCINA, null, 20, ['today', 'Hoy'], JOSEP),
   taskRow('t-fregadero', 'Limpiar fregadero', COCINA, null, 5, ['soon', 'En 2 d'], JOSEP, '2026-10-16'),
 ];
+
+/** GET /households/h-casa: the household with its members (the task form's «Responsable»). */
+export const HOUSEHOLD = {
+  id: 'h-casa', name: 'Casa Pau y Josep', timeZone: 'Europe/Madrid', role: 'owner', memberCount: 3, roomCount: 6, members: [JOSEP, PAU, MARTA],
+};
+
+/** #screen-task-form (edit): «Limpiar nevera por dentro», as the prototype draws the form. */
+export const FRIDGE_TASK = {
+  id: 't-nevera', title: 'Limpiar nevera por dentro', roomId: 'r-cocina', roomName: 'Cocina', roomEmoji: '🍳', zone: null,
+  freqValue: 1, freqUnit: 'month', nextDue: TODAY, due: { kind: 'today', label: 'Hoy' }, estimatedMinutes: 30, priority: 'medium',
+  assignee: JOSEP, notes: null,
+  subtasks: [{ id: 's1', title: 'Vaciar y sacar baldas' }, { id: 's2', title: 'Retirar lo caducado' }, { id: 's3', title: 'Limpiar baldas y cajones' }],
+  products: [{ id: 'p-desincrustante', name: 'Desincrustante', emoji: '🧴' }, { id: 'p-bayetas', name: 'Bayetas microfibra', emoji: '🧽' }],
+  lastDone: null, history: [],
+};

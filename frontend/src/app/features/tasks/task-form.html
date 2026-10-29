@@ -1,0 +1,66 @@
+<la-sheet screen="task-form" [title]="taskId() ? 'Editar tarea' : 'Nueva tarea'" [full]="true" (closed)="closed.emit()">
+  @if (invalid()) {
+    <div class="banner error" role="alert"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-x" /></svg><span>Revisa los campos marcados.</span></div>
+  }
+  <div class="form-section"><span class="form-section-title">Básico</span></div>
+  <div class="field" [class.invalid]="invalid()"><label for="tf-title">Título</label>
+    <input id="tf-title" class="input" [attr.placeholder]="taskId() || invalid() || title() ? null : 'Ej.: Limpiar el horno'" maxlength="80" data-testid="task-title"
+           [attr.aria-invalid]="invalid() || null" [value]="title()" (input)="title.set($any($event.target).value)">
+    @if (invalid()) {<span class="err">El título es obligatorio.</span>}</div>
+  <div class="form-row">
+    <div class="field"><label for="tf-room">Habitación</label><select id="tf-room" class="select" data-testid="task-room" (change)="chooseRoom($any($event.target).value)">
+      @for (r of rooms(); track r.id) {<option [value]="r.id" [selected]="r.id === room()">{{ r.emoji }} {{ r.name }}</option>}</select></div>
+    <div class="field"><label for="tf-zone">Zona</label><select id="tf-zone" class="select" data-testid="task-zone" (change)="zone.set($any($event.target).value)">
+      <option value="" [selected]="!zone()">Sin zona</option>
+      @for (z of zones(); track z.id) {<option [value]="z.id" [selected]="z.id === zone()">{{ z.name }}</option>}</select></div>
+  </div>
+
+  <div class="form-section"><span class="form-section-title">Frecuencia</span></div>
+  <div class="form-row">
+    <div class="field"><label for="tf-n">Cada</label><input id="tf-n" class="input" type="number" inputmode="numeric" min="1" max="365" data-testid="task-freq-value"
+         [value]="freqValue()" (input)="freqValue.set(+$any($event.target).value || 1)"></div>
+    <div class="field"><label for="tf-u">Unidad</label><select id="tf-u" class="select" data-testid="task-freq-unit" (change)="freqUnit.set($any($event.target).value)">
+      @for (u of units; track u[0]) {<option [value]="u[0]" [selected]="u[0] === freqUnit()">{{ u[1][1] }}</option>}</select></div>
+  </div>
+  <div class="field"><label for="tf-d">Primera vez que toca</label><input id="tf-d" class="input" type="date" data-testid="task-first-due" [value]="nextDue()" (input)="nextDue.set($any($event.target).value)"><span class="help">Después se calcula desde el día en que se haga.</span></div>
+
+  <div class="form-section"><span class="form-section-title">Esfuerzo</span></div>
+  <div class="field"><span class="lbl">Tiempo estimado</span>
+    <div class="stepper" role="group" aria-label="Minutos"><button type="button" aria-label="Menos" (click)="changeMinutes(-1)">−</button><output>{{ minutes() }} min</output><button type="button" aria-label="Más" (click)="changeMinutes(1)">+</button></div></div>
+  <div class="field"><span class="lbl">Prioridad</span>
+    <div class="seg" data-testid="task-priority">@for (p of priorities; track p[0]) {<button type="button" [class.active]="p[0] === priority()" [attr.aria-pressed]="p[0] === priority()" (click)="priority.set(p[0])">{{ p[1] }}</button>}</div></div>
+
+  <div class="form-section"><span class="form-section-title">Asignación</span></div>
+  <div class="field"><label for="tf-as">Responsable</label><select id="tf-as" class="select" data-testid="task-assignee" (change)="assignee.set($any($event.target).value)">
+    <option value="" [selected]="!assignee()">Sin asignar</option>
+    @for (m of members(); track m.id) {<option [value]="m.id" [selected]="m.id === assignee()">{{ m.name }}</option>}</select></div>
+
+  <div class="form-section"><span class="form-section-title">Subtareas</span><span class="help" style="font-size:12px;color:var(--text-3)">{{ subtasks().length }} de {{ maxSubtasks }}</span></div>
+  <div data-testid="task-checklist-editor">
+    @for (s of subtasks(); track s.key) {
+      <div class="rep-row"><span style="color:var(--text-3)"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-drag" /></svg></span><input class="input" aria-label="Subtarea" maxlength="120" [value]="s.title" (input)="renameSubtask(s.key, $any($event.target).value)"><button type="button" class="rm" aria-label="Quitar subtarea" (click)="removeSubtask(s.key)"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-x" /></svg></button></div>
+    }
+  </div>
+  <button type="button" class="add-link" data-testid="task-add-subtask" [disabled]="subtasks().length >= maxSubtasks" (click)="addSubtask()"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-plus" /></svg> Añadir subtarea</button>
+
+  <div class="form-section"><span class="form-section-title">Productos</span></div>
+  <div class="chips">
+    @for (p of products(); track p.id) {<span class="chip">{{ p.emoji }} {{ p.name }} <button type="button" class="x" [attr.aria-label]="'Quitar ' + p.name" (click)="removeProduct(p.id)">×</button></span>}
+    <!-- The prototype's «+ Añadir» chip; an invisible native select over it picks the product. -->
+    <label class="chip" data-testid="task-add-product" style="position:relative"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-plus" /></svg> Añadir
+      <select #pick aria-label="Añadir producto" style="position:absolute;inset:0;width:100%;opacity:0;cursor:pointer" (change)="addProduct(pick)">
+        <option value=""></option>
+        @for (p of available(); track p.id) {<option [value]="p.id">{{ p.emoji }} {{ p.name }}</option>}
+      </select></label>
+  </div>
+
+  <div class="form-section"><span class="form-section-title">Notas</span></div>
+  <div class="field"><textarea class="textarea" placeholder="Trucos, avisos, cómo hacerlo…" aria-label="Notas" data-testid="task-notes" [value]="notes()" (input)="notes.set($any($event.target).value)"></textarea></div>
+
+  <div class="sheet-foot" sheet-foot><button type="button" class="btn btn-secondary" data-testid="task-cancel" (click)="closed.emit()">Cancelar</button>
+    @if (saving()) {
+      <button type="button" class="btn btn-primary disabled" disabled><span class="spinner"></span> Guardando…</button>
+    } @else {
+      <button type="button" class="btn btn-primary" data-testid="task-save" (click)="save()">Guardar tarea</button>
+    }</div>
+</la-sheet>

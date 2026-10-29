@@ -2,7 +2,9 @@ import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
+import { RefreshBus } from '../core/refresh-bus';
 import { SessionStore } from '../core/session.store';
+import { TaskForm } from '../features/tasks/task-form';
 import { avatarColor, members } from '../shared/avatar';
 import { HomeSwitcher } from './home-switcher';
 
@@ -26,7 +28,7 @@ export const NAV: NavItem[] = [
 /** Sidebar (≥ 1024 px) and bottom bar (phones) of the prototype around every signed-in screen. */
 @Component({
   selector: 'la-shell',
-  imports: [RouterOutlet, RouterLink, HomeSwitcher],
+  imports: [RouterOutlet, RouterLink, HomeSwitcher, TaskForm],
   templateUrl: './shell.html',
 })
 export class Shell {
@@ -48,14 +50,23 @@ export class Shell {
   );
 
   /** Sheets open over the current screen with `?sheet=…`: shareable, and the back button closes them. */
-  protected readonly sheet = toSignal(inject(ActivatedRoute).queryParamMap.pipe(map((p) => p.get('sheet'))));
+  private readonly query = toSignal(inject(ActivatedRoute).queryParamMap);
+  protected readonly sheet = () => this.query()?.get('sheet') ?? null;
+  protected readonly param = (name: string) => this.query()?.get(name) ?? null;
+  private readonly refresh = inject(RefreshBus);
 
   protected openSheet(name: string): void {
     void this.router.navigate([], { queryParams: { sheet: name }, queryParamsHandling: 'merge' });
   }
 
   protected closeSheet(): void {
-    void this.router.navigate([], { queryParams: { sheet: null }, queryParamsHandling: 'merge', replaceUrl: true });
+    void this.router.navigate([], { queryParams: { sheet: null, room: null, task: null }, queryParamsHandling: 'merge', replaceUrl: true });
+  }
+
+  /** A task was saved: close the form and let the screen behind reload. */
+  protected taskSaved(): void {
+    this.closeSheet();
+    this.refresh.bump();
   }
 
   protected isActive(item: NavItem): boolean {

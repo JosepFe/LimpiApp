@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { HouseholdApi } from '../../core/household-api';
+import { RefreshBus } from '../../core/refresh-bus';
 import { HealthRing } from '../../shared/health-ring';
 import { ErrorState, LoadState } from '../../shared/states';
 import { TaskRow } from '../../shared/task-row';
@@ -21,6 +22,7 @@ interface Group {
 export class RoomDetail {
   private readonly api = inject(HouseholdApi);
   private readonly router = inject(Router);
+  private readonly refresh = inject(RefreshBus);
   /** Route parameter (/rooms/:id). */
   readonly id = input.required<string>();
 
@@ -37,7 +39,11 @@ export class RoomDetail {
   });
 
   constructor() {
-    effect(() => void this.load(this.id()));
+    // Reloads when the room changes and when a sheet saved something (a new task…).
+    effect(() => {
+      this.refresh.version();
+      void this.load(this.id());
+    });
   }
 
   protected async load(id = this.id()): Promise<void> {

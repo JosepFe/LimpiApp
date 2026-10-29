@@ -19,6 +19,11 @@ public static class HouseholdsEndpoints
 
     public sealed record HouseholdResponse(Guid Id, string Name, string TimeZone, MemberRole Role, int MemberCount, int RoomCount);
 
+    public sealed record MemberDto(Guid Id, string Name, string AvatarColor);
+
+    /// <summary>The household with its members (the task form's «Responsable»; E03/US-008).</summary>
+    public sealed record HouseholdDetail(Guid Id, string Name, string TimeZone, MemberRole Role, int MemberCount, int RoomCount, IReadOnlyList<MemberDto> Members);
+
     public static IEndpointRouteBuilder MapHouseholds(this IEndpointRouteBuilder app)
     {
         app.MapPost("/households", CreateAsync).RequireAuthorization();
@@ -103,8 +108,9 @@ public static class HouseholdsEndpoints
     {
         var membership = HouseholdAccess.Current(http);
         var id = membership.HouseholdId;
-        var members = await db.Memberships.CountAsync(m => m.HouseholdId == id, ct);
+        var members = await db.Memberships.Where(m => m.HouseholdId == id).OrderBy(m => m.JoinedAt).ThenBy(m => m.User.Name)
+            .Select(m => new MemberDto(m.UserId, m.User.Name, m.User.AvatarColor)).ToListAsync(ct);
         var rooms = await db.Rooms.CountAsync(r => r.HouseholdId == id && r.ArchivedAt == null, ct);
-        return TypedResults.Ok(new HouseholdResponse(id, membership.Household.Name, membership.Household.TimeZone, membership.Role, members, rooms));
+        return TypedResults.Ok(new HouseholdDetail(id, membership.Household.Name, membership.Household.TimeZone, membership.Role, members.Count, rooms, members));
     }
 }

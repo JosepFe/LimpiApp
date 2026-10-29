@@ -30,6 +30,14 @@
   </nav>
 </div>
 
-@if (sheet() === 'homes') {
-  <la-home-switcher (closed)="closeSheet()" />
+@switch (sheet()) {
+  @case ('homes') {
+    <la-home-switcher (closed)="closeSheet()" />
+  }
+  @case ('task-new') {
+    <la-task-form [roomId]="param('room')" (closed)="closeSheet()" (saved)="taskSaved()" />
+  }
+  @case ('task-edit') {
+    <la-task-form [taskId]="param('task')" (closed)="closeSheet()" (saved)="taskSaved()" />
+  }
 }
