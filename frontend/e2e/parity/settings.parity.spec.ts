@@ -1,5 +1,6 @@
-// E07/US-001 · criteria 1 and 4: #screen-settings default and error.
+// E07/US-001 · criteria 1 and 4: #screen-settings default and error (install-available: E07/US-002).
 import type { Route } from '@playwright/test';
+import { offerInstall } from '../fixtures/install';
 import { mockSettings } from '../fixtures/settings';
 import { test } from '../fixtures/test';
 import { expectParity } from './parity';
@@ -15,4 +16,12 @@ test('settings · error', async ({ page, api }) => {
   await page.goto('/settings');
   await page.getByRole('button', { name: 'Color rose' }).click();
   await expectParity(page, { screen: 'settings', state: 'error' });
+});
+
+// E07/US-002 · criterion 1: #screen-settings install-available.
+test('settings · install-available', async ({ page, api }) => {
+  mockSettings(api);
+  await page.goto('/settings');
+  await offerInstall(page);
+  await expectParity(page, { screen: 'settings', state: 'install-available' });
 });

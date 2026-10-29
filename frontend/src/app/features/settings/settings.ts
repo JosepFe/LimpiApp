@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { versionLine } from '../../core/build-info';
 import { HouseholdApi } from '../../core/household-api';
+import { InstallService } from '../../core/install';
 import { Me, SessionStore } from '../../core/session.store';
 import { ThemeChoice } from '../../core/theme';
 import { AVATAR_COLORS, initial } from '../../shared/avatar';
@@ -21,6 +22,7 @@ export class Settings implements OnInit {
   private readonly api = inject(HouseholdApi);
   private readonly router = inject(Router);
   protected readonly session = inject(SessionStore);
+  protected readonly install = inject(InstallService);
   protected readonly colors = AVATAR_COLORS;
   protected readonly themes: { id: ThemeChoice; label: string }[] = [
     { id: 'system', label: 'Sistema' },

@@ -18,7 +18,12 @@ curl -fsS "$BASE/rooms" | grep -q '<la-root>' || fail "/rooms does not fall back
 [ "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/missing.js")" = 404 ] || fail "a missing asset must be a 404"
 echo "ok  SPA fallback (and 404 for missing assets)"
 
-# 3. Mailpit (dev profile) receives mail sent from the api container to SMTP_HOST:SMTP_PORT
+# 3. Installable (E07/US-002): the manifest with its media type, not cached forever
+curl -fsSI "$BASE/manifest.webmanifest" | grep -qi '^content-type: application/manifest+json' || fail "manifest.webmanifest is not application/manifest+json"
+curl -fsSI "$BASE/icons/icon-512.png" | grep -qi '^cache-control: no-cache' || fail "the install icons must not be cached forever"
+echo "ok  install manifest and icons"
+
+# 4. Mailpit (dev profile) receives mail sent from the api container to SMTP_HOST:SMTP_PORT
 curl -fsS "$MAILPIT/api/v1/info" >/dev/null || fail "Mailpit is not up (docker compose --profile dev up -d)"
 curl -fsS -X DELETE "$MAILPIT/api/v1/messages" >/dev/null
 docker compose exec -T api bash -c '

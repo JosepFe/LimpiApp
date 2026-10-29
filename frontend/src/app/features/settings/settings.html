@@ -4,6 +4,9 @@
     @if (session.me(); as me) {
       <div class="settings-grid" style="margin-top:var(--s4)">
         <div style="grid-column:1/-1;display:flex;flex-direction:column;gap:var(--s3)">
+          @if (install.available()) {
+            <div class="banner install" data-testid="install-banner"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-download" /></svg><span style="flex:1"><b>Instala LimpiApp</b><br><span style="font-size:13px;color:var(--text-2)">Acceso directo y uso a pantalla completa.</span></span><button type="button" class="btn btn-primary btn-sm" data-testid="install-btn" (click)="install.install()">Instalar</button></div>
+          }
           @if (failed()) {
             <div class="banner error" role="alert" style="margin:0"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-x" /></svg><span>No se han podido guardar los ajustes.</span></div>
           }
