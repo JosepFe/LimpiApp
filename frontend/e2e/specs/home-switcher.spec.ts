@@ -4,7 +4,8 @@ import { ME, ROOMS, TODAY_SUMMARY } from '../fixtures/prototype-data';
 import { expect, mockShell, test } from '../fixtures/test';
 
 test('the sidebar opens «Mis hogares»; choosing another household opens its Hoy and is remembered', async ({ page, api }) => {
-  mockShell(api).on('GET', '/households/h-playa/today', { summary: { pendingToday: 2 } }).on('GET', '/households/h-casa/rooms', ROOMS);
+  mockShell(api).on('GET', '/households/h-playa/today', { ...TODAY_SUMMARY, summary: { ...TODAY_SUMMARY.summary, pendingToday: 2 } }).on('GET', '/households/h-casa/rooms', ROOMS)
+    .on('GET', '/households/h-playa/rooms', ROOMS); // the list follows the new household before Hoy opens
   await page.goto('/rooms');
   await page.getByTestId('side-home-switcher').click();
   await expect(page).toHaveURL(/\/rooms\?sheet=homes$/);

@@ -8,7 +8,7 @@ test('«Editar tarea» opens the form with the task; «Más acciones» archives 
   mockTaskForm(api)
     .on('GET', '/households/h-casa/tasks/t-fregar', FLOOR_TASK)
     .on('DELETE', '/households/h-casa/tasks/t-fregar', async (route: Route) => route.fulfill({ status: 204, body: '' }));
-  await page.goto('/tasks/t-fregar');
+  await page.goto('/today/tasks/t-fregar');
   await page.getByTestId('task-edit').click();
   await expect(page.getByTestId('task-title')).toHaveValue('Fregar suelo');
   await page.getByTestId('task-cancel').click();

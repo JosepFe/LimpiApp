@@ -14,19 +14,19 @@ const cases: [string, string | undefined, string, unknown][] = [
 for (const [name, state, id, task] of cases) {
   test(`task-detail · ${name}`, async ({ page, api }) => {
     mockShell(api).on('GET', `/households/h-casa/tasks/${id}`, task);
-    await page.goto(`/tasks/${id}`);
+    await page.goto(`/today/tasks/${id}`);
     await expectParity(page, { screen: 'task-detail', state, scope: 'task-detail-body' });
   });
 }
 
 test('task-detail · loading', async ({ page, api }) => {
   mockShell(api).on('GET', '/households/h-casa/tasks/t-fregar', () => new Promise(() => undefined));
-  await page.goto('/tasks/t-fregar');
+  await page.goto('/today/tasks/t-fregar');
   await expectParity(page, { screen: 'task-detail', state: 'loading', scope: 'task-detail-body' });
 });
 
 test('task-detail · error', async ({ page, api }) => {
   mockShell(api).on('GET', '/households/h-casa/tasks/t-fregar', async (route: Route) => route.fulfill({ status: 500, json: {} }));
-  await page.goto('/tasks/t-fregar');
+  await page.goto('/today/tasks/t-fregar');
   await expectParity(page, { screen: 'task-detail', state: 'error', scope: 'task-detail-body' });
 });

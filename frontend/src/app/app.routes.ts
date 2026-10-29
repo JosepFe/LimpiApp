@@ -24,8 +24,13 @@ export const routes: Routes = [
     canActivate: [authGuard, householdGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'today' },
-      placeholder('today', 'today', 'Hoy'),
-      { path: 'tasks/:id', loadComponent: () => import('./features/tasks/task-detail').then((m) => m.TaskDetail) },
+      {
+        path: 'today',
+        loadComponent: () => import('./features/today/today').then((m) => m.Today),
+        // The task detail belongs to Hoy in the prototype (its pane on desktop, «Hoy» lit in the navigation).
+        children: [{ path: 'tasks/:id', loadComponent: () => import('./features/tasks/task-detail').then((m) => m.TaskDetail) }],
+      },
+      { path: 'tasks/:id', redirectTo: 'today/tasks/:id' },
       {
         path: 'rooms',
         loadComponent: () => import('./features/rooms/rooms').then((m) => m.Rooms),

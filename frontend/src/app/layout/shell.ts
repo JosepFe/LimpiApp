@@ -18,7 +18,7 @@ interface NavItem {
 }
 
 export const NAV: NavItem[] = [
-  { nav: 'today', label: 'Hoy', icon: 'i-today', link: '/today', match: ['/today'] },
+  { nav: 'today', label: 'Hoy', icon: 'i-today', link: '/today', match: ['/today', '/tasks'] },
   { nav: 'rooms', label: 'Habitaciones', icon: 'i-rooms', link: '/rooms', match: ['/rooms'] },
   { nav: 'activity', label: 'Actividad', icon: 'i-activity', link: '/history', match: ['/history', '/stats'] },
   { nav: 'household', label: 'Hogar', icon: 'i-users', link: '/ranking', match: ['/ranking', '/members'] },

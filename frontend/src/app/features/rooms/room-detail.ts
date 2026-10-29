@@ -74,6 +74,6 @@ export class RoomDetail {
   }
 
   protected openTask(task: TaskSummary): void {
-    void this.router.navigate(['/tasks', task.id]);
+    void this.router.navigate(['/today/tasks', task.id]);
   }
 }

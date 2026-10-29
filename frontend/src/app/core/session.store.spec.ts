@@ -28,12 +28,12 @@ describe('SessionStore', () => {
 
   afterEach(() => http.verify());
 
-  it('loads me, picks the first household and its «Hoy» counter', async () => {
+  it('loads me, picks the first household and its «Hoy» counter, without waiting for the counter', async () => {
     const loading = store.load();
     http.expectOne('/api/auth/me').flush(ME);
-    await new Promise((r) => setTimeout(r));
+    expect(await loading).toBe(true); // the counter request is still pending
     http.expectOne('/api/households/h-casa/today').flush({ summary: { pendingToday: 6 } });
-    await loading;
+    await new Promise((r) => setTimeout(r));
 
     expect(store.me()?.name).toBe('Josep');
     expect(store.household()?.name).toBe('Casa Pau y Josep');

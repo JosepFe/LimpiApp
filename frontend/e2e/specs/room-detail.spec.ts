@@ -18,5 +18,5 @@ test('«Añadir tarea» asks for the task form of this room; a row opens the tas
 
   await page.goto('/rooms/r-cocina');
   await page.getByTestId('task-row').filter({ hasText: 'Fregar suelo' }).click();
-  await expect(page).toHaveURL(/\/tasks\/t-fregar$/);
+  await expect(page).toHaveURL(/\/today\/tasks\/t-fregar$/);
 });

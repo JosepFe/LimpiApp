@@ -1,0 +1,45 @@
+<section class="screen active" data-screen="screen-today" data-testid="screen-today">
+  <header class="page-header"><button type="button" class="home-switch hide-desktop" data-testid="home-switch" (click)="openSheet('homes')"><span>{{ session.household()?.name }}</span><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-down" /></svg></button><h1 class="ph-title">Hoy<span class="ph-sub" style="display:block">{{ date }}</span></h1><div class="ph-actions"><button type="button" class="btn btn-primary btn-sm hide-mobile" data-testid="new-task-desktop" (click)="openSheet('task-new')"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-plus" /></svg> Nueva tarea</button></div></header>
+  <div class="twopane" [class.has-detail]="hasDetail()">
+    <div class="pane-list">
+      <div class="content">
+        @switch (state()) {
+          @case ('loading') {
+            <div data-testid="today-loading"><la-skeleton-list [rows]="6" /></div>
+          }
+          @case ('error') {
+            <div data-testid="today-error"><la-error-state (retry)="load()" /></div>
+          }
+          @default {
+            @if (empty()) {
+              <div data-testid="today-empty"><div class="empty"><div class="big" aria-hidden="true">✨</div><h3>Todo limpio</h3><p>No hay tareas pendientes. Disfruta de la casa brillante.</p><button type="button" class="btn btn-secondary" (click)="rooms()">Ver habitaciones</button></div></div>
+            } @else {
+              @let s = data()!.summary;
+              <div class="hero" data-testid="home-summary">
+                <la-health-ring [health]="s.health" size="lg" />
+                <div class="meta"><div class="big">Hogar: {{ s.health?.label ?? 'Sin tareas' }}</div><div class="sub">{{ s.health?.value ?? 100 }} % limpio · {{ plural(s.pendingToday, 'tarea pendiente', 'tareas pendientes') }} hoy</div>
+                  @if (s.streak) {<div style="margin-top:6px"><span class="badge today" data-testid="home-streak">🔥 Racha de {{ plural(s.streak, 'día', 'días') }}</span></div>}</div>
+              </div>
+              <div class="filters" data-testid="today-filters">
+                <div class="seg" role="tablist" aria-label="Asignación">
+                  <button type="button" class="active" data-testid="filter-all">Todas</button><button type="button" data-testid="filter-mine">Mías</button></div>
+                <div class="chips scroll">
+                  <button type="button" class="chip" data-testid="filter-room"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-rooms" /></svg> Habitación <svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-down" /></svg></button>
+                  <button type="button" class="chip" data-testid="filter-time"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-clock" /></svg> Tengo 15 min</button>
+                </div>
+              </div>
+              <div data-testid="today-groups">
+                @for (g of groups(); track g.key) {
+                  <div class="group-h" [class]="g.css">{{ g.name }} <span class="count">{{ g.tasks.length }}</span></div>
+                  <div class="list">@for (t of g.tasks; track t.id) {<la-task-row [task]="t" [showRoom]="true" (opened)="open(t)" />}</div>
+                }
+              </div>
+            }
+          }
+        }
+      </div>
+      <button type="button" class="fab hide-desktop" aria-label="Añadir tarea" data-testid="fab-new-task" (click)="openSheet('task-new')"><svg class="ic lg" aria-hidden="true"><use href="icons.svg#i-plus" /></svg></button>
+    </div>
+    <aside class="pane-detail" aria-label="Detalle">@if (!hasDetail()) {<div class="pane-empty"><div style="font-size:40px">🧽</div><p>Selecciona una tarea para ver su detalle</p></div>}<router-outlet /></aside>
+  </div>
+</section>

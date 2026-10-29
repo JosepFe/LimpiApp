@@ -58,7 +58,7 @@ export class SessionStore {
       this.me.set(null);
       return false;
     }
-    await this.loadCounters();
+    void this.loadCounters(); // the badge must not hold up the screen (the guards wait for this method)
     return true;
   }
 

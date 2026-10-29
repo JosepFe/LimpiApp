@@ -16,8 +16,12 @@ export const ME = {
   ],
 };
 
-/** GET /households/h-casa/today, the part the shell uses: «Hoy 6» in the navigation. Completed by E04/US-001. */
-export const TODAY_SUMMARY = { summary: { pendingToday: 6 } };
+/** GET /households/h-casa/today: #screen-today (and «Hoy 6» in the navigation). Filled in at the end of this file. */
+export const TODAY_SUMMARY = {
+  date: '2026-10-14',
+  summary: { health: { value: 78, label: 'Bien', level: 'good' }, pendingToday: 6, streak: 5 },
+  groups: { overdue: [] as unknown[], today: [] as unknown[], upcoming: [] as unknown[] },
+};
 
 /** #screen-login: the email typed in the prototype. */
 export const LOGIN_EMAIL = 'josep@example.com';
@@ -114,3 +118,28 @@ export const FLOOR_TASK = {
 };
 export const OVEN_TASK = { ...FLOOR_TASK, id: 't-horno', title: 'Limpiar horno', zone: { id: 'z-horno', name: 'Horno' }, nextDue: '2026-10-08', due: { kind: 'overdue', label: 'Atrasada 6 d' } };
 export const MICROWAVE_TASK = { ...FLOOR_TASK, id: 't-micro', title: 'Limpiar microondas', lastDone: null, history: [] };
+
+const BANO: [string, string, string] = ['r-bano', 'Baño', '🛁'];
+const DORMITORIO: [string, string, string] = ['r-dormitorio', 'Dormitorio', '🛏️'];
+const SALON: [string, string, string] = ['r-salon', 'Salón', '🛋️'];
+const TERRAZA: [string, string, string] = ['r-terraza', 'Terraza', '🌿'];
+/** #screen-today: Atrasadas 3, Hoy 3, Próximos 7 días 5, in the prototype's order. */
+TODAY_SUMMARY.groups = {
+  overdue: [
+    taskRow('t-horno', 'Limpiar horno', COCINA, ['z-horno', 'Horno'], 45, ['overdue', 'Atrasada 6 d'], PAU, '2026-10-08'),
+    taskRow('t-nevera', 'Limpiar nevera por dentro', COCINA, ['z-nevera', 'Nevera'], 30, ['overdue', 'Atrasada 3 d'], JOSEP, '2026-10-11'),
+    taskRow('t-juntas', 'Limpiar juntas y mamparas', BANO, null, 30, ['overdue', 'Atrasada 2 d'], null, '2026-10-12'),
+  ],
+  today: [
+    taskRow('t-wc', 'Limpiar WC', BANO, null, 8, ['today', 'Hoy'], PAU),
+    taskRow('t-fregar', 'Fregar suelo', COCINA, null, 20, ['today', 'Hoy'], JOSEP),
+    taskRow('t-sabanas', 'Cambiar sábanas', DORMITORIO, null, 15, ['today', 'Hoy'], MARTA),
+  ],
+  upcoming: [
+    taskRow('t-lavabo', 'Limpiar lavabo y espejo', BANO, null, 10, ['soon', 'Mañana'], PAU, '2026-10-15'),
+    taskRow('t-fregadero', 'Limpiar fregadero', COCINA, null, 5, ['soon', 'En 2 d'], JOSEP, '2026-10-16'),
+    taskRow('t-sofa', 'Aspirar sofá y suelo', SALON, null, 20, ['soon', 'En 3 d'], MARTA, '2026-10-17'),
+    taskRow('t-polvo', 'Quitar polvo', SALON, null, 15, ['ok', 'En 4 d'], null, '2026-10-18'),
+    taskRow('t-terraza', 'Barrer terraza', TERRAZA, null, 10, ['ok', 'En 6 d'], JOSEP, '2026-10-20'),
+  ],
+};
