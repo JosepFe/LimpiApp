@@ -31,7 +31,7 @@
             <div data-testid="room-zones">
               @for (g of groups(); track g.name) {
                 <div class="group-h">{{ g.name }} <span class="count">{{ g.tasks.length }}</span></div>
-                <div class="list">@for (t of g.tasks; track t.id) {<la-task-row [task]="t" (opened)="openTask(t)" />}</div>
+                <div class="list">@for (t of g.tasks; track t.id) {<la-task-row [task]="t" [checkable]="true" (opened)="openTask(t)" (checked)="complete(t)" />}</div>
               }
             </div>
           } @else {

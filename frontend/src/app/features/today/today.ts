@@ -98,6 +98,10 @@ export class Today {
     void this.router.navigate(['/today/tasks', task.id]);
   }
 
+  protected complete(task: TaskSummary): void {
+    void this.router.navigate([], { queryParams: { sheet: 'complete', task: task.id }, queryParamsHandling: 'merge' });
+  }
+
   protected openSheet(sheet: string): void {
     void this.router.navigate([], { queryParams: { sheet }, queryParamsHandling: 'merge' });
   }

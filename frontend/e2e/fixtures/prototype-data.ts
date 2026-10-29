@@ -145,3 +145,11 @@ TODAY_SUMMARY.groups = {
   ],
 };
 TODAY_SUMMARY.rooms = ROOMS.rooms.map(({ id, name, emoji }) => ({ id, name, emoji }));
+
+/** #screen-complete: «Limpiar nevera por dentro» (Cocina · Nevera, 30 min, 5 subtasks) and its «¡Hecho!». */
+export const COMPLETE_TASK = {
+  ...FRIDGE_TASK, zone: { id: 'z-nevera', name: 'Nevera' }, nextDue: '2026-10-11', due: { kind: 'overdue', label: 'Atrasada 3 d' },
+  subtasks: ['Vaciar y sacar baldas', 'Retirar lo caducado', 'Limpiar baldas y cajones', 'Limpiar paredes y gomas', 'Secar y recolocar'].map((title, i) => ({ id: `n${i}`, title })),
+};
+/** The API says «sáb 14 nov» (14/11/2026 is a Saturday); the prototype writes «mié 14 nov»: this mock follows the prototype. */
+export const COMPLETE_RESULT = { completionId: 'c-nevera', points: 9, streak: 6, nextDue: '2026-11-14', nextDueDay: 'mié 14 nov' };

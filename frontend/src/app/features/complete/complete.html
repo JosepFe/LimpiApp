@@ -1,0 +1,55 @@
+<la-sheet screen="complete" title="Marcar como hecha" (closed)="closed.emit()">
+  @if (result(); as r) {
+    <div class="success-box" data-testid="complete-success">
+      <div class="big" aria-hidden="true">🎉</div>
+      <h3 style="font-size:22px">¡Hecho!</h3>
+      <span class="pts-pill" style="font-size:18px">+{{ r.points }} {{ r.points === 1 ? 'punto' : 'puntos' }}</span>
+      @if (r.streak) {<span class="badge today" style="font-size:14px;height:28px;padding:0 12px">🔥 Racha de {{ r.streak }} {{ r.streak === 1 ? 'día' : 'días' }}</span>}
+      <p style="color:var(--text-2)">Próxima vez: <b>{{ r.nextDueDay }}</b></p>
+    </div>
+  } @else {
+    <div data-testid="complete-form">
+      @if (task(); as t) {
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:var(--s3)"><span class="emo" style="font-size:28px">{{ t.roomEmoji }}</span>
+          <div><div style="font-weight:600;font-size:17px">{{ t.title }}</div><div style="font-size:13px;color:var(--text-3)">{{ place() }}</div></div></div>
+      }
+      @if (failed()) {
+        <div class="banner error" role="alert"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-x" /></svg><span>No se ha podido guardar. Inténtalo de nuevo.</span></div>
+      }
+      @if (task()?.subtasks?.length) {
+        <div class="form-section"><span class="form-section-title">Subtareas</span><span class="help js-count" style="font-size:12px;color:var(--text-3)">{{ doneCount() }} de {{ done().length }}</span></div>
+        <ul class="plain-list" data-testid="complete-checklist">
+          @for (s of task()!.subtasks; track s.id; let i = $index) {
+            <li><button type="button" class="check" [class.done]="done()[i]" [attr.aria-pressed]="done()[i]" data-testid="complete-check" (click)="toggle(i)"><span class="box"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-check" /></svg></span><span class="lab">{{ s.title }}</span></button></li>
+          }
+        </ul>
+      }
+
+      <div class="form-section"><span class="form-section-title">Tiempo dedicado</span></div>
+      <div class="stepper" role="group" aria-label="Minutos"><button type="button" aria-label="Menos" (click)="changeMinutes(-1)">−</button><output data-testid="complete-minutes">{{ minutes() }} min</output><button type="button" aria-label="Más" (click)="changeMinutes(1)">+</button></div>
+
+      <div class="form-section"><span class="form-section-title">Nota</span></div>
+      <textarea class="textarea" placeholder="¿Algo que recordar? (opcional)" aria-label="Nota" data-testid="complete-note" maxlength="1000" [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
+
+      <div class="form-section"><span class="form-section-title">Fotos</span><span class="help" style="font-size:12px;color:var(--text-3)"><span>0</span> de 3</span></div>
+      <!-- Adding photos arrives with E04/US-006. -->
+      <div class="photos"><button type="button" class="photo add" data-testid="complete-add-photo" disabled><svg class="ic" aria-hidden="true"><use href="icons.svg#i-camera" /></svg><span>Añadir foto</span></button></div>
+
+      <div style="margin-top:var(--s4);display:flex;justify-content:space-between;align-items:center">
+        <span style="color:var(--text-2)">Puntos</span>
+        <span class="pts-pill" data-testid="complete-points"><span class="js-pts">+{{ points() }} pts</span></span></div>
+    </div>
+  }
+  <div class="sheet-foot" sheet-foot>
+    @if (result()) {
+      <!-- «Deshacer» arrives with E04/US-007. -->
+      <button type="button" class="btn btn-secondary" data-testid="complete-undo" disabled>Deshacer</button>
+      <button type="button" class="btn btn-primary" data-testid="complete-done" (click)="closed.emit()">Listo</button>
+    } @else if (saving()) {
+      <button type="button" class="btn btn-primary disabled" disabled><span class="spinner"></span> Guardando…</button>
+    } @else {
+      <button type="button" class="btn btn-secondary" data-testid="complete-cancel" (click)="closed.emit()">Cancelar</button>
+      <button type="button" class="btn btn-primary js-confirm" data-testid="complete-confirm" [disabled]="!task()" (click)="confirm()">Confirmar</button>
+    }
+  </div>
+</la-sheet>

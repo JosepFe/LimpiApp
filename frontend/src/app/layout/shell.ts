@@ -4,6 +4,7 @@ import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from 
 import { filter, map } from 'rxjs';
 import { RefreshBus } from '../core/refresh-bus';
 import { SessionStore } from '../core/session.store';
+import { Complete } from '../features/complete/complete';
 import { TaskForm } from '../features/tasks/task-form';
 import { avatarColor, members } from '../shared/avatar';
 import { HomeSwitcher } from './home-switcher';
@@ -28,7 +29,7 @@ export const NAV: NavItem[] = [
 /** Sidebar (≥ 1024 px) and bottom bar (phones) of the prototype around every signed-in screen. */
 @Component({
   selector: 'la-shell',
-  imports: [RouterOutlet, RouterLink, HomeSwitcher, TaskForm],
+  imports: [RouterOutlet, RouterLink, HomeSwitcher, TaskForm, Complete],
   templateUrl: './shell.html',
 })
 export class Shell {
@@ -67,6 +68,12 @@ export class Shell {
   protected taskSaved(): void {
     this.closeSheet();
     this.refresh.bump();
+  }
+
+  /** A task was done (or undone): the screen behind and the «Hoy» badge reload; the sheet stays for «¡Hecho!». */
+  protected taskDone(): void {
+    this.refresh.bump();
+    void this.session.refreshCounters();
   }
 
   protected isActive(item: NavItem): boolean {

@@ -63,6 +63,10 @@ export class TaskDetail {
     this.location.back();
   }
 
+  protected complete(): void {
+    void this.router.navigate([], { queryParams: { sheet: 'complete', task: this.id() } });
+  }
+
   protected edit(): void {
     void this.router.navigate([], { queryParams: { sheet: 'task-edit', task: this.id() } });
   }

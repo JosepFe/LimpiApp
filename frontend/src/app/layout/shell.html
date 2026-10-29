@@ -37,6 +37,9 @@
   @case ('task-new') {
     <la-task-form [roomId]="param('room')" (closed)="closeSheet()" (saved)="taskSaved()" />
   }
+  @case ('complete') {
+    <la-complete [taskId]="param('task')!" (closed)="closeSheet()" (changed)="taskDone()" />
+  }
   @case ('task-edit') {
     <la-task-form [taskId]="param('task')" (closed)="closeSheet()" (saved)="taskSaved()" />
   }

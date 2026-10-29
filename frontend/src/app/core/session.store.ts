@@ -58,7 +58,7 @@ export class SessionStore {
       this.me.set(null);
       return false;
     }
-    void this.loadCounters(); // the badge must not hold up the screen (the guards wait for this method)
+    void this.refreshCounters(); // the badge must not hold up the screen (the guards wait for this method)
     return true;
   }
 
@@ -75,11 +75,11 @@ export class SessionStore {
     } catch {
       // private mode: only for this visit
     }
-    void this.loadCounters();
+    void this.refreshCounters();
   }
 
-  /** A failing counter only hides the badge: it never signs the user out of the shell. */
-  private async loadCounters(): Promise<void> {
+  /** The «Hoy» badge. A failing counter only hides it: it never signs the user out of the shell. */
+  async refreshCounters(): Promise<void> {
     const household = this.household();
     if (!household) return;
     try {

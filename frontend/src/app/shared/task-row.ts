@@ -21,7 +21,7 @@ export class TaskRow {
   readonly task = input.required<TaskSummary>();
   /** Show the room in the subtitle (Hoy) or only the zone (a room's detail). */
   readonly showRoom = input(false);
-  /** «Marcar hecha» works from E04/US-005. */
+  /** The check opens «Marcar como hecha» (off where a row is only shown, e.g. the UI kit). */
   readonly checkable = input(false);
   readonly opened = output();
   readonly checked = output();

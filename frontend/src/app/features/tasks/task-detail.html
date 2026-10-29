@@ -24,8 +24,7 @@
             <div><h2 style="font-size:22px;font-weight:700;line-height:1.3" data-title>{{ t.title }}</h2>
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px"><span style="color:var(--text-2)">{{ place() }}</span><span class="badge" [class]="t.due.kind">{{ t.due.label }}</span>@if (!t.lastDone) {<span class="badge neutral">Nunca hecha</span>}</div></div>
 
-            <!-- «Marcar hecha» works from E04/US-005. -->
-            <button type="button" class="btn btn-primary btn-block" style="margin:var(--s4) 0" data-testid="task-complete" disabled><svg class="ic" aria-hidden="true"><use href="icons.svg#i-check" /></svg> Marcar hecha</button>
+            <button type="button" class="btn btn-primary btn-block" style="margin:var(--s4) 0" data-testid="task-complete" (click)="complete()"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-check" /></svg> Marcar hecha</button>
 
             <div class="card card-pad">
               <dl class="kv">

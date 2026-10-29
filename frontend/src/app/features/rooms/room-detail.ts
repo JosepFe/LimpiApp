@@ -73,6 +73,10 @@ export class RoomDetail {
     void this.router.navigate([], { queryParams: { sheet: 'task-new', room: this.id() } });
   }
 
+  protected complete(task: TaskSummary): void {
+    void this.router.navigate([], { queryParams: { sheet: 'complete', task: task.id } });
+  }
+
   protected openTask(task: TaskSummary): void {
     void this.router.navigate(['/today/tasks', task.id]);
   }
