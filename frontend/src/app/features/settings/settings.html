@@ -1,0 +1,57 @@
+<section class="screen active" data-screen="screen-settings" data-testid="screen-settings">
+  <header class="page-header"><h1 class="ph-title">Ajustes</h1><div class="ph-actions"></div></header>
+  <div class="content">
+    @if (session.me(); as me) {
+      <div class="settings-grid" style="margin-top:var(--s4)">
+        <div style="grid-column:1/-1;display:flex;flex-direction:column;gap:var(--s3)">
+          @if (failed()) {
+            <div class="banner error" role="alert" style="margin:0"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-x" /></svg><span>No se han podido guardar los ajustes.</span></div>
+          }
+        </div>
+
+        <div>
+          <div class="group-h" style="padding-top:0">Perfil</div>
+          <div class="card card-pad">
+            <div style="display:flex;align-items:center;gap:var(--s4);margin-bottom:var(--s4)"><span class="avatar lg" [class]="me.avatarColor" [title]="me.name" [attr.aria-label]="me.name">{{ initial(me.name) }}</span><div><div style="font-weight:600">{{ me.name }}</div><div style="font-size:13px;color:var(--text-3)">{{ me.email }}</div></div></div>
+            <div class="field"><label for="st-name">Tu nombre</label><input id="st-name" class="input" maxlength="80" data-testid="settings-name" [value]="me.name" (change)="saveName($any($event.target).value)"></div>
+            <div class="field" style="margin-bottom:0"><span class="lbl">Color del avatar</span><div class="swatches" data-testid="settings-avatar-color">
+              @for (c of colors; track c) {
+                <button type="button" class="sw" [class.sel]="me.avatarColor === c" [style.background]="'var(--av-' + c + ')'" [attr.aria-label]="'Color ' + c" [attr.aria-pressed]="me.avatarColor === c" (click)="saveColor(c)"></button>
+              }
+            </div></div>
+          </div>
+          <div class="group-h">Apariencia</div>
+          <div class="card card-pad"><div class="seg" data-testid="settings-theme">
+            @for (t of themes; track t.id) {
+              <button type="button" [class.active]="me.theme === t.id" [attr.aria-pressed]="me.theme === t.id" (click)="saveTheme(t.id)">{{ t.label }}</button>
+            }
+          </div></div>
+        </div>
+
+        <div>
+          @if (session.household(); as household) {
+            <div class="group-h" style="padding-top:0">Hogar</div>
+            <div class="card card-pad">
+              <div class="field"><label for="st-home">Nombre del hogar</label><input id="st-home" class="input" maxlength="80" data-testid="settings-home-name" [value]="household.name" [disabled]="!isOwner()" (change)="saveHousehold({ name: $any($event.target).value })"></div>
+              <div class="field" style="margin-bottom:0"><label for="st-tz">Zona horaria</label><select id="st-tz" class="select" data-testid="settings-timezone" [disabled]="!isOwner()" (change)="saveHousehold({ timeZone: $any($event.target).value })">
+                @for (z of zones(); track z) {
+                  <option [value]="z" [selected]="z === timeZone()">{{ z }}</option>
+                }
+              </select></div>
+            </div>
+            <div class="list" style="margin-top:var(--s4)">
+              <a class="menu-row" routerLink="/products" data-testid="settings-products"><span style="color:var(--text-2)">🧴</span><span class="t">Productos</span>@if (productCount() !== null) {<span class="v">{{ productCount() }}</span>}<svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-right" /></svg></a>
+              <a class="menu-row" routerLink="/members" data-testid="settings-members"><span style="color:var(--text-2)"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-users" /></svg></span><span class="t">Miembros</span><span class="v">{{ household.memberCount }}</span><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-right" /></svg></a>
+              <a class="menu-row" routerLink="." [queryParams]="{ sheet: 'homes' }" data-testid="settings-switch"><span style="color:var(--text-2)"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-home" /></svg></span><span class="t">Cambiar de hogar</span><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-right" /></svg></a>
+            </div>
+          }
+        </div>
+
+        <div style="grid-column:1/-1">
+          <button type="button" class="btn btn-secondary btn-block danger-t" data-testid="settings-logout" (click)="logout()"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-logout" /></svg> Cerrar sesión</button>
+          <p class="legal" data-testid="settings-version">{{ version }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</section>

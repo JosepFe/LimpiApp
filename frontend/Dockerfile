@@ -4,7 +4,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY . .
-RUN npx ng build
+# «build 2026.10.29» in Ajustes: the day the image was built.
+RUN npx ng build --define "LIMPIAPP_BUILD='$(date +%Y.%m.%d)'"
 
 FROM nginx:1.29-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf

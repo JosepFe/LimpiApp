@@ -12,6 +12,7 @@ using LimpiApp.Api.Features.Invites;
 using LimpiApp.Api.Features.Members;
 using LimpiApp.Api.Features.Photos;
 using LimpiApp.Api.Features.Products;
+using LimpiApp.Api.Features.Profile;
 using LimpiApp.Api.Features.Ranking;
 using LimpiApp.Api.Features.Rooms;
 using LimpiApp.Api.Features.Stats;
@@ -82,6 +83,7 @@ app.MapStats();
 app.MapMembers();
 app.MapInvites();
 app.MapRanking();
+app.MapProfile();
 
 await app.RunAsync();
 

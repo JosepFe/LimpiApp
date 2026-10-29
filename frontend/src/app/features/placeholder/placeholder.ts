@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 
-/** A section whose screen is not built yet: only its page header. Replaced by each screen's story. */
+/** A screen with only its page header: the shell tests route to it. */
 @Component({
   selector: 'la-placeholder',
   template: `<section class="screen active" [attr.data-screen]="'screen-' + screen()">
