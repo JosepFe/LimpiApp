@@ -21,3 +21,15 @@ export const TODAY_SUMMARY = { summary: { pendingToday: 6 } };
 
 /** #screen-login: the email typed in the prototype. */
 export const LOGIN_EMAIL = 'josep@example.com';
+
+/** GET /templates: the 8 cards of #screen-onboarding (step-templates). */
+export const TEMPLATES = [
+  { id: 'kitchen', name: 'Cocina', emoji: '🍳', color: 'orange', taskCount: 6 },
+  { id: 'bathroom', name: 'Baño', emoji: '🛁', color: 'blue', taskCount: 6 },
+  { id: 'bedroom', name: 'Dormitorio', emoji: '🛏️', color: 'violet', taskCount: 5 },
+  { id: 'living', name: 'Salón', emoji: '🛋️', color: 'green', taskCount: 4 },
+  { id: 'hall', name: 'Recibidor', emoji: '🚪', color: 'slate', taskCount: 2 },
+  { id: 'laundry', name: 'Lavadero', emoji: '🧺', color: 'teal', taskCount: 3 },
+  { id: 'office', name: 'Despacho', emoji: '💻', color: 'amber', taskCount: 3 },
+  { id: 'terrace', name: 'Terraza', emoji: '🌿', color: 'rose', taskCount: 3 },
+];

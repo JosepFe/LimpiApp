@@ -1,5 +1,6 @@
 <section class="screen active" data-screen="screen-onboarding" data-testid="screen-onboarding">
   <div class="content" style="max-width:640px;padding-top:var(--s8)">
+    @if (step() !== 'creating') {
     <div>
       <div class="step-dots" aria-label="Paso"><i class="on"></i><i [style.background]="step() === 'templates' ? 'var(--primary)' : null"></i></div>
       @if (step() === 'name') {
@@ -19,7 +20,30 @@
             <span class="help">Define cuándo cambia el día para recurrencias y rachas.</span></div>
           <button type="button" class="btn btn-primary btn-block" data-testid="onboarding-next" (click)="next()">Siguiente</button>
         </div>
+      } @else {
+        <div>
+          <h1 style="font-size:24px;font-weight:700">¿Qué habitaciones tienes?</h1>
+          <p style="color:var(--text-2);margin:4px 0 var(--s4)">Elige plantillas: cada una trae tareas sugeridas que podrás editar.</p>
+          <div class="tpl-grid" data-testid="template-grid">
+            @for (t of templates(); track t.id) {
+              <button type="button" class="tpl" [class.sel]="selected().has(t.id)" [attr.aria-pressed]="selected().has(t.id)" data-testid="template-card"
+                      (click)="toggle(t.id)"><span class="tick"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-check" /></svg></span><span class="e">{{ t.emoji }}</span><span class="n">{{ t.name }}</span><span class="c">{{ t.taskCount }} tareas</span></button>
+            }
+          </div>
+          <p class="help" style="margin:var(--s3) 0 var(--s4);font-size:12px;color:var(--text-3)"><span data-testid="template-summary">{{ summary() }}</span></p>
+          <div style="display:flex;gap:var(--s3)">
+            <button type="button" class="btn btn-secondary" style="flex:0 0 auto" (click)="back()">Atrás</button>
+            <button type="button" class="btn btn-primary" style="flex:1" data-testid="onboarding-create" (click)="create()">Crear hogar</button>
+          </div>
+        </div>
       }
     </div>
+    } @else {
+      <div class="success-box" data-testid="onboarding-creating" style="padding-top:96px">
+        <span class="spinner" style="width:40px;height:40px"></span>
+        <h2 style="font-size:20px">Preparando tu hogar…</h2>
+        <p style="color:var(--text-2)">Creando habitaciones y tareas sugeridas.</p>
+      </div>
+    }
   </div>
 </section>
