@@ -37,10 +37,21 @@ internal sealed class CleaningTaskConfiguration : IEntityTypeConfiguration<Clean
         b.HasOne(t => t.Zone).WithMany().HasForeignKey(t => t.ZoneId).OnDelete(DeleteBehavior.SetNull);
         b.HasOne<User>().WithMany().HasForeignKey(t => t.AssigneeId).OnDelete(DeleteBehavior.SetNull);
         b.HasMany(t => t.Subtasks).WithOne().HasForeignKey(s => s.TaskId).OnDelete(DeleteBehavior.Cascade);
+        b.HasMany(t => t.Products).WithMany(p => p.Tasks).UsingEntity("task_products");
     }
 }
 
 internal sealed class SubtaskConfiguration : IEntityTypeConfiguration<Subtask>
 {
     public void Configure(EntityTypeBuilder<Subtask> b) => b.Property(s => s.Title).HasMaxLength(120);
+}
+
+internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
+{
+    public void Configure(EntityTypeBuilder<Product> b)
+    {
+        b.Property(p => p.Name).HasMaxLength(60);
+        b.Property(p => p.Emoji).HasMaxLength(16);
+        b.HasOne<Household>().WithMany().HasForeignKey(p => p.HouseholdId).OnDelete(DeleteBehavior.Cascade);
+    }
 }

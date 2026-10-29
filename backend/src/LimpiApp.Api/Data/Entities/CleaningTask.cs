@@ -37,6 +37,8 @@ public sealed class CleaningTask
     public DateTimeOffset CreatedAt { get; set; }
 
     public List<Subtask> Subtasks { get; } = [];
+
+    public List<Product> Products { get; } = [];
 }
 
 public sealed class Subtask
