@@ -12,10 +12,12 @@ COVERAGE = --coverage --coverage-output-format cobertura --coverage-output $(COV
 qa: format build unit integration coverage
 
 format:
-	dotnet format LimpiApp.slnx --verify-no-changes
+	dotnet format LimpiApp.slnx --verify-no-changes --exclude src/LimpiApp.Api/Data/Migrations
 
 build:
 	dotnet build LimpiApp.slnx -warnaserror
+	dotnet tool restore >/dev/null
+	dotnet ef migrations has-pending-model-changes --project src/LimpiApp.Api --no-build
 
 unit:
 	rm -rf $(COVERAGE_DIR) && mkdir -p $(COVERAGE_DIR)
@@ -25,11 +27,12 @@ unit:
 integration:
 	dotnet test --project tests/LimpiApp.IntegrationTests --no-build $(call COVERAGE,integration)
 
-# Unit + integration merged; fails under COVERAGE_MIN % line coverage of LimpiApp.Api (enforced from E01/US-002).
+# Unit + integration merged; fails under COVERAGE_MIN % line coverage of LimpiApp.Api.
 coverage:
 	dotnet reportgenerator -reports:"$(COVERAGE_DIR)/*.cobertura.xml" -targetdir:$(COVERAGE_DIR)/report \
 		-reporttypes:TextSummary -assemblyfilters:+LimpiApp.Api -filefilters:-*/Migrations/* -verbosity:Warning
-	@cat $(COVERAGE_DIR)/report/Summary.txt | grep -E "Line coverage"
+	@awk -v min=$(COVERAGE_MIN) '/Line coverage:/ { gsub("%", "", $$3); printf "Line coverage: %s%% (min %s%%)\n", $$3, min; \
+		if ($$3 + 0 < min) { print "FAIL: coverage below threshold"; exit 1 } }' $(COVERAGE_DIR)/report/Summary.txt
 
 run:
 	dotnet run --project src/LimpiApp.Api
