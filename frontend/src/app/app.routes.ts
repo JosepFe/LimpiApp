@@ -37,7 +37,7 @@ export const routes: Routes = [
         children: [{ path: ':id', loadComponent: () => import('./features/rooms/room-detail').then((m) => m.RoomDetail) }],
       },
       { path: 'history', loadComponent: () => import('./features/activity/history').then((m) => m.History) },
-      placeholder('stats', 'stats', 'Actividad'),
+      { path: 'stats', loadComponent: () => import('./features/activity/stats').then((m) => m.Stats) },
       placeholder('ranking', 'ranking', 'Hogar'),
       placeholder('members', 'members', 'Hogar'),
       placeholder('settings', 'settings', 'Ajustes'),

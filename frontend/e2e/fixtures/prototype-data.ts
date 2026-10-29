@@ -183,3 +183,11 @@ export const SHOWER_ENTRY = {
 };
 export const SHOWER_ENTRY_PHOTOS = { ...SHOWER_ENTRY, photos: ['p1', 'p2', 'p3'].map((id) => ({ id, url: `/households/h-casa/photos/${id}` })) };
 export const SHOWER_ENTRY_UNDONE = { ...SHOWER_ENTRY, points: 0, undone: true };
+
+/** GET /households/h-casa/stats: #screen-stats. Week counts give the prototype's bar heights (33 %…100 % of 18). */
+export const STATS = {
+  completed: 24, minutes: 410, overdue: 6,
+  rooms: ROOMS.rooms.map(({ name, emoji, health }) => ({ name, emoji, health })),
+  weeks: [6, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15, 18].map((count, i) => ({ week: 31 + i, count })),
+  share: [{ person: JOSEP, points: 46, percent: 46 }, { person: PAU, points: 38, percent: 38 }, { person: MARTA, points: 16, percent: 16 }],
+};
