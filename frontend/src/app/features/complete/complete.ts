@@ -1,5 +1,8 @@
 import { Component, computed, inject, input, OnDestroy, OnInit, output, signal } from '@angular/core';
 import { HouseholdApi } from '../../core/household-api';
+import { RefreshBus } from '../../core/refresh-bus';
+import { SessionStore } from '../../core/session.store';
+import { ToastService } from '../../core/toast';
 import { Sheet } from '../../shared/sheet';
 import { TaskDetail } from '../../shared/task.model';
 import { resizeImage } from './resize-image';
@@ -34,6 +37,9 @@ export function points(estimatedMinutes: number, done: number, total: number): n
 })
 export class Complete implements OnInit, OnDestroy {
   private readonly api = inject(HouseholdApi);
+  private readonly toast = inject(ToastService);
+  private readonly refresh = inject(RefreshBus);
+  private readonly session = inject(SessionStore);
   readonly taskId = input.required<string>();
   readonly closed = output();
   /** Done (or undone): the screens behind reload. */
@@ -113,6 +119,40 @@ export class Complete implements OnInit, OnDestroy {
     } finally {
       this.saving.set(false);
     }
+  }
+
+  /** «Deshacer» in the sheet: back as it was, the sheet closes (E04/US-007). */
+  protected async undo(): Promise<void> {
+    const result = this.result();
+    if (!result) return;
+    try {
+      await this.api.post(`/completions/${result.completionId}/undo`, null);
+      this.changed.emit();
+      this.closed.emit();
+    } catch {
+      this.toast.show('Ya no se puede deshacer.');
+      this.closed.emit();
+    }
+  }
+
+  /** «Listo»: closes and leaves «Tarea completada · Deshacer» a few seconds (only its author, 10 minutes: the API checks). */
+  protected finish(): void {
+    const result = this.result()!;
+    // The sheet is gone when the toast is used: the action talks to root services, not to this component.
+    const { api, toast, refresh, session } = this;
+    this.closed.emit();
+    toast.show('Tarea completada', {
+      label: 'Deshacer',
+      run: async () => {
+        try {
+          await api.post(`/completions/${result.completionId}/undo`, null);
+          refresh.bump();
+          void session.refreshCounters();
+        } catch {
+          toast.show('Ya no se puede deshacer.');
+        }
+      },
+    });
   }
 
   /** After the completion exists; a failing photo keeps the completion and is reported (E04/US-006). */

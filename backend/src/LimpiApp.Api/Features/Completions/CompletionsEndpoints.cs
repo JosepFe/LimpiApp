@@ -15,10 +15,41 @@ public static class CompletionsEndpoints
 
     public sealed record CompleteResponse(Guid CompletionId, int Points, int Streak, DateOnly NextDue, string NextDueDay);
 
+    /// <summary>Who completed a task can undo it during this time (E04/US-007).</summary>
+    public static readonly TimeSpan UndoWindow = TimeSpan.FromMinutes(10);
+
     public static IEndpointRouteBuilder MapCompletions(this IEndpointRouteBuilder app)
     {
         app.MapHouseholdGroup("/tasks").MapPost("/{id:guid}/complete", CompleteAsync);
+        app.MapHouseholdGroup("/completions").MapPost("/{id:guid}/undo", UndoAsync);
         return app;
+    }
+
+    /// <summary>Kept in the history as «Deshecha»; it no longer counts for points or streaks, and the task is due as before.</summary>
+    private static async Task<IResult> UndoAsync(Guid id, HttpContext http, AppDbContext db, Clock clock, CancellationToken ct)
+    {
+        var householdId = HouseholdAccess.Current(http).HouseholdId;
+        var completion = await db.Completions.Include(c => c.Task).SingleOrDefaultAsync(c => c.Id == id && c.HouseholdId == householdId, ct);
+        if (completion is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        if (completion.UserId != http.User.UserId())
+        {
+            return TypedResults.Problem("Solo quien la completó puede deshacerla.", statusCode: StatusCodes.Status403Forbidden);
+        }
+
+        var now = clock.Now;
+        if (completion.UndoneAt is not null || now - completion.CompletedAt > UndoWindow)
+        {
+            return TypedResults.Problem("Ya no se puede deshacer.", statusCode: StatusCodes.Status409Conflict);
+        }
+
+        completion.UndoneAt = now;
+        completion.Task.NextDue = completion.PrevNextDue;
+        await db.SaveChangesAsync(ct);
+        return TypedResults.NoContent();
     }
 
     private static async Task<IResult> CompleteAsync(Guid id, CompleteRequest request, HttpContext http, AppDbContext db, Clock clock, CancellationToken ct)

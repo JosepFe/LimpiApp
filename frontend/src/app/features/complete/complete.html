@@ -50,9 +50,8 @@
   }
   <div class="sheet-foot" sheet-foot>
     @if (result()) {
-      <!-- «Deshacer» arrives with E04/US-007. -->
-      <button type="button" class="btn btn-secondary" data-testid="complete-undo" disabled>Deshacer</button>
-      <button type="button" class="btn btn-primary" data-testid="complete-done" (click)="closed.emit()">Listo</button>
+      <button type="button" class="btn btn-secondary" data-testid="complete-undo" (click)="undo()">Deshacer</button>
+      <button type="button" class="btn btn-primary" data-testid="complete-done" (click)="finish()">Listo</button>
     } @else if (saving()) {
       <button type="button" class="btn btn-primary disabled" disabled><span class="spinner"></span> Guardando…</button>
     } @else {

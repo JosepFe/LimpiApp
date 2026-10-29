@@ -44,3 +44,7 @@
     <la-task-form [taskId]="param('task')" (closed)="closeSheet()" (saved)="taskSaved()" />
   }
 }
+
+@if (toast.current(); as t) {
+  <div class="toast" role="status"><span>{{ t.text }}</span>@if (t.action; as a) {<button type="button" (click)="toast.act()">{{ a.label }}</button>}</div>
+}

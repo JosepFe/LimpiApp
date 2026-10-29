@@ -4,6 +4,7 @@ import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from 
 import { filter, map } from 'rxjs';
 import { RefreshBus } from '../core/refresh-bus';
 import { SessionStore } from '../core/session.store';
+import { ToastService } from '../core/toast';
 import { Complete } from '../features/complete/complete';
 import { TaskForm } from '../features/tasks/task-form';
 import { avatarColor, members } from '../shared/avatar';
@@ -36,6 +37,7 @@ export class Shell {
   protected readonly session = inject(SessionStore);
   protected readonly nav = NAV;
   protected readonly members = members;
+  protected readonly toast = inject(ToastService);
   /** Same colour as in «Mis hogares»: by the household's position in the user's list. */
   protected readonly householdColor = computed(() => {
     const households = this.session.me()?.households ?? [];
