@@ -7,8 +7,15 @@ namespace LimpiApp.Api.Features.Auth;
 /// <summary>Finds or creates the user of a verified email, and where to send them after signing in.</summary>
 public static class SignInRedirect
 {
+    /// <summary>
+    /// Only a path of this app: starts with one "/", and has no "\" nor control characters anywhere (browsers drop
+    /// tab/CR/LF, so "/\t/evil.com" would become "//evil.com", another site).
+    /// </summary>
     public static bool IsLocal(string? url) =>
-        !string.IsNullOrEmpty(url) && url.StartsWith('/') && !url.StartsWith("//", StringComparison.Ordinal) && !url.StartsWith("/\\", StringComparison.Ordinal);
+        !string.IsNullOrEmpty(url)
+        && url[0] == '/'
+        && (url.Length == 1 || url[1] != '/')
+        && !url.Any(c => c == '\\' || char.IsControl(c));
 
     public static async Task<string> TargetAsync(AppDbContext db, Guid userId, string? returnUrl, CancellationToken ct)
     {

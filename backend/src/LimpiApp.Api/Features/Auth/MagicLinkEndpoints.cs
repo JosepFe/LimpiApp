@@ -76,13 +76,16 @@ public static partial class MagicLinkEndpoints
 
         var hash = Tokens.Hash(token);
         var now = clock.Now;
-        var link = await db.MagicLinks.SingleOrDefaultAsync(m => m.TokenHash == hash, ct);
-        if (link is null || link.UsedAt is not null || link.ExpiresAt <= now)
+        // Claimed atomically: of two requests with the same link at the same moment, only one gets a session.
+        var claimed = await db.MagicLinks
+            .Where(m => m.TokenHash == hash && m.UsedAt == null && m.ExpiresAt > now)
+            .ExecuteUpdateAsync(m => m.SetProperty(x => x.UsedAt, now), ct);
+        if (claimed != 1)
         {
             return TypedResults.Redirect(Failed);
         }
 
-        link.UsedAt = now;
+        var link = await db.MagicLinks.AsNoTracking().SingleAsync(m => m.TokenHash == hash, ct);
         var user = await SignInRedirect.FindOrCreateUserAsync(db, link.Email, null, now, ct);
         await sessions.SignInAsync(http, user, ct);
         return TypedResults.Redirect(await SignInRedirect.TargetAsync(db, user.Id, link.ReturnUrl, ct));

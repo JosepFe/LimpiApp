@@ -78,9 +78,13 @@ public class MagicLinkTests(ApiFactory factory) : IntegrationTest(factory)
         var join = await browser.GetAsync($"/auth/magic?token={Factory.Emails.LastToken(Email)}", Ct);
         Assert.Equal("/join/k3Jx9QmZ2vLpA8", join.Headers.Location?.OriginalString);
 
-        await RequestLink(browser, returnUrl: "//evil.example.com");
-        var evil = await browser.GetAsync($"/auth/magic?token={Factory.Emails.LastToken(Email)}", Ct);
-        Assert.Equal("/today", evil.Headers.Location?.OriginalString);
+        foreach (var evil in new[] { "//evil.example.com", "/\t/evil.example.com", "/\\evil.example.com", "https://evil.example.com" })
+        {
+            Factory.Time.Advance(TimeSpan.FromMinutes(16)); // stay under the 5-links-in-15-minutes limit
+            await RequestLink(browser, returnUrl: evil);
+            var response = await browser.GetAsync($"/auth/magic?token={Factory.Emails.LastToken(Email)}", Ct);
+            Assert.Equal("/today", response.Headers.Location?.OriginalString);
+        }
 
         await using var check = Factory.CreateDbContext();
         Assert.Equal(1, await check.Users.CountAsync(Ct));
@@ -119,6 +123,20 @@ public class MagicLinkTests(ApiFactory factory) : IntegrationTest(factory)
         Assert.False(response.Headers.Contains("Set-Cookie"));
         await using var after = Factory.CreateDbContext();
         Assert.Equal(0, await after.Sessions.CountAsync(Ct));
+    }
+
+    [Fact]
+    public async Task TheSameLinkOpenedTwiceAtOnce_OpensOnlyOneSession()
+    {
+        await RequestLink(Factory.CreateBrowser());
+        var token = Factory.Emails.LastToken(Email);
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 6).Select(_ => Factory.CreateBrowser().GetAsync($"/auth/magic?token={token}", Ct)));
+
+        Assert.Single(responses, r => r.Headers.Location?.OriginalString == "/onboarding");
+        Assert.Equal(5, responses.Count(r => r.Headers.Location?.OriginalString == "/login?error=link"));
+        await using var db = Factory.CreateDbContext();
+        Assert.Equal(1, await db.Sessions.CountAsync(Ct));
     }
 
     [Fact]

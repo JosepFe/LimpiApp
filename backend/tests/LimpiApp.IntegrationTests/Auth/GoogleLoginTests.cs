@@ -1,8 +1,13 @@
 using System.Net;
+using System.Security.Claims;
+using System.Text.Json;
 using LimpiApp.Api.Data.Entities;
 using LimpiApp.IntegrationTests.Infrastructure;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace LimpiApp.IntegrationTests.Auth;
 
@@ -55,8 +60,9 @@ public class GoogleLoginTests(ApiFactory factory) : IntegrationTest(factory)
 
         Assert.Equal("/today", (await Complete("google-pau|pau@example.com|true|Pau")).Headers.Location?.OriginalString);
         Assert.Equal("/join/k3Jx9QmZ2vLpA8", (await Complete("google-pau|pau@example.com|true|Pau", "/join/k3Jx9QmZ2vLpA8")).Headers.Location?.OriginalString);
+        Assert.Equal("/today", (await Complete("google-pau|pau@example.com|true|Pau", "/\t/evil.example.com")).Headers.Location?.OriginalString);
         await using var check = Factory.CreateDbContext();
-        Assert.Equal(3, await check.Sessions.CountAsync(Ct));
+        Assert.Equal(4, await check.Sessions.CountAsync(Ct));
     }
 
     [Theory]
@@ -93,6 +99,40 @@ public sealed class GoogleApiFactory(PostgresFixture db) : ApiFactory(db)
 
 public sealed class GoogleStartTests(GoogleApiFactory factory) : IClassFixture<GoogleApiFactory>
 {
+    [Fact]
+    public async Task Start_WithAnEvilReturn_DoesNotKeepIt()
+    {
+        var response = await factory.CreateBrowser().GetAsync("/auth/google?return=/%09/evil.example.com", TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.StartsWith("https://accounts.google.com/", response.Headers.Location!.ToString(), StringComparison.Ordinal);
+        Assert.DoesNotContain("evil", Uri.UnescapeDataString(response.Headers.GetValues("Set-Cookie").First()), StringComparison.Ordinal);
+    }
+
+    /// <summary>The real claim actions of the Google handler over a userinfo v2 answer (what Google sends).</summary>
+    [Theory]
+    [InlineData(true, "True")]
+    [InlineData(false, "False")]
+    public void UserInfo_MapsVerifiedEmail_ToTheClaimTheCallbackReads(bool verified, string claim)
+    {
+        var options = factory.Services.GetRequiredService<IOptionsMonitor<GoogleOptions>>().Get(GoogleDefaults.AuthenticationScheme);
+        using var userInfo = JsonDocument.Parse($$"""
+            {"id":"1234567890","email":"pau@example.com","verified_email":{{(verified ? "true" : "false")}},"name":"Pau García","given_name":"Pau","family_name":"García","picture":"https://x/y.jpg"}
+            """);
+        var identity = new ClaimsIdentity();
+
+        foreach (var action in options.ClaimActions)
+        {
+            action.Run(userInfo.RootElement, identity, "Google");
+        }
+
+        Assert.Equal("1234567890", identity.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+        Assert.Equal("pau@example.com", identity.FindFirst(ClaimTypes.Email)?.Value);
+        Assert.Equal("Pau", identity.FindFirst(ClaimTypes.GivenName)?.Value);
+        Assert.Equal(claim, identity.FindFirst(LimpiApp.Api.Features.Auth.GoogleEndpoints.EmailVerifiedClaim)?.Value);
+        Assert.Equal(verified, string.Equals(claim, "true", StringComparison.OrdinalIgnoreCase));
+    }
+
     [Fact]
     public async Task Start_ChallengesGoogle_WithTheCallbackUnderApiBehindNginx()
     {
