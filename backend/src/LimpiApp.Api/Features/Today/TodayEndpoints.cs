@@ -20,7 +20,10 @@ public static class TodayEndpoints
         IReadOnlyList<TasksEndpoints.TaskSummary> Today,
         IReadOnlyList<TasksEndpoints.TaskSummary> Upcoming);
 
-    public sealed record TodayResponse(DateOnly Date, TodaySummary Summary, TodayGroups Groups);
+    /// <summary>A room to filter by («Habitación»).</summary>
+    public sealed record RoomOption(Guid Id, string Name, string Emoji);
+
+    public sealed record TodayResponse(DateOnly Date, TodaySummary Summary, TodayGroups Groups, IReadOnlyList<RoomOption> Rooms);
 
     public static IEndpointRouteBuilder MapToday(this IEndpointRouteBuilder app)
     {
@@ -53,6 +56,6 @@ public static class TodayEndpoints
             shown.Where(t => t.NextDue < today).ToList(),
             shown.Where(t => t.NextDue == today).ToList(),
             shown.Where(t => t.NextDue > today && t.NextDue <= today.AddDays(UpcomingDays)).ToList());
-        return TypedResults.Ok(new TodayResponse(today, summary, groups));
+        return TypedResults.Ok(new TodayResponse(today, summary, groups, [.. rooms.Select(r => new RoomOption(r.Id, r.Name, r.Emoji))]));
     }
 }

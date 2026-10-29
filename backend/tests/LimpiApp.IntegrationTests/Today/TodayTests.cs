@@ -18,6 +18,7 @@ public class TodayTests(ApiFactory factory) : IntegrationTest(factory)
         var body = await josep.GetFromJsonAsync<JsonElement>($"/households/{hid}/today", Ct);
 
         Assert.Equal("2026-10-14", body.GetProperty("date").GetString());
+        Assert.Equal(["Cocina", "Baño"], body.GetProperty("rooms").EnumerateArray().Select(r => r.GetProperty("name").GetString()));
         var summary = body.GetProperty("summary");
         Assert.Equal((6, 5), (summary.GetProperty("pendingToday").GetInt32(), summary.GetProperty("streak").GetInt32()));
         Assert.True(summary.GetProperty("health").GetProperty("value").GetInt32() < 100);

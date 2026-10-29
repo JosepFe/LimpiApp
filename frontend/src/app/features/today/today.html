@@ -20,20 +20,30 @@
                 <div class="meta"><div class="big">Hogar: {{ s.health?.label ?? 'Sin tareas' }}</div><div class="sub">{{ s.health?.value ?? 100 }} % limpio · {{ plural(s.pendingToday, 'tarea pendiente', 'tareas pendientes') }} hoy</div>
                   @if (s.streak) {<div style="margin-top:6px"><span class="badge today" data-testid="home-streak">🔥 Racha de {{ plural(s.streak, 'día', 'días') }}</span></div>}</div>
               </div>
+              @let f = filters();
               <div class="filters" data-testid="today-filters">
                 <div class="seg" role="tablist" aria-label="Asignación">
-                  <button type="button" class="active" data-testid="filter-all">Todas</button><button type="button" data-testid="filter-mine">Mías</button></div>
+                  <button type="button" role="tab" [class.active]="!f.mine" [attr.aria-selected]="!f.mine" data-testid="filter-all" (click)="setFilter('f', null)">Todas</button><button type="button" role="tab" [class.active]="f.mine" [attr.aria-selected]="f.mine" data-testid="filter-mine" (click)="setFilter('f', 'mine')">Mías</button></div>
                 <div class="chips scroll">
-                  <button type="button" class="chip" data-testid="filter-room"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-rooms" /></svg> Habitación <svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-down" /></svg></button>
-                  <button type="button" class="chip" data-testid="filter-time"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-clock" /></svg> Tengo 15 min</button>
+                  <!-- The prototype's chip; an invisible native select over it picks the room. -->
+                  <label class="chip" [class.active]="!!f.room" data-testid="filter-room" style="position:relative"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-rooms" /></svg> {{ roomName() }} <svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-down" /></svg>
+                    <select aria-label="Filtrar por habitación" style="position:absolute;inset:0;width:100%;opacity:0;cursor:pointer" (change)="setFilter('room', $any($event.target).value || null)">
+                      <option value="" [selected]="!f.room">Todas las habitaciones</option>
+                      @for (r of data()!.rooms; track r.id) {<option [value]="r.id" [selected]="r.id === f.room">{{ r.emoji }} {{ r.name }}</option>}
+                    </select></label>
+                  <button type="button" class="chip" [class.active]="f.quick" [attr.aria-pressed]="f.quick" data-testid="filter-time" (click)="setFilter('max', f.quick ? null : '15')"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-clock" /></svg> Tengo 15 min</button>
                 </div>
               </div>
-              <div data-testid="today-groups">
-                @for (g of groups(); track g.key) {
-                  <div class="group-h" [class]="g.css">{{ g.name }} <span class="count">{{ g.tasks.length }}</span></div>
-                  <div class="list">@for (t of g.tasks; track t.id) {<la-task-row [task]="t" [showRoom]="true" (opened)="open(t)" />}</div>
-                }
-              </div>
+              @if (noResults()) {
+                <div data-testid="today-no-results"><div class="empty"><div class="big" aria-hidden="true">🔍</div><h3>Sin resultados</h3><p>Ninguna tarea coincide con los filtros.</p><button type="button" class="btn btn-secondary" (click)="clearFilters()">Quitar filtros</button></div></div>
+              } @else {
+                <div data-testid="today-groups">
+                  @for (g of groups(); track g.key) {
+                    <div class="group-h" [class]="g.css">{{ g.name }} <span class="count">{{ g.tasks.length }}</span></div>
+                    <div class="list">@for (t of g.tasks; track t.id) {<la-task-row [task]="t" [showRoom]="true" (opened)="open(t)" />}</div>
+                  }
+                </div>
+              }
             }
           }
         }

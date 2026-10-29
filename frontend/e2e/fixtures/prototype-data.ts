@@ -21,6 +21,7 @@ export const TODAY_SUMMARY = {
   date: '2026-10-14',
   summary: { health: { value: 78, label: 'Bien', level: 'good' }, pendingToday: 6, streak: 5 },
   groups: { overdue: [] as unknown[], today: [] as unknown[], upcoming: [] as unknown[] },
+  rooms: [] as { id: string; name: string; emoji: string }[],
 };
 
 /** #screen-login: the email typed in the prototype. */
@@ -143,3 +144,4 @@ TODAY_SUMMARY.groups = {
     taskRow('t-terraza', 'Barrer terraza', TERRAZA, null, 10, ['ok', 'En 6 d'], JOSEP, '2026-10-20'),
   ],
 };
+TODAY_SUMMARY.rooms = ROOMS.rooms.map(({ id, name, emoji }) => ({ id, name, emoji }));

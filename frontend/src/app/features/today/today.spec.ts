@@ -22,7 +22,7 @@ describe('Today', () => {
 
   it('leaves out empty groups and the streak when it is 0; singular counts', async () => {
     const task = { id: 't', title: 'X', roomId: 'r', roomName: 'Baño', roomEmoji: '🛁', zone: null, estimatedMinutes: 5, nextDue: '2026-10-14', due: { kind: 'today', label: 'Hoy' }, assignee: null };
-    const el = await render({ date: '2026-10-14', summary: { health: null, pendingToday: 1, streak: 0 }, groups: { overdue: [], today: [task], upcoming: [] } });
+    const el = await render({ date: '2026-10-14', summary: { health: null, pendingToday: 1, streak: 0 }, groups: { overdue: [], today: [task], upcoming: [] }, rooms: [] });
     expect([...el.querySelectorAll('.group-h')].map((g) => g.textContent?.trim())).toEqual(['Hoy 1']);
     expect(el.querySelector('[data-testid="home-summary"]')?.textContent).toContain('100 % limpio · 1 tarea pendiente hoy');
     expect(el.querySelector('[data-testid="home-streak"]')).toBeNull();
@@ -31,5 +31,13 @@ describe('Today', () => {
   it('longDay', () => {
     expect(longDay('2026-10-14')).toBe('Miércoles 14 de octubre');
     expect(longDay('2026-01-04')).toBe('Domingo 4 de enero');
+  });
+});
+
+describe('apiQuery', () => {
+  it('turns the filters into the API query', async () => {
+    const { apiQuery } = await import('./today.model');
+    expect(apiQuery({ mine: false, room: null, quick: false })).toBe('');
+    expect(apiQuery({ mine: true, room: 'r', quick: true })).toBe('?filter=mine&room=r&max=15');
   });
 });
