@@ -24,19 +24,19 @@ public static class ProductsEndpoints
         return app;
     }
 
-    /// <summary>In the order they were added (ids are UUID v7), counting only active tasks.</summary>
+    /// <summary>In the order they were added, counting only active tasks.</summary>
     private static async Task<IResult> ListAsync(HttpContext http, AppDbContext db, CancellationToken ct)
     {
         var householdId = HouseholdAccess.Current(http).HouseholdId;
         var products = await db.Products.AsNoTracking()
             .Where(p => p.HouseholdId == householdId && p.ArchivedAt == null)
-            .OrderBy(p => p.Id)
+            .OrderBy(p => p.CreatedAt).ThenBy(p => p.Id)
             .Select(p => new ProductDto(p.Id, p.Name, p.Emoji, p.Tasks.Count(t => t.ArchivedAt == null)))
             .ToListAsync(ct);
         return TypedResults.Ok(products);
     }
 
-    private static async Task<IResult> CreateAsync(ProductRequest request, HttpContext http, AppDbContext db, CancellationToken ct)
+    private static async Task<IResult> CreateAsync(ProductRequest request, HttpContext http, AppDbContext db, Clock clock, CancellationToken ct)
     {
         var name = request.Name.Trim();
         if (name.Length == 0)
@@ -45,7 +45,7 @@ public static class ProductsEndpoints
         }
 
         var householdId = HouseholdAccess.Current(http).HouseholdId;
-        var product = new Product { HouseholdId = householdId, Name = name, Emoji = string.IsNullOrWhiteSpace(request.Emoji) ? DefaultEmoji : request.Emoji };
+        var product = new Product { HouseholdId = householdId, Name = name, Emoji = string.IsNullOrWhiteSpace(request.Emoji) ? DefaultEmoji : request.Emoji, CreatedAt = clock.Now };
         db.Products.Add(product);
         await db.SaveChangesAsync(ct);
         return TypedResults.Created($"/households/{householdId}/products/{product.Id}", new ProductDto(product.Id, product.Name, product.Emoji, 0));

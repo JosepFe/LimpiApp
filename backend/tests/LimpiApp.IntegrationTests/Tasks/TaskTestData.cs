@@ -16,8 +16,8 @@ public sealed record TaskTestData(HttpClient Josep, Guid HouseholdId, Guid Kitch
         await using var db = factory.CreateDbContext();
         var pau = new User { Email = "pau@example.com", Name = "Pau", AvatarColor = "violet", CreatedAt = ApiFactory.PrototypeNow };
         db.Memberships.Add(new Membership { User = pau, HouseholdId = hid, Role = MemberRole.Owner, JoinedAt = ApiFactory.PrototypeNow });
-        var mop = new Product { HouseholdId = hid, Name = "Fregona", Emoji = "🪣" };
-        var bleach = new Product { HouseholdId = hid, Name = "Lejía", Emoji = "🧪" };
+        var mop = new Product { HouseholdId = hid, Name = "Fregona", Emoji = "🪣", CreatedAt = ApiFactory.PrototypeNow.AddMinutes(-2) };
+        var bleach = new Product { HouseholdId = hid, Name = "Lejía", Emoji = "🧪", CreatedAt = ApiFactory.PrototypeNow.AddMinutes(-1) };
         db.Products.AddRange(mop, bleach);
         await db.SaveChangesAsync(ct);
         var kitchen = await db.Rooms.SingleAsync(r => r.HouseholdId == hid, ct);

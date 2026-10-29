@@ -11,6 +11,8 @@ public sealed class Product
 
     public required string Emoji { get; set; }
 
+    public DateTimeOffset CreatedAt { get; set; }
+
     public DateTimeOffset? ArchivedAt { get; set; }
 
     public List<CleaningTask> Tasks { get; } = [];

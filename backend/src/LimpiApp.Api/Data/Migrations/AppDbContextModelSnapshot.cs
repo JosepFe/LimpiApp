@@ -223,6 +223,10 @@ namespace LimpiApp.Api.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("archived_at");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
                     b.Property<string>("Emoji")
                         .IsRequired()
                         .HasMaxLength(16)
