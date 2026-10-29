@@ -41,11 +41,8 @@ public static class TodayEndpoints
         var tasks = await TasksEndpoints.Summaries(db, household, today, null, ct);
         var rooms = await RoomsEndpoints.Summaries(db, household, today, null, ct);
         var health = HealthRules.Average(rooms.Where(r => r.Health is not null).Select(r => r.Health!.Value));
-        var since = today.AddDays(-400);
-        var myDays = await db.Completions
-            .Where(c => c.HouseholdId == household.Id && c.UserId == userId && c.UndoneAt == null && c.CompletedOn >= since)
-            .Select(c => c.CompletedOn).Distinct().ToListAsync(ct);
-        var summary = new TodaySummary(RoomsEndpoints.ToDto(health), tasks.Count(t => t.NextDue <= today), StreakRules.Count(myDays, today));
+        var streak = await CompletionsEndpoints.StreakAsync(db, household.Id, userId, today, ct);
+        var summary = new TodaySummary(RoomsEndpoints.ToDto(health), tasks.Count(t => t.NextDue <= today), streak);
 
         var shown = tasks
             .Where(t => filter != "mine" || t.Assignee?.Id == userId)

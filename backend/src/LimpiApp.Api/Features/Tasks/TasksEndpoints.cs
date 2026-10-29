@@ -39,7 +39,7 @@ public static class TasksEndpoints
         Guid Id, string Title, Guid RoomId, string RoomName, string RoomEmoji, RefDto? Zone,
         int EstimatedMinutes, DateOnly NextDue, DueDto Due, PersonDto? Assignee);
 
-    /// <summary>One of «Últimas veces» (filled from completions by E04).</summary>
+    /// <summary>One of «Últimas veces» (the 5 latest completions that were not undone).</summary>
     public sealed record DoneDto(DateTimeOffset At, PersonDto By, int Minutes, int Points);
 
     public sealed record TaskDetail(
@@ -219,13 +219,19 @@ public static class TasksEndpoints
         }
 
         var people = await People(db, household.Id, ct);
+        var history = await db.Completions.AsNoTracking()
+            .Where(c => c.TaskId == id && c.UndoneAt == null)
+            .OrderByDescending(c => c.CompletedAt).Take(5)
+            .Select(c => new { c.CompletedAt, c.UserId, c.User.Name, c.User.AvatarColor, c.Minutes, c.Points })
+            .ToListAsync(ct);
+        var done = history.Select(c => new DoneDto(c.CompletedAt, new PersonDto(c.UserId, c.Name, c.AvatarColor), c.Minutes, c.Points)).ToList();
         return new TaskDetail(
             t.Id, t.Title, t.RoomId, t.Room.Name, t.Room.Emoji, t.Zone is null ? null : new RefDto(t.Zone.Id, t.Zone.Name),
             t.FreqValue, t.FreqUnit, t.NextDue, Due(t.NextDue, today), t.EstimatedMinutes, t.Priority,
             Person(people, t.AssigneeId), t.Notes,
             t.Subtasks.OrderBy(s => s.Position).Select(s => new SubtaskDto(s.Id, s.Title)).ToList(),
             t.Products.OrderBy(p => p.Name, StringComparer.Ordinal).Select(p => new ProductRef(p.Id, p.Name, p.Emoji)).ToList(),
-            null, []);
+            done.FirstOrDefault(), done);
     }
 
     public static DueDto Due(DateOnly nextDue, DateOnly today)
