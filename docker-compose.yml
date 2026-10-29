@@ -1,0 +1,61 @@
+# LimpiApp — local stack. Dockerfiles are added by E01/US-001 (api) and E01/US-003 (web); see E01/US-005.
+name: limpiapp
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: limpiapp
+      POSTGRES_USER: limpiapp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      TZ: Europe/Madrid
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U limpiapp -d limpiapp"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Db: Host=db;Database=limpiapp;Username=limpiapp;Password=${POSTGRES_PASSWORD}
+      PUBLIC_URL: ${PUBLIC_URL:-http://127.0.0.1:8090}
+      PHOTOS_DIR: /data/photos
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-LimpiApp <limpiapp@localhost>}
+      TZ: Europe/Madrid
+    volumes:
+      - photos:/data/photos
+    ports:
+      - "127.0.0.1:8091:8080"
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:8090:80"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    profiles: [dev]
+    ports:
+      - "127.0.0.1:8025:8025"
+
+volumes:
+  db:
+    name: limpiapp_db
+  photos:
+    name: limpiapp_photos

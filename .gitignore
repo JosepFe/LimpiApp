@@ -1,0 +1,20 @@
+.env
+secrets/
+# .NET
+bin/
+obj/
+*.user
+TestResults/
+coverage*/
+# Node / Angular
+node_modules/
+dist/
+.angular/
+test-results/
+playwright-report/
+frontend/coverage/
+# OS / editors
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
