@@ -18,3 +18,6 @@ export const ME = {
 
 /** GET /households/h-casa/today, the part the shell uses: «Hoy 6» in the navigation. Completed by E04/US-001. */
 export const TODAY_SUMMARY = { summary: { pendingToday: 6 } };
+
+/** #screen-login: the email typed in the prototype. */
+export const LOGIN_EMAIL = 'josep@example.com';

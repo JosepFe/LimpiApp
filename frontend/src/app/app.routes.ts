@@ -11,6 +11,7 @@ const placeholder = (path: string, screen: string, title: string) => ({
 });
 
 export const routes: Routes = [
+  { path: 'login', loadComponent: () => import('./features/login/login').then((m) => m.Login) },
   {
     path: '',
     component: Shell,
