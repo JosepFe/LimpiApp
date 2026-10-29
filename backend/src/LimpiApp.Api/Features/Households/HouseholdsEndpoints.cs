@@ -3,6 +3,7 @@ using LimpiApp.Api.Common;
 using LimpiApp.Api.Data;
 using LimpiApp.Api.Data.Entities;
 using LimpiApp.Api.Features.Auth;
+using LimpiApp.Api.Features.Tasks;
 using LimpiApp.Api.Features.Templates;
 using Microsoft.EntityFrameworkCore;
 
@@ -91,7 +92,7 @@ public static class HouseholdsEndpoints
                     FreqValue = t.Every,
                     FreqUnit = t.Unit,
                     EstimatedMinutes = t.Minutes,
-                    NextDue = today.AddDays(n++ % RoomTemplates.PeriodDays(t.Every, t.Unit)),
+                    NextDue = today.AddDays(n++ % DueRules.PeriodDays(t.Every, t.Unit)),
                     CreatedAt = now,
                 });
             }

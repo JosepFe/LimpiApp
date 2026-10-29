@@ -21,14 +21,6 @@ public static class RoomTemplates
 
     public static RoomTemplate? Find(string id) => All.FirstOrDefault(t => t.Id == id);
 
-    /// <summary>Approximate length of a frequency in days, to spread the first due dates.</summary>
-    public static int PeriodDays(int every, FrequencyUnit unit) => every * unit switch
-    {
-        FrequencyUnit.Day => 1,
-        FrequencyUnit.Week => 7,
-        _ => 30,
-    };
-
     public static IEndpointRouteBuilder MapTemplates(this IEndpointRouteBuilder app)
     {
         app.MapGet("/templates", () => TypedResults.Ok(All.Select(t => new { t.Id, t.Name, t.Emoji, t.Color, TaskCount = t.Tasks.Count })))
