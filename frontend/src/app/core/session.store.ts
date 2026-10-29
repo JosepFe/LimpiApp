@@ -41,15 +41,31 @@ export class SessionStore {
     return households.find((h) => h.id === this.activeId()) ?? households[0] ?? null;
   });
 
-  async load(): Promise<void> {
+  private loading: Promise<boolean> | null = null;
+
+  /** The session, loaded once and shared by the guards (Angular runs them at the same time). */
+  ensureLoaded(): Promise<boolean> {
+    if (this.me()) return Promise.resolve(true);
+    this.loading ??= this.load().finally(() => (this.loading = null));
+    return this.loading;
+  }
+
+  /** Loads who is signed in; false without a session (the guards send the browser to the login). */
+  async load(): Promise<boolean> {
     try {
       this.me.set(await firstValueFrom(this.http.get<Me>('/api/auth/me')));
     } catch {
-      // Not signed in or API down: the shell stays empty (the login guard arrives with E02/US-004).
       this.me.set(null);
-      return;
+      return false;
     }
     await this.loadCounters();
+    return true;
+  }
+
+  async logout(): Promise<void> {
+    await firstValueFrom(this.http.post('/api/auth/logout', null));
+    this.me.set(null);
+    this.pendingToday.set(0);
   }
 
   selectHousehold(id: string): void {

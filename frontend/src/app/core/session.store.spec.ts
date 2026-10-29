@@ -77,10 +77,29 @@ describe('SessionStore', () => {
   it('without a session stays empty', async () => {
     const loading = store.load();
     http.expectOne('/api/auth/me').flush({ title: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
-    await loading;
 
+    expect(await loading).toBe(false);
     expect(store.me()).toBeNull();
     expect(store.household()).toBeNull();
+    expect(store.pendingToday()).toBe(0);
+  });
+
+  it('ensureLoaded asks /auth/me once for callers at the same time, and not again once signed in', async () => {
+    const a = store.ensureLoaded();
+    const b = store.ensureLoaded();
+    http.expectOne('/api/auth/me').flush({ ...ME, households: [] });
+    expect(await Promise.all([a, b])).toEqual([true, true]);
+    expect(await store.ensureLoaded()).toBe(true);
+    http.expectNone('/api/auth/me');
+  });
+
+  it('logout signs out in the API and forgets the user', async () => {
+    store.me.set(ME);
+    store.pendingToday.set(6);
+    const out = store.logout();
+    http.expectOne({ method: 'POST', url: '/api/auth/logout' }).flush(null, { status: 204, statusText: 'No Content' });
+    await out;
+    expect(store.me()).toBeNull();
     expect(store.pendingToday()).toBe(0);
   });
 

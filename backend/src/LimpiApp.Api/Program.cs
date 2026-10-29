@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using LimpiApp.Api.Common;
 using LimpiApp.Api.Common.Email;
 using LimpiApp.Api.Data;
@@ -14,6 +16,7 @@ var connectionString = builder.Configuration.GetConnectionString("Db")
 builder.Services.AddDbContext<AppDbContext>(options => AppDbContext.Configure(options, connectionString));
 
 builder.Services.AddProblemDetails();
+builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
 builder.Services.AddValidation();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<Clock>();
@@ -45,12 +48,14 @@ using (var scope = app.Services.CreateScope())
 app.UseForwardedHeaders();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+app.UseCsrfHeader();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHealth();
 app.MapMagicLink();
 app.MapGoogleSignIn();
+app.MapMe();
 
 await app.RunAsync();
 

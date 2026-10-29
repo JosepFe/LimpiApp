@@ -26,12 +26,3 @@ test('phone: the bottom bar navigates and highlights the active section', async 
   await expect(page.getByTestId('bnav-activity')).toHaveClass(/active/);
   await expect(page.getByTestId('bnav-today')).not.toHaveClass(/active/);
 });
-
-test('without a session the shell stays empty instead of breaking', async ({ page, api }) => {
-  api.on('GET', '/auth/me', async (route: import('@playwright/test').Route) => {
-    await route.fulfill({ status: 401, json: { title: 'Unauthorized' } });
-  });
-  await page.goto('/today');
-  await expect(page.getByTestId('nav-today')).toHaveText('Hoy');
-  await expect(page.getByTestId('side-home-switcher')).toHaveCount(0);
-});

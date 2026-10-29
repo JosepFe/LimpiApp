@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { routes } from './app.routes';
 
 describe('routes', () => {
-  const children = routes.find((r) => r.component)?.children ?? [];
+  const children = routes.find((r) => r.path === '' && r.children)?.children ?? [];
 
   it('opens Hoy by default and sends unknown paths home', () => {
     expect(children[0]).toMatchObject({ path: '', redirectTo: 'today' });
@@ -15,6 +15,12 @@ describe('routes', () => {
     for (const p of ['today', 'rooms', 'history', 'stats', 'ranking', 'members', 'settings', 'products', 'ui-kit']) {
       expect(paths).toContain(p);
     }
+  });
+
+  it('signed-in screens need a session and a household; the onboarding only a session', () => {
+    const shell = routes.find((r) => r.component && r.path === '')!;
+    expect(shell.canActivate?.length).toBe(2);
+    expect(routes.find((r) => r.path === 'onboarding')?.canActivate?.length).toBe(1);
   });
 
   it('the login lives outside the shell and loads lazily', async () => {

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -27,7 +27,7 @@ export const NAV: NavItem[] = [
   imports: [RouterOutlet, RouterLink],
   templateUrl: './shell.html',
 })
-export class Shell implements OnInit {
+export class Shell {
   protected readonly session = inject(SessionStore);
   protected readonly nav = NAV;
   private readonly router = inject(Router);
@@ -42,9 +42,5 @@ export class Shell implements OnInit {
   protected isActive(item: NavItem): boolean {
     const path = this.url().split(/[?#]/)[0];
     return item.match.some((m) => path === m || path.startsWith(`${m}/`));
-  }
-
-  ngOnInit(): void {
-    void this.session.load();
   }
 }

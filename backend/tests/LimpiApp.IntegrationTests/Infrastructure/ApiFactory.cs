@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using LimpiApp.Api.Common.Email;
 using LimpiApp.Api.Data;
 using Microsoft.AspNetCore.Builder;
@@ -36,13 +37,28 @@ public class ApiFactory(PostgresFixture db) : WebApplicationFactory<Program>
         });
     }
 
-    /// <summary>An HTTPS client (the session cookie is Secure) that keeps cookies and does not follow redirects.</summary>
-    public HttpClient CreateBrowser() => CreateClient(new WebApplicationFactoryClientOptions
+    /// <summary>An HTTPS client (the session cookie is Secure) that keeps cookies and does not follow redirects.
+    /// Like the SPA, it sends the CSRF header on every request.</summary>
+    public HttpClient CreateBrowser()
     {
-        BaseAddress = new Uri("https://localhost"),
-        AllowAutoRedirect = false,
-        HandleCookies = true,
-    });
+        var client = CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("https://localhost"),
+            AllowAutoRedirect = false,
+            HandleCookies = true,
+        });
+        client.DefaultRequestHeaders.Add("X-Requested-With", "limpiapp");
+        return client;
+    }
+
+    /// <summary>A browser signed in as `email` (created if needed), through the emailed link.</summary>
+    public async Task<HttpClient> SignedInAsync(string email = "josep@example.com")
+    {
+        var client = CreateBrowser();
+        await client.PostAsJsonAsync("/auth/magic-link", new { email }, TestContext.Current.CancellationToken);
+        await client.GetAsync($"/auth/magic?token={Emails.LastToken(email)}", TestContext.Current.CancellationToken);
+        return client;
+    }
 
     public AppDbContext CreateDbContext() => Services.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
 

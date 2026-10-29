@@ -1,5 +1,6 @@
 import { isDevMode } from '@angular/core';
 import { Routes } from '@angular/router';
+import { authGuard, householdGuard } from './core/guards';
 import { Placeholder } from './features/placeholder/placeholder';
 import { Shell } from './layout/shell';
 
@@ -12,9 +13,12 @@ const placeholder = (path: string, screen: string, title: string) => ({
 
 export const routes: Routes = [
   { path: 'login', loadComponent: () => import('./features/login/login').then((m) => m.Login) },
+  // Replaced by the onboarding screen in E02/US-006.
+  { path: 'onboarding', canActivate: [authGuard], component: Placeholder, data: { screen: 'onboarding', title: 'Crea tu hogar' } },
   {
     path: '',
     component: Shell,
+    canActivate: [authGuard, householdGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'today' },
       placeholder('today', 'today', 'Hoy'),
