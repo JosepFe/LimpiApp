@@ -1,0 +1,70 @@
+<section class="screen active" data-screen="screen-task-detail" data-testid="screen-task-detail">
+  <div data-testid="task-detail-body">
+    <header class="page-header">
+      <button type="button" class="icon-btn hide-desktop" aria-label="Volver" data-testid="back" (click)="back()"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-back" /></svg></button>
+      <h1 class="ph-title">Detalle de tarea</h1>
+      <div class="ph-actions">
+        <button type="button" class="icon-btn" aria-label="Editar tarea" data-testid="task-edit" [disabled]="!task()" (click)="edit()"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-edit" /></svg></button>
+        <button type="button" class="icon-btn" aria-label="Más acciones" title="Archivar tarea" [disabled]="!task()" (click)="archive()"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-more" /></svg></button>
+      </div>
+    </header>
+    <div class="content" style="padding-top:var(--s4)">
+      @switch (state()) {
+        @case ('loading') {
+          <div data-testid="task-detail-loading">
+            <div class="skel" style="height:28px;width:70%;margin-bottom:12px"></div><div class="skel" style="height:16px;width:40%;margin-bottom:24px"></div>
+            <div class="skel" style="height:120px;margin-bottom:16px"></div><div class="skel" style="height:160px"></div></div>
+        }
+        @case ('error') {
+          <div data-testid="task-detail-error"><la-error-state message="No hemos podido cargar la tarea." (retry)="load()" /></div>
+        }
+        @default {
+          @let t = task()!;
+          <div>
+            <div><h2 style="font-size:22px;font-weight:700;line-height:1.3" data-title>{{ t.title }}</h2>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px"><span style="color:var(--text-2)">{{ place() }}</span><span class="badge" [class]="t.due.kind">{{ t.due.label }}</span>@if (!t.lastDone) {<span class="badge neutral">Nunca hecha</span>}</div></div>
+
+            <!-- «Marcar hecha» works from E04/US-005. -->
+            <button type="button" class="btn btn-primary btn-block" style="margin:var(--s4) 0" data-testid="task-complete" disabled><svg class="ic" aria-hidden="true"><use href="icons.svg#i-check" /></svg> Marcar hecha</button>
+
+            <div class="card card-pad">
+              <dl class="kv">
+                <dt>Frecuencia</dt><dd>{{ frequency() }}</dd>
+                <dt>Tiempo estimado</dt><dd>{{ t.estimatedMinutes }} min</dd>
+                <dt>Prioridad</dt><dd><span class="pri" [class]="t.priority">{{ priority[t.priority] }}</span></dd>
+                <dt>Asignada a</dt><dd style="display:flex;align-items:center;gap:8px">@if (t.assignee; as a) {<span class="avatar sm" [class]="a.avatarColor" [title]="a.name" [attr.aria-label]="a.name">{{ initial(a.name) }}</span> {{ a.name }}} @else {Sin asignar}</dd>
+                <dt>Última vez</dt><dd><span>{{ t.lastDone ? shortDay(t.lastDone.at) + ' · ' + t.lastDone.by.name : 'Nunca' }}</span></dd>
+              </dl>
+            </div>
+
+            @if (t.subtasks.length) {
+              <div class="group-h">Subtareas <span class="count">{{ t.subtasks.length }}</span></div>
+              <ul class="list plain-list" style="padding:var(--s2) var(--s4)" data-testid="task-checklist">
+                @for (s of t.subtasks; track s.id) {<li class="check" style="cursor:default"><span class="box" style="color:transparent"></span><span class="lab">{{ s.title }}</span></li>}
+              </ul>
+            }
+            @if (t.products.length) {
+              <div class="group-h">Productos</div>
+              <div class="chips">@for (p of t.products; track p.id) {<span class="chip">{{ p.emoji }} {{ p.name }}</span>}</div>
+            }
+            @if (t.notes) {
+              <div class="group-h">Notas</div>
+              <div class="card card-pad" style="color:var(--text-2)">{{ t.notes }}</div>
+            }
+
+            <div class="group-h">Últimas veces</div>
+            @if (t.history.length) {
+              <div><div class="list">
+                @for (h of t.history; track h.at) {
+                  <div class="row" style="min-height:56px"><span class="avatar sm" [class]="h.by.avatarColor" [title]="h.by.name" [attr.aria-label]="h.by.name">{{ initial(h.by.name) }}</span><span class="body"><span class="t">{{ h.by.name }}</span><span class="s">{{ shortDay(h.at) }} · {{ h.minutes }} min</span></span><span class="badge success">+{{ h.points }} pts</span></div>
+                }
+              </div></div>
+            } @else {
+              <div class="card card-pad" style="text-align:center;color:var(--text-3)">Aún no se ha hecho esta tarea.</div>
+            }
+          </div>
+        }
+      }
+    </div>
+  </div>
+</section>

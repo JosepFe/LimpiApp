@@ -96,3 +96,21 @@ export const FRIDGE_TASK = {
   products: [{ id: 'p-desincrustante', name: 'Desincrustante', emoji: '🧴' }, { id: 'p-bayetas', name: 'Bayetas microfibra', emoji: '🧽' }],
   lastDone: null, history: [],
 };
+
+const done = (at: string, by: typeof JOSEP, minutes: number, points: number) => ({ at, by, minutes, points });
+/** #screen-task-detail: «Fregar suelo» (default), «Limpiar horno» (overdue) and «Limpiar microondas» (never-done). */
+export const FLOOR_TASK = {
+  id: 't-fregar', title: 'Fregar suelo', roomId: 'r-cocina', roomName: 'Cocina', roomEmoji: '🍳', zone: null,
+  freqValue: 1, freqUnit: 'week', nextDue: TODAY, due: { kind: 'today', label: 'Hoy' }, estimatedMinutes: 20, priority: 'medium',
+  assignee: JOSEP, notes: 'Usar la fregona de microfibra azul. Fregar primero la zona de la entrada.',
+  subtasks: ['Quitar sillas y objetos del suelo', 'Barrer o aspirar', 'Fregar con producto', 'Repasar esquinas y rodapiés', 'Aclarar la fregona y secar']
+    .map((title, i) => ({ id: `s${i}`, title })),
+  products: [{ id: 'p-fregona', name: 'Fregona', emoji: '🪣' }, { id: 'p-aspiradora', name: 'Aspiradora', emoji: '🌀' }, { id: 'p-lejia', name: 'Lejía', emoji: '🧪' }],
+  lastDone: done('2026-10-07T18:00:00Z', JOSEP, 20, 9),
+  history: [
+    done('2026-10-07T18:00:00Z', JOSEP, 20, 9), done('2026-09-30T18:00:00Z', PAU, 25, 9), done('2026-09-23T18:00:00Z', JOSEP, 20, 9),
+    done('2026-09-16T18:00:00Z', MARTA, 15, 6), done('2026-09-09T18:00:00Z', JOSEP, 20, 9),
+  ],
+};
+export const OVEN_TASK = { ...FLOOR_TASK, id: 't-horno', title: 'Limpiar horno', zone: { id: 'z-horno', name: 'Horno' }, nextDue: '2026-10-08', due: { kind: 'overdue', label: 'Atrasada 6 d' } };
+export const MICROWAVE_TASK = { ...FLOOR_TASK, id: 't-micro', title: 'Limpiar microondas', lastDone: null, history: [] };

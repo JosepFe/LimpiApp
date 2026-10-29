@@ -25,8 +25,7 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'today' },
       placeholder('today', 'today', 'Hoy'),
-      // Replaced by the task detail in E03/US-009.
-      placeholder('tasks/:id', 'task-detail', 'Detalle de tarea'),
+      { path: 'tasks/:id', loadComponent: () => import('./features/tasks/task-detail').then((m) => m.TaskDetail) },
       {
         path: 'rooms',
         loadComponent: () => import('./features/rooms/rooms').then((m) => m.Rooms),

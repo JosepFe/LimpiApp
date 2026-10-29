@@ -11,3 +11,9 @@ export const BROWSER_PROMPT = new InjectionToken<(message: string) => string | n
   providedIn: 'root',
   factory: () => (message: string) => window.prompt(message),
 });
+
+/** `window.confirm`, as a token so tests can answer it. */
+export const BROWSER_CONFIRM = new InjectionToken<(message: string) => boolean>('BROWSER_CONFIRM', {
+  providedIn: 'root',
+  factory: () => (message: string) => window.confirm(message),
+});

@@ -1,9 +1,10 @@
 // E03/US-007 · criterion 2: «Añadir tarea» opens the task form with the room chosen; a task opens its detail.
+import { FLOOR_TASK } from '../fixtures/prototype-data';
 import { mockTaskForm } from '../fixtures/task-form';
 import { expect, test } from '../fixtures/test';
 
 test('«Añadir tarea» asks for the task form of this room; a row opens the task; the pencil edits the room', async ({ page, api }) => {
-  mockTaskForm(api);
+  mockTaskForm(api).on('GET', '/households/h-casa/tasks/t-fregar', FLOOR_TASK);
   await page.goto('/rooms/r-cocina');
 
   await page.getByTestId('add-task-desktop').click();
