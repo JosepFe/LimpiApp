@@ -33,6 +33,16 @@ describe('manifest.webmanifest', () => {
     }
   });
 
+  it('the tab icon: an SVG with the prototype green and a 32×32 .ico for older browsers, both linked', () => {
+    const index = readFileSync(join(root, 'src', 'index.html'), 'utf8');
+    expect(index).toContain('<link rel="icon" href="favicon.svg" type="image/svg+xml">');
+    expect(index).toContain('<link rel="icon" href="favicon.ico" sizes="32x32">');
+    expect(readFileSync(join(root, 'public', 'favicon.svg'), 'utf8')).toMatch(/^<svg [^>]*viewBox="0 0 100 100"[\s\S]*fill="#2D7D46"/);
+    const ico = readFileSync(join(root, 'public', 'favicon.ico'));
+    expect([ico.readUInt16LE(2), ico.readUInt16LE(4), ico[6], ico[7]]).toEqual([1, 1, 32, 32]); // icon, one image, 32×32
+    expect(ico.subarray(22, 26).toString('latin1')).toBe('\x89PNG');
+  });
+
   it('index.html links it, with the theme colour and the iOS icon; there is no service worker', () => {
     const index = readFileSync(join(root, 'src', 'index.html'), 'utf8');
     expect(index).toContain('<link rel="manifest" href="manifest.webmanifest">');

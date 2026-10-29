@@ -21,7 +21,8 @@ echo "ok  SPA fallback (and 404 for missing assets)"
 # 3. Installable (E07/US-002): the manifest with its media type, not cached forever
 curl -fsSI "$BASE/manifest.webmanifest" | grep -qi '^content-type: application/manifest+json' || fail "manifest.webmanifest is not application/manifest+json"
 curl -fsSI "$BASE/icons/icon-512.png" | grep -qi '^cache-control: no-cache' || fail "the install icons must not be cached forever"
-echo "ok  install manifest and icons"
+curl -fsSI "$BASE/favicon.svg" | grep -qi '^content-type: image/svg+xml' || fail "favicon.svg is not served as image/svg+xml"
+echo "ok  install manifest, icons and tab icon"
 
 # 4. Mailpit (dev profile) receives mail sent from the api container to SMTP_HOST:SMTP_PORT
 curl -fsS "$MAILPIT/api/v1/info" >/dev/null || fail "Mailpit is not up (docker compose --profile dev up -d)"
