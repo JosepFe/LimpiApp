@@ -46,9 +46,11 @@ export class Settings implements OnInit {
     void this.api.get<{ timeZone: string }>('').then((h) => this.timeZone.set(h.timeZone), () => undefined);
   }
 
-  protected async saveName(value: string): Promise<void> {
-    const name = value.trim();
-    if (!name || name === this.session.me()?.name) return;
+  protected async saveName(input: HTMLInputElement): Promise<void> {
+    const name = input.value.trim();
+    const current = this.session.me()?.name ?? '';
+    if (!name) input.value = current; // a name is required: back to the saved one
+    if (!name || name === current) return;
     await this.saveMe({ name });
   }
 
@@ -61,7 +63,13 @@ export class Settings implements OnInit {
     const me = this.session.me();
     if (!me || theme === me.theme) return;
     this.session.me.set({ ...me, theme });
-    if (!(await this.saveMe({ theme }))) this.session.me.update((m) => (m ? { ...m, theme: me.theme } : m));
+    // Put back only if no later choice replaced this one meanwhile.
+    if (!(await this.saveMe({ theme }))) this.session.me.update((m) => (m?.theme === theme ? { ...m, theme: me.theme } : m));
+  }
+
+  protected async saveHouseholdName(input: HTMLInputElement): Promise<void> {
+    if (!input.value.trim()) input.value = this.session.household()?.name ?? '';
+    await this.saveHousehold({ name: input.value });
   }
 
   protected async saveHousehold(change: { name?: string; timeZone?: string }): Promise<void> {

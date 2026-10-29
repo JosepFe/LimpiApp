@@ -45,9 +45,9 @@ describe('Settings', () => {
   it('an empty or unchanged name is not saved; same colour, theme, household name or zone neither', async () => {
     const { fixture, http, el } = await render();
     const name = el.querySelector<HTMLInputElement>('[data-testid="settings-name"]')!;
-    name.value = '  ';
-    name.dispatchEvent(new Event('change'));
     name.value = 'Ana';
+    name.dispatchEvent(new Event('change'));
+    name.value = '  ';
     name.dispatchEvent(new Event('change'));
     el.querySelector<HTMLButtonElement>('[aria-label="Color teal"]')!.click();
     el.querySelector<HTMLButtonElement>('[data-testid="settings-theme"] button')!.click();
@@ -60,6 +60,29 @@ describe('Settings', () => {
     await fixture.whenStable();
     http.expectNone('/api/me');
     expect(api.patch).not.toHaveBeenCalled();
+    expect(name.value).toBe('Ana');
+  });
+
+  it('an empty household name goes back to the saved one', async () => {
+    const { fixture, el } = await render();
+    const home = el.querySelector<HTMLInputElement>('[data-testid="settings-home-name"]')!;
+    home.value = ' ';
+    home.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    expect(home.value).toBe('Casa');
+    expect(api.patch).not.toHaveBeenCalled();
+  });
+
+  it('a failed theme does not undo a later choice', async () => {
+    const { fixture, el, http } = await render();
+    const [, light, dark] = el.querySelectorAll<HTMLButtonElement>('[data-testid="settings-theme"] button');
+    dark.click();
+    light.click();
+    const [first, second] = http.match('/api/me');
+    second.flush({ name: 'Ana', avatarColor: 'teal', theme: 'light' });
+    first.flush({}, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+    expect(session.me()?.theme).toBe('light');
   });
 
   it('a failed household save shows the error banner', async () => {

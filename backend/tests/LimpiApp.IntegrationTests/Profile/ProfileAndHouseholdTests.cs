@@ -27,6 +27,7 @@ public class ProfileAndHouseholdTests(ApiFactory factory) : IntegrationTest(fact
         var josep = await Factory.SignedInAsync();
 
         Assert.Equal(HttpStatusCode.BadRequest, (await josep.PatchAsJsonAsync("/me", new { name = "  " }, Ct)).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await josep.PatchAsJsonAsync("/me", new { name = new string('a', 81) }, Ct)).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await josep.PatchAsJsonAsync("/me", new { avatarColor = "#ff0000" }, Ct)).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await josep.PatchAsJsonAsync("/me", new { theme = "neon" }, Ct)).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await Factory.CreateBrowser().PatchAsJsonAsync("/me", new { name = "X" }, Ct)).StatusCode);
@@ -55,6 +56,7 @@ public class ProfileAndHouseholdTests(ApiFactory factory) : IntegrationTest(fact
 
         Assert.Equal(HttpStatusCode.Forbidden, (await data.Marta.PatchAsJsonAsync(url, new { name = "Mía" }, Ct)).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await data.Josep.PatchAsJsonAsync(url, new { name = " " }, Ct)).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await data.Josep.PatchAsJsonAsync(url, new { name = new string('a', 81) }, Ct)).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await data.Josep.PatchAsJsonAsync(url, new { timeZone = "Romance Standard Time" }, Ct)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await stranger.PatchAsJsonAsync(url, new { name = "Mía" }, Ct)).StatusCode);
         var household = await data.Josep.GetFromJsonAsync<JsonElement>(url, Ct);

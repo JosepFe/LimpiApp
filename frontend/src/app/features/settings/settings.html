@@ -16,7 +16,7 @@
           <div class="group-h" style="padding-top:0">Perfil</div>
           <div class="card card-pad">
             <div style="display:flex;align-items:center;gap:var(--s4);margin-bottom:var(--s4)"><span class="avatar lg" [class]="me.avatarColor" [title]="me.name" [attr.aria-label]="me.name">{{ initial(me.name) }}</span><div><div style="font-weight:600">{{ me.name }}</div><div style="font-size:13px;color:var(--text-3)">{{ me.email }}</div></div></div>
-            <div class="field"><label for="st-name">Tu nombre</label><input id="st-name" class="input" maxlength="80" data-testid="settings-name" [value]="me.name" (change)="saveName($any($event.target).value)"></div>
+            <div class="field"><label for="st-name">Tu nombre</label><input id="st-name" class="input" maxlength="80" data-testid="settings-name" [value]="me.name" (change)="saveName($any($event.target))"></div>
             <div class="field" style="margin-bottom:0"><span class="lbl">Color del avatar</span><div class="swatches" data-testid="settings-avatar-color">
               @for (c of colors; track c) {
                 <button type="button" class="sw" [class.sel]="me.avatarColor === c" [style.background]="'var(--av-' + c + ')'" [attr.aria-label]="'Color ' + c" [attr.aria-pressed]="me.avatarColor === c" (click)="saveColor(c)"></button>
@@ -35,7 +35,7 @@
           @if (session.household(); as household) {
             <div class="group-h" style="padding-top:0">Hogar</div>
             <div class="card card-pad">
-              <div class="field"><label for="st-home">Nombre del hogar</label><input id="st-home" class="input" maxlength="80" data-testid="settings-home-name" [value]="household.name" [disabled]="!isOwner()" (change)="saveHousehold({ name: $any($event.target).value })"></div>
+              <div class="field"><label for="st-home">Nombre del hogar</label><input id="st-home" class="input" maxlength="80" data-testid="settings-home-name" [value]="household.name" [disabled]="!isOwner()" (change)="saveHouseholdName($any($event.target))"></div>
               <div class="field" style="margin-bottom:0"><label for="st-tz">Zona horaria</label><select id="st-tz" class="select" data-testid="settings-timezone" [disabled]="!isOwner()" (change)="saveHousehold({ timeZone: $any($event.target).value })">
                 @for (z of zones(); track z) {
                   <option [value]="z" [selected]="z === timeZone()">{{ z }}</option>
