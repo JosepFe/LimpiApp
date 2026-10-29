@@ -1,0 +1,58 @@
+<section class="screen active" data-screen="screen-history" data-testid="screen-history">
+  <header class="page-header"><h1 class="ph-title">Actividad</h1><div class="ph-actions"></div></header>
+  <div class="tabs" role="tablist" style="margin:0"><a class="tab active" role="tab" routerLink="/history" data-testid="tab-history" aria-selected="true">Historial</a><a class="tab" role="tab" routerLink="/stats" data-testid="tab-stats" aria-selected="false">Estadísticas</a></div>
+  <div class="content">
+    @switch (state()) {
+      @case ('loading') {
+        <div data-testid="history-loading"><la-skeleton-list [rows]="7" /></div>
+      }
+      @case ('error') {
+        <div data-testid="history-error"><la-error-state (retry)="load()" /></div>
+      }
+      @default {
+        @if (!items().length && !filtered()) {
+          <div data-testid="history-empty"><div class="empty"><div class="big" aria-hidden="true">📒</div><h3>Aún no hay actividad</h3><p>Cuando alguien marque una tarea como hecha, aparecerá aquí.</p></div></div>
+        } @else {
+          @let f = filters();
+          <div data-testid="history-filters">
+            <div class="chips scroll" style="margin-top:var(--s3)">
+              <!-- The prototype's chips; invisible native selects over them pick the value. -->
+              <label class="chip" [class.active]="f.mine" style="position:relative"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-users" /></svg> {{ f.mine ? 'Solo yo' : 'Todos' }} <svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-down" /></svg>
+                <select aria-label="Quién" style="position:absolute;inset:0;width:100%;opacity:0;cursor:pointer" (change)="setFilter('mine', $any($event.target).value)">
+                  <option value="" [selected]="!f.mine">Todos</option><option value="1" [selected]="f.mine">Solo yo</option></select></label>
+              <label class="chip" [class.active]="!!f.room" style="position:relative"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-rooms" /></svg> {{ roomLabel() }} <svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-down" /></svg>
+                <select aria-label="Filtrar por habitación" style="position:absolute;inset:0;width:100%;opacity:0;cursor:pointer" (change)="setFilter('room', $any($event.target).value)">
+                  <option value="" [selected]="!f.room">Todas las habitaciones</option>
+                  @for (r of page()!.rooms; track r.id) {<option [value]="r.id" [selected]="r.id === f.room">{{ r.emoji }} {{ r.name }}</option>}</select></label>
+              <!-- Only the last 30 days for now (E05 D1). -->
+              <span class="chip"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-clock" /></svg> Últimos 30 días <svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-down" /></svg></span>
+            </div>
+          </div>
+          @if (items().length) {
+            <div data-testid="history-list">
+              @for (d of days(); track d.day) {
+                <div class="day-h">{{ header(d.day) }}</div>
+                <div class="list">
+                  @for (i of d.items; track i.id) {
+                    <div class="row" role="button" tabindex="0" data-testid="history-row" (click)="open(i)" (keydown.enter)="open(i)" (keydown.space)="$event.preventDefault(); open(i)">
+                      <span class="avatar" [class]="i.by.avatarColor" [title]="i.by.name" [attr.aria-label]="i.by.name">{{ initial(i.by.name) }}</span>
+                      <span class="body"><span class="t" style="display:block;white-space:normal"><b>{{ i.by.name }}</b> limpió {{ i.roomName }}: {{ i.taskTitle }}</span>
+                        <span class="s"><span>{{ time(i.at) }}</span><span aria-hidden="true">·</span><span>{{ i.minutes }} min</span>@if (i.photoCount) {<span class="badge neutral"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-camera" /></svg> {{ i.photoCount }}</span>}</span>
+                        @if (i.note) {<span class="s" style="display:block;margin-top:2px">“{{ i.note }}”</span>}</span>
+                      <span class="end">@if (i.undone) {<span class="badge neutral">Deshecha</span>} @else {<span class="badge success">+{{ i.points }} pts</span>}</span>
+                    </div>
+                  }
+                </div>
+              }
+              @if (page()!.nextCursor) {
+                <div style="text-align:center;margin:var(--s4) 0"><button type="button" class="btn btn-secondary" data-testid="history-load-more" [disabled]="loadingMore()" (click)="more()">Cargar más</button></div>
+              }
+            </div>
+          } @else {
+            <div data-testid="history-no-results"><div class="empty"><div class="big" aria-hidden="true">🔍</div><h3>Sin resultados</h3><p>No hay actividad con estos filtros.</p><button type="button" class="btn btn-secondary" (click)="clearFilters()">Quitar filtros</button></div></div>
+          }
+        }
+      }
+    }
+  </div>
+</section>

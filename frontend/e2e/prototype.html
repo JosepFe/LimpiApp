@@ -640,9 +640,16 @@ body.nonav .fab{bottom:var(--s4)}
 <!--E:room-detail-->
 <!--S:history-->
 <section class="screen" id="screen-history" data-testid="screen-history"><header class="page-header"><h1 class="ph-title">Actividad</h1><div class="ph-actions"></div></header><div class="tabs" role="tablist" style="margin:0"><button class="tab active" role="tab" data-go="history" data-testid="tab-history" aria-selected="true">Historial</button><button class="tab" role="tab" data-go="stats" data-testid="tab-stats" aria-selected="false">Estadísticas</button></div><div class="content">
-<div data-s="default no-results" data-testid="history-filters">
+<div data-s="default" data-testid="history-filters">
   <div class="chips scroll" style="margin-top:var(--s3)">
     <button class="chip"><svg class="ic sm" aria-hidden="true"><use href="#i-users"/></svg> Todos <svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
+    <button class="chip"><svg class="ic sm" aria-hidden="true"><use href="#i-rooms"/></svg> Habitación <svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
+    <button class="chip"><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> Últimos 30 días <svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
+  </div>
+</div>
+<div data-s="no-results" data-testid="history-filters">
+  <div class="chips scroll" style="margin-top:var(--s3)">
+    <button class="chip"><svg class="ic sm" aria-hidden="true"><use href="#i-users"/></svg> Solo yo <svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
     <button class="chip"><svg class="ic sm" aria-hidden="true"><use href="#i-rooms"/></svg> Habitación <svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
     <button class="chip"><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> Últimos 30 días <svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
   </div>

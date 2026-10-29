@@ -155,3 +155,22 @@ export const COMPLETE_TASK = {
 };
 /** The API says «sáb 14 nov» (14/11/2026 is a Saturday); the prototype writes «mié 14 nov»: this mock follows the prototype. */
 export const COMPLETE_RESULT = { completionId: 'c-nevera', points: 9, streak: 6, nextDue: '2026-11-14', nextDueDay: 'mié 14 nov' };
+
+const entry = (id: string, at: string, by: typeof JOSEP, room: [string, string], task: string, minutes: number, points: number, extra: { note?: string; photos?: number } = {}) => ({
+  id, at, on: at.slice(0, 10), by, taskId: `t-${id}`, taskTitle: task, roomName: room[0], roomEmoji: room[1], minutes, points,
+  note: extra.note ?? null, photoCount: extra.photos ?? 0, undone: false,
+});
+/** GET /households/h-casa/history: #screen-history (times in Madrid: 08:40 = 06:40Z). */
+export const HISTORY = {
+  today: TODAY,
+  items: [
+    entry('h1', '2026-10-14T06:40:00Z', PAU, ['Dormitorio', '🛏️'], 'Aspirar suelo', 15, 5),
+    entry('h2', '2026-10-14T07:15:00Z', MARTA, ['Recibidor', '🚪'], 'Barrer y fregar entrada', 10, 3),
+    entry('h3', '2026-10-13T17:42:00Z', JOSEP, ['Baño', '🛁'], 'Limpiar ducha/bañera', 20, 8, { note: 'Con desincrustante', photos: 2 }),
+    entry('h4', '2026-10-13T16:05:00Z', PAU, ['Baño', '🛁'], 'Cambiar toallas', 5, 1),
+    entry('h5', '2026-10-12T18:10:00Z', MARTA, ['Dormitorio', '🛏️'], 'Quitar polvo', 10, 2),
+    entry('h6', '2026-10-12T10:30:00Z', JOSEP, ['Cocina', '🍳'], 'Limpiar microondas', 10, 2),
+  ],
+  nextCursor: 'c1',
+  rooms: ROOMS.rooms.map(({ name, emoji }, i) => ({ id: roomGuid(i), name, emoji })),
+};
