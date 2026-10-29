@@ -30,10 +30,10 @@
                       (click)="toggle(t.id)"><span class="tick"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-check" /></svg></span><span class="e">{{ t.emoji }}</span><span class="n">{{ t.name }}</span><span class="c">{{ t.taskCount }} tareas</span></button>
             }
           </div>
-          <p class="help" style="margin:var(--s3) 0 var(--s4);font-size:12px;color:var(--text-3)"><span data-testid="template-summary">{{ summary() }}</span></p>
+          <p class="help" style="margin:var(--s3) 0 var(--s4);font-size:12px;color:var(--text-3)">@if (templates().length) {<span data-testid="template-summary">{{ summary() }}</span>}</p>
           <div style="display:flex;gap:var(--s3)">
             <button type="button" class="btn btn-secondary" style="flex:0 0 auto" (click)="back()">Atrás</button>
-            <button type="button" class="btn btn-primary" style="flex:1" data-testid="onboarding-create" (click)="create()">Crear hogar</button>
+            <button type="button" class="btn btn-primary" style="flex:1" data-testid="onboarding-create" [disabled]="!templates().length" (click)="create()">Crear hogar</button>
           </div>
         </div>
       }

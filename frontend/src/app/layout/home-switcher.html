@@ -6,7 +6,7 @@
           @let selected = home.id === session.household()?.id;
           <button type="button" class="row" [class.sel]="selected" data-testid="home-row" (click)="choose(home.id)">
             <span class="avatar" [class]="avatarColor(i)">{{ initial(home.name) }}</span>
-            <span class="body"><span class="t">{{ home.name }}</span><span class="s">{{ home.memberCount }} miembros · {{ home.role === 'owner' ? 'Propietario' : 'Miembro' }}</span></span>
+            <span class="body"><span class="t">{{ home.name }}</span><span class="s">{{ members(home.memberCount) }} · {{ home.role === 'owner' ? 'Propietario' : 'Miembro' }}</span></span>
             @if (selected) {<span style="color:var(--primary)"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-check" /></svg></span>}
           </button>
         }

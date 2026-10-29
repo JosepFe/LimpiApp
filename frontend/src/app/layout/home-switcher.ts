@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { BROWSER_PROMPT } from '../core/browser';
 import { SessionStore } from '../core/session.store';
 import { Sheet } from '../shared/sheet';
-import { avatarColor, initial } from '../shared/avatar';
+import { avatarColor, initial, members } from '../shared/avatar';
 
 /** #screen-home-switcher «Mis hogares»: change household, create another or join one with a link (E02/US-008). */
 @Component({
@@ -20,6 +20,7 @@ export class HomeSwitcher {
   protected readonly session = inject(SessionStore);
   protected readonly avatarColor = avatarColor;
   protected readonly initial = initial;
+  protected readonly members = members;
   readonly closed = output();
 
   protected readonly creating = signal(false);

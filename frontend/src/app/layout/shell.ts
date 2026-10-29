@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { SessionStore } from '../core/session.store';
-import { avatarColor } from '../shared/avatar';
+import { avatarColor, members } from '../shared/avatar';
 import { HomeSwitcher } from './home-switcher';
 
 interface NavItem {
@@ -32,6 +32,7 @@ export const NAV: NavItem[] = [
 export class Shell {
   protected readonly session = inject(SessionStore);
   protected readonly nav = NAV;
+  protected readonly members = members;
   /** Same colour as in «Mis hogares»: by the household's position in the user's list. */
   protected readonly householdColor = computed(() => {
     const households = this.session.me()?.households ?? [];

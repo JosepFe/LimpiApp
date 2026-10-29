@@ -45,6 +45,9 @@ describe('Onboarding', () => {
     q<HTMLButtonElement>('onboarding-next')!.click();
     fixture.detectChanges();
     expect(q('onboarding-next')).toBeNull();
+    // Until the templates arrive, no summary and «Crear hogar» cannot create an empty household.
+    expect(q('template-summary')).toBeNull();
+    expect(q<HTMLButtonElement>('onboarding-create')!.disabled).toBe(true);
     TestBed.inject(HttpTestingController).expectOne('/api/templates').flush(TEMPLATES);
   });
 
