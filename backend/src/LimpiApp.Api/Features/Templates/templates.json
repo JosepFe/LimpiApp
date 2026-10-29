@@ -1,0 +1,42 @@
+[
+  { "id": "kitchen", "name": "Cocina", "emoji": "🍳", "color": "orange", "zones": ["Nevera", "Horno"], "tasks": [
+    { "title": "Fregar suelo", "every": 1, "unit": "week", "minutes": 20 },
+    { "title": "Limpiar fregadero", "every": 3, "unit": "day", "minutes": 5 },
+    { "title": "Limpiar encimera", "every": 2, "unit": "day", "minutes": 10 },
+    { "title": "Limpiar microondas", "every": 2, "unit": "week", "minutes": 10 },
+    { "title": "Limpiar nevera por dentro", "every": 1, "unit": "month", "minutes": 30, "zone": "Nevera" },
+    { "title": "Limpiar horno", "every": 1, "unit": "month", "minutes": 45, "zone": "Horno" } ] },
+  { "id": "bathroom", "name": "Baño", "emoji": "🛁", "color": "blue", "zones": [], "tasks": [
+    { "title": "Limpiar WC", "every": 1, "unit": "week", "minutes": 8 },
+    { "title": "Limpiar lavabo y espejo", "every": 1, "unit": "week", "minutes": 10 },
+    { "title": "Limpiar ducha/bañera", "every": 1, "unit": "week", "minutes": 20 },
+    { "title": "Cambiar toallas", "every": 1, "unit": "week", "minutes": 5 },
+    { "title": "Fregar suelo", "every": 1, "unit": "week", "minutes": 10 },
+    { "title": "Limpiar juntas y mamparas", "every": 1, "unit": "month", "minutes": 30 } ] },
+  { "id": "bedroom", "name": "Dormitorio", "emoji": "🛏️", "color": "violet", "zones": [], "tasks": [
+    { "title": "Cambiar sábanas", "every": 1, "unit": "week", "minutes": 15 },
+    { "title": "Aspirar suelo", "every": 1, "unit": "week", "minutes": 15 },
+    { "title": "Quitar polvo", "every": 2, "unit": "week", "minutes": 10 },
+    { "title": "Ordenar armario", "every": 1, "unit": "month", "minutes": 30 },
+    { "title": "Ventilar y girar colchón", "every": 3, "unit": "month", "minutes": 10 } ] },
+  { "id": "living", "name": "Salón", "emoji": "🛋️", "color": "green", "zones": [], "tasks": [
+    { "title": "Aspirar sofá y suelo", "every": 1, "unit": "week", "minutes": 20 },
+    { "title": "Quitar polvo", "every": 1, "unit": "week", "minutes": 15 },
+    { "title": "Fregar suelo", "every": 1, "unit": "week", "minutes": 20 },
+    { "title": "Limpiar cristales", "every": 1, "unit": "month", "minutes": 30 } ] },
+  { "id": "hall", "name": "Recibidor", "emoji": "🚪", "color": "slate", "zones": [], "tasks": [
+    { "title": "Barrer y fregar entrada", "every": 1, "unit": "week", "minutes": 10 },
+    { "title": "Limpiar espejo y zapatero", "every": 1, "unit": "month", "minutes": 10 } ] },
+  { "id": "laundry", "name": "Lavadero", "emoji": "🧺", "color": "teal", "zones": [], "tasks": [
+    { "title": "Limpiar filtro y goma de la lavadora", "every": 1, "unit": "month", "minutes": 20 },
+    { "title": "Limpiar pila", "every": 2, "unit": "week", "minutes": 10 },
+    { "title": "Barrer y fregar", "every": 2, "unit": "week", "minutes": 10 } ] },
+  { "id": "office", "name": "Despacho", "emoji": "💻", "color": "amber", "zones": [], "tasks": [
+    { "title": "Quitar polvo del escritorio", "every": 1, "unit": "week", "minutes": 10 },
+    { "title": "Aspirar suelo", "every": 1, "unit": "week", "minutes": 10 },
+    { "title": "Vaciar papelera", "every": 1, "unit": "week", "minutes": 5 } ] },
+  { "id": "terrace", "name": "Terraza", "emoji": "🌿", "color": "rose", "zones": [], "tasks": [
+    { "title": "Barrer terraza", "every": 1, "unit": "week", "minutes": 10 },
+    { "title": "Limpiar barandilla", "every": 1, "unit": "month", "minutes": 20 },
+    { "title": "Limpiar macetas y plato", "every": 2, "unit": "week", "minutes": 15 } ] }
+]

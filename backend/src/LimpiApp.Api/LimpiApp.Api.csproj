@@ -11,6 +11,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Features/Templates/templates.json" />
+  </ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="LimpiApp.UnitTests" />
     <InternalsVisibleTo Include="LimpiApp.IntegrationTests" />
   </ItemGroup>

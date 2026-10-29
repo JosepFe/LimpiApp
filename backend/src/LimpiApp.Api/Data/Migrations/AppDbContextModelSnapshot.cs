@@ -22,6 +22,90 @@ namespace LimpiApp.Api.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.CleaningTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("ArchivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("archived_at");
+
+                    b.Property<Guid?>("AssigneeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assignee_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("EstimatedMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("estimated_minutes");
+
+                    b.Property<string>("FreqUnit")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("freq_unit");
+
+                    b.Property<int>("FreqValue")
+                        .HasColumnType("integer")
+                        .HasColumnName("freq_value");
+
+                    b.Property<Guid>("HouseholdId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("household_id");
+
+                    b.Property<DateOnly>("NextDue")
+                        .HasColumnType("date")
+                        .HasColumnName("next_due");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("priority");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("room_id");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("title");
+
+                    b.Property<Guid?>("ZoneId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("zone_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tasks");
+
+                    b.HasIndex("AssigneeId")
+                        .HasDatabaseName("ix_tasks_assignee_id");
+
+                    b.HasIndex("RoomId")
+                        .HasDatabaseName("ix_tasks_room_id");
+
+                    b.HasIndex("ZoneId")
+                        .HasDatabaseName("ix_tasks_zone_id");
+
+                    b.HasIndex("HouseholdId", "NextDue")
+                        .HasDatabaseName("ix_tasks_household_id_next_due");
+
+                    b.ToTable("tasks", (string)null);
+                });
+
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.Household", b =>
                 {
                     b.Property<Guid>("Id")
@@ -128,6 +212,52 @@ namespace LimpiApp.Api.Data.Migrations
                     b.ToTable("memberships", (string)null);
                 });
 
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.Room", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("ArchivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("archived_at");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("color");
+
+                    b.Property<string>("Emoji")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("emoji");
+
+                    b.Property<Guid>("HouseholdId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("household_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.HasKey("Id")
+                        .HasName("pk_rooms");
+
+                    b.HasIndex("HouseholdId", "Position")
+                        .HasDatabaseName("ix_rooms_household_id_position");
+
+                    b.ToTable("rooms", (string)null);
+                });
+
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.Session", b =>
                 {
                     b.Property<Guid>("Id")
@@ -168,6 +298,36 @@ namespace LimpiApp.Api.Data.Migrations
                         .HasDatabaseName("ix_sessions_user_id");
 
                     b.ToTable("sessions", (string)null);
+                });
+
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.Subtask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("task_id");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id")
+                        .HasName("pk_subtasks");
+
+                    b.HasIndex("TaskId")
+                        .HasDatabaseName("ix_subtasks_task_id");
+
+                    b.ToTable("subtasks", (string)null);
                 });
 
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.User", b =>
@@ -224,6 +384,67 @@ namespace LimpiApp.Api.Data.Migrations
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.Zone", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("room_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_zones");
+
+                    b.HasIndex("RoomId")
+                        .HasDatabaseName("ix_zones_room_id");
+
+                    b.ToTable("zones", (string)null);
+                });
+
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.CleaningTask", b =>
+                {
+                    b.HasOne("LimpiApp.Api.Data.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("AssigneeId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_tasks_users_assignee_id");
+
+                    b.HasOne("LimpiApp.Api.Data.Entities.Household", null)
+                        .WithMany()
+                        .HasForeignKey("HouseholdId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tasks_households_household_id");
+
+                    b.HasOne("LimpiApp.Api.Data.Entities.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tasks_rooms_room_id");
+
+                    b.HasOne("LimpiApp.Api.Data.Entities.Zone", null)
+                        .WithMany()
+                        .HasForeignKey("ZoneId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_tasks_zones_zone_id");
+
+                    b.Navigation("Room");
+                });
+
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.Membership", b =>
                 {
                     b.HasOne("LimpiApp.Api.Data.Entities.Household", "Household")
@@ -245,6 +466,18 @@ namespace LimpiApp.Api.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.Room", b =>
+                {
+                    b.HasOne("LimpiApp.Api.Data.Entities.Household", "Household")
+                        .WithMany()
+                        .HasForeignKey("HouseholdId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_rooms_households_household_id");
+
+                    b.Navigation("Household");
+                });
+
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.Session", b =>
                 {
                     b.HasOne("LimpiApp.Api.Data.Entities.User", "User")
@@ -257,9 +490,39 @@ namespace LimpiApp.Api.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.Subtask", b =>
+                {
+                    b.HasOne("LimpiApp.Api.Data.Entities.CleaningTask", null)
+                        .WithMany("Subtasks")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_subtasks_tasks_task_id");
+                });
+
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.Zone", b =>
+                {
+                    b.HasOne("LimpiApp.Api.Data.Entities.Room", null)
+                        .WithMany("Zones")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_zones_rooms_room_id");
+                });
+
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.CleaningTask", b =>
+                {
+                    b.Navigation("Subtasks");
+                });
+
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.Household", b =>
                 {
                     b.Navigation("Memberships");
+                });
+
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.Room", b =>
+                {
+                    b.Navigation("Zones");
                 });
 
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.User", b =>

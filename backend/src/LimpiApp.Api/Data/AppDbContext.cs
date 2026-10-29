@@ -16,6 +16,14 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<Membership> Memberships => Set<Membership>();
 
+    public DbSet<Room> Rooms => Set<Room>();
+
+    public DbSet<Zone> Zones => Set<Zone>();
+
+    public DbSet<CleaningTask> Tasks => Set<CleaningTask>();
+
+    public DbSet<Subtask> Subtasks => Set<Subtask>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
