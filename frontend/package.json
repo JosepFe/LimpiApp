@@ -13,7 +13,7 @@
     "qa": "npm run lint && npm run typecheck && npm test && npm run test:node && npm run build && npm run e2e && npm run parity",
     "prototype:sync": "node scripts/prototype-sync.mjs",
     "e2e": "playwright test --project=e2e",
-    "parity": "node scripts/prototype-sync.mjs --check && playwright test --project=parity --project=parity-mobile --pass-with-no-tests",
+    "parity": "node scripts/prototype-sync.mjs --check && playwright test --project=parity --project=parity-mobile",
     "styles": "node scripts/sync-styles.mjs"
   },
   "private": true,

@@ -57,6 +57,23 @@ describe('SessionStore', () => {
     expect(localStorage.getItem('limpiapp.household')).toBe('h-playa');
   });
 
+  it('a failing counter keeps the session and hides the badge, also when switching household', async () => {
+    const loading = store.load();
+    http.expectOne('/api/auth/me').flush(ME);
+    await new Promise((r) => setTimeout(r));
+    http.expectOne('/api/households/h-casa/today').flush(null, { status: 500, statusText: 'Server Error' });
+    await loading;
+    expect(store.household()?.name).toBe('Casa Pau y Josep');
+    expect(store.pendingToday()).toBe(0);
+
+    store.selectHousehold('h-playa');
+    await new Promise((r) => setTimeout(r));
+    http.expectOne('/api/households/h-playa/today').flush(null, { status: 500, statusText: 'Server Error' });
+    await new Promise((r) => setTimeout(r));
+    expect(store.me()?.name).toBe('Josep');
+    expect(store.pendingToday()).toBe(0);
+  });
+
   it('without a session stays empty', async () => {
     const loading = store.load();
     http.expectOne('/api/auth/me').flush({ title: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });

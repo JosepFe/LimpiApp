@@ -3,7 +3,7 @@
     <div class="brand"><i>✨</i> LimpiApp</div>
     @for (item of nav; track item.nav) {
       <a class="side-link" [attr.data-nav]="item.nav" [attr.data-testid]="'nav-' + item.nav" [routerLink]="item.link"
-         [class.active]="isActive(item)"><svg class="ic"><use [attr.href]="'icons.svg#' + item.icon" /></svg> {{ item.label }}
+         [class.active]="isActive(item)"><svg class="ic" aria-hidden="true"><use [attr.href]="'icons.svg#' + item.icon" /></svg> {{ item.label }}
         @if (item.nav === 'today' && session.pendingToday()) {<span class="dot">{{ session.pendingToday() }}</span>}</a>
     }
     <div class="side-foot">
@@ -11,7 +11,7 @@
         <button type="button" class="side-home" data-testid="side-home-switcher">
           <span class="avatar teal">{{ household.name.charAt(0) }}</span>
           <span style="flex:1;min-width:0"><span class="nm" style="display:block">{{ household.name }}</span><span class="sb">{{ household.memberCount }} miembros</span></span>
-          <svg class="ic sm"><use href="icons.svg#i-down" /></svg>
+          <svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-down" /></svg>
         </button>
       }
     </div>
@@ -24,7 +24,7 @@
   <nav class="bottom-nav" aria-label="Navegación principal">
     @for (item of nav; track item.nav) {
       <a class="bn-item" [attr.data-nav]="item.nav" [attr.data-testid]="'bnav-' + item.nav" [routerLink]="item.link"
-         [class.active]="isActive(item)"><svg class="ic"><use [attr.href]="'icons.svg#' + item.icon" /></svg>{{ item.label }}
+         [class.active]="isActive(item)"><svg class="ic" aria-hidden="true"><use [attr.href]="'icons.svg#' + item.icon" /></svg>{{ item.label }}
         @if (item.nav === 'today' && session.pendingToday()) {<span class="dot">{{ session.pendingToday() }}</span>}</a>
     }
   </nav>

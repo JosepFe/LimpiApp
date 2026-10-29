@@ -32,7 +32,8 @@ coverage:
 	dotnet reportgenerator -reports:"$(COVERAGE_DIR)/*.cobertura.xml" -targetdir:$(COVERAGE_DIR)/report \
 		-reporttypes:TextSummary -assemblyfilters:+LimpiApp.Api -filefilters:-*/Migrations/* -verbosity:Warning
 	@awk -v min=$(COVERAGE_MIN) '/Line coverage:/ { gsub("%", "", $$3); printf "Line coverage: %s%% (min %s%%)\n", $$3, min; \
-		if ($$3 + 0 < min) { print "FAIL: coverage below threshold"; exit 1 } }' $(COVERAGE_DIR)/report/Summary.txt
+		seen = 1; if ($$3 + 0 < min) { print "FAIL: coverage below threshold"; exit 1 } } \
+		END { if (!seen) { print "FAIL: no line coverage in the report"; exit 1 } }' $(COVERAGE_DIR)/report/Summary.txt
 
 run:
 	dotnet run --project src/LimpiApp.Api

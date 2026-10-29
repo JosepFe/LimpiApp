@@ -44,11 +44,12 @@ export class SessionStore {
   async load(): Promise<void> {
     try {
       this.me.set(await firstValueFrom(this.http.get<Me>('/api/auth/me')));
-      await this.loadCounters();
     } catch {
       // Not signed in or API down: the shell stays empty (the login guard arrives with E02/US-004).
       this.me.set(null);
+      return;
     }
+    await this.loadCounters();
   }
 
   selectHousehold(id: string): void {
@@ -61,11 +62,16 @@ export class SessionStore {
     void this.loadCounters();
   }
 
+  /** A failing counter only hides the badge: it never signs the user out of the shell. */
   private async loadCounters(): Promise<void> {
     const household = this.household();
     if (!household) return;
-    const today = await firstValueFrom(this.http.get<TodaySummary>(`/api/households/${household.id}/today`));
-    this.pendingToday.set(today.summary.pendingToday);
+    try {
+      const today = await firstValueFrom(this.http.get<TodaySummary>(`/api/households/${household.id}/today`));
+      this.pendingToday.set(today.summary.pendingToday);
+    } catch {
+      this.pendingToday.set(0);
+    }
   }
 }
 
