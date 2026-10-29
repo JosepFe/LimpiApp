@@ -1,3 +1,4 @@
+using LimpiApp.Api.Common.Email;
 using LimpiApp.Api.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -5,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Time.Testing;
 
 namespace LimpiApp.IntegrationTests.Infrastructure;
 
@@ -14,9 +14,11 @@ public class ApiFactory(PostgresFixture db) : WebApplicationFactory<Program>
 {
     public static readonly DateTimeOffset PrototypeNow = new(2026, 10, 14, 7, 0, 0, TimeSpan.Zero);
 
-    public FakeTimeProvider Time { get; } = new(PrototypeNow);
+    public TestClock Time { get; } = new(PrototypeNow);
 
     public PostgresFixture Db => db;
+
+    public RecordingEmailSender Emails { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -28,8 +30,18 @@ public class ApiFactory(PostgresFixture db) : WebApplicationFactory<Program>
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(Time);
             services.AddSingleton<IStartupFilter, ThrowingEndpointFilter>();
+            services.RemoveAll<IEmailSender>();
+            services.AddSingleton<IEmailSender>(Emails);
         });
     }
+
+    /// <summary>An HTTPS client (the session cookie is Secure) that keeps cookies and does not follow redirects.</summary>
+    public HttpClient CreateBrowser() => CreateClient(new WebApplicationFactoryClientOptions
+    {
+        BaseAddress = new Uri("https://localhost"),
+        AllowAutoRedirect = false,
+        HandleCookies = true,
+    });
 
     public AppDbContext CreateDbContext() => Services.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
 
@@ -59,6 +71,7 @@ public abstract class IntegrationTest(ApiFactory factory) : IClassFixture<ApiFac
         _ = factory.Server; // starts the host, which applies the migrations
         await factory.Db.ResetAsync();
         factory.Time.SetUtcNow(ApiFactory.PrototypeNow);
+        factory.Emails.Clear();
     }
 
     public ValueTask DisposeAsync()
@@ -66,4 +79,42 @@ public abstract class IntegrationTest(ApiFactory factory) : IClassFixture<ApiFac
         GC.SuppressFinalize(this);
         return ValueTask.CompletedTask;
     }
+}
+
+/// <summary>Keeps the emails instead of sending them: tests never talk to an SMTP server.</summary>
+public sealed class RecordingEmailSender : IEmailSender
+{
+    private readonly List<EmailMessage> _sent = [];
+
+    public IReadOnlyList<EmailMessage> Sent
+    {
+        get { lock (_sent) { return [.. _sent]; } }
+    }
+
+    public Task SendAsync(EmailMessage message, CancellationToken ct)
+    {
+        lock (_sent) { _sent.Add(message); }
+        return Task.CompletedTask;
+    }
+
+    public void Clear()
+    {
+        lock (_sent) { _sent.Clear(); }
+    }
+
+    /// <summary>The token of the last link sent to `to`.</summary>
+    public string LastToken(string to) =>
+        System.Text.RegularExpressions.Regex.Match(Sent.Last(m => m.To == to).TextBody, @"token=([A-Za-z0-9_-]+)").Groups[1].Value;
+}
+
+/// <summary>A clock tests can set and move, also backwards (the factory is shared by the tests of a class).</summary>
+public sealed class TestClock(DateTimeOffset now) : TimeProvider
+{
+    private DateTimeOffset _now = now;
+
+    public override DateTimeOffset GetUtcNow() => _now;
+
+    public void SetUtcNow(DateTimeOffset value) => _now = value;
+
+    public void Advance(TimeSpan by) => _now += by;
 }
