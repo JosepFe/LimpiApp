@@ -6,13 +6,14 @@ import { RefreshBus } from '../../core/refresh-bus';
 import { initial } from '../../shared/avatar';
 import { ErrorState, LoadState, SkeletonList } from '../../shared/states';
 import { byDay, dayHeader, HistoryItem, HistoryPage, time } from './activity.model';
+import { HistoryEntry } from './history-entry';
 
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** #screen-history: what was done, by day, filtered by person and room (E05/US-002). Filters live in the URL. */
 @Component({
   selector: 'la-history',
-  imports: [RouterLink, SkeletonList, ErrorState],
+  imports: [RouterLink, SkeletonList, ErrorState, HistoryEntry],
   templateUrl: './history.html',
 })
 export class History {
@@ -35,6 +36,7 @@ export class History {
     },
     { equal: (a, b) => a.mine === b.mine && a.room === b.room },
   );
+  protected readonly entry = computed(() => (this.query()?.get('sheet') === 'history-entry' ? this.query()?.get('entry') ?? null : null));
   protected readonly filtered = computed(() => this.filters().mine || !!this.filters().room);
   protected readonly days = computed(() => byDay(this.items()));
   protected readonly roomLabel = computed(() => {
@@ -91,6 +93,10 @@ export class History {
 
   protected open(item: HistoryItem): void {
     void this.router.navigate([], { queryParams: { sheet: 'history-entry', entry: item.id }, queryParamsHandling: 'merge' });
+  }
+
+  protected closeEntry(): void {
+    void this.router.navigate([], { queryParams: { sheet: null, entry: null }, queryParamsHandling: 'merge', replaceUrl: true });
   }
 
   private queryOf(f: { mine: boolean; room: string | null }, cursor?: string): string {

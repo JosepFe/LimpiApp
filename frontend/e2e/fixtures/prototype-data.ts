@@ -174,3 +174,12 @@ export const HISTORY = {
   nextCursor: 'c1',
   rooms: ROOMS.rooms.map(({ name, emoji }, i) => ({ id: roomGuid(i), name, emoji })),
 };
+
+/** #screen-history-entry: Josep's «Limpiar ducha/bañera» (mar 13 oct · 19:42), with photos and undone variants. */
+export const SHOWER_ENTRY = {
+  id: 'h3', at: '2026-10-13T17:42:00Z', by: JOSEP, taskId: 't-ducha', taskTitle: 'Limpiar ducha/bañera', roomName: 'Baño', roomEmoji: '🛁',
+  subtasksDone: 4, subtasksTotal: 5, minutes: 20, points: 8, note: 'Con desincrustante. Quedan restos en la junta de la esquina.',
+  photos: [] as { id: string; url: string }[], undone: false, mine: true,
+};
+export const SHOWER_ENTRY_PHOTOS = { ...SHOWER_ENTRY, photos: ['p1', 'p2', 'p3'].map((id) => ({ id, url: `/households/h-casa/photos/${id}` })) };
+export const SHOWER_ENTRY_UNDONE = { ...SHOWER_ENTRY, points: 0, undone: true };

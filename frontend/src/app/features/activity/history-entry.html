@@ -1,0 +1,30 @@
+<la-sheet screen="history-entry" title="Detalle de actividad" (closed)="closed.emit()">
+  @if (failed()) {
+    <div class="banner error" role="alert"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-x" /></svg><span>No hemos podido cargar los datos.</span></div>
+  }
+  @if (entry(); as e) {
+    <div style="display:flex;gap:12px;align-items:center"><span class="avatar lg" [class]="e.by.avatarColor" [title]="e.by.name" [attr.aria-label]="e.by.name">{{ initial(e.by.name) }}</span><div><div style="font-weight:600;font-size:17px">{{ e.by.name }}</div><div style="font-size:13px;color:var(--text-3)">{{ when(e) }}</div></div>
+      @if (e.undone) {<span class="badge neutral" style="margin-left:auto">Deshecha</span>} @else {<span class="badge success" style="margin-left:auto">+{{ e.points }} pts</span>}</div>
+    @if (e.undone) {
+      <div class="banner error" style="margin-top:var(--s3)"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-x" /></svg><span>Esta tarea se deshizo. No cuenta para puntos ni rachas.</span></div>
+    }
+    <div class="card card-pad" style="margin-top:var(--s4)">
+      <dl class="kv">
+        <dt>Tarea</dt><dd>{{ e.taskTitle }}</dd><dt>Habitación</dt><dd>{{ e.roomEmoji }} {{ e.roomName }}</dd>
+        @if (e.subtasksTotal) {<dt>Subtareas</dt><dd>{{ e.subtasksDone }} de {{ e.subtasksTotal }}</dd>}<dt>Tiempo</dt><dd>{{ e.minutes }} min</dd></dl></div>
+    @if (e.note) {
+      <div class="group-h">Nota</div>
+      <div class="card card-pad" style="color:var(--text-2)">{{ e.note }}</div>
+    }
+    <div class="group-h">Fotos</div>
+    @if (e.photos.length) {
+      <div class="photo-grid" data-testid="entry-photos">
+        @for (p of e.photos; track p.id) {<div class="photo-lg" role="img" aria-label="Foto" [style.background]="'center / cover no-repeat ' + photoUrl(p.url)"></div>}
+      </div>
+    } @else {
+      <div class="card card-pad" style="text-align:center;color:var(--text-3)">Sin fotos</div>
+    }
+    <p class="help" style="margin-top:var(--s4);font-size:12px;color:var(--text-3)">Solo quien la completó puede deshacerla durante los primeros 10 minutos.</p>
+  }
+  <div class="sheet-foot" sheet-foot><button type="button" class="btn btn-secondary" data-testid="entry-close" (click)="closed.emit()">Cerrar</button></div>
+</la-sheet>

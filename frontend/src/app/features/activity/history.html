@@ -56,3 +56,6 @@
     }
   </div>
 </section>
+@if (entry(); as id) {
+  <la-history-entry [entryId]="id" (closed)="closeEntry()" />
+}
