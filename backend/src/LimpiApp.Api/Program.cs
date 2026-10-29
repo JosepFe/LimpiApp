@@ -10,6 +10,7 @@ using LimpiApp.Api.Features.Products;
 using LimpiApp.Api.Features.Rooms;
 using LimpiApp.Api.Features.Tasks;
 using LimpiApp.Api.Features.Templates;
+using LimpiApp.Api.Features.Today;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
@@ -66,6 +67,7 @@ app.MapHouseholds();
 app.MapRooms();
 app.MapTasks();
 app.MapProducts();
+app.MapToday();
 
 await app.RunAsync();
 

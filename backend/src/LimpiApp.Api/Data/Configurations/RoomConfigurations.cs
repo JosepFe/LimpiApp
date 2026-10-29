@@ -55,3 +55,16 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         b.HasOne<Household>().WithMany().HasForeignKey(p => p.HouseholdId).OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+internal sealed class CompletionConfiguration : IEntityTypeConfiguration<Completion>
+{
+    public void Configure(EntityTypeBuilder<Completion> b)
+    {
+        b.Property(c => c.Note).HasMaxLength(1000);
+        b.HasIndex(c => new { c.HouseholdId, c.CompletedOn });
+        b.HasIndex(c => new { c.TaskId, c.CompletedAt });
+        b.HasOne<Household>().WithMany().HasForeignKey(c => c.HouseholdId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(c => c.Task).WithMany().HasForeignKey(c => c.TaskId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(c => c.User).WithMany().HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.Cascade);
+    }
+}

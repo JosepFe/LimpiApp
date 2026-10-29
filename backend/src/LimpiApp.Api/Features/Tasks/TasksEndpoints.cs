@@ -62,16 +62,22 @@ public static class TasksEndpoints
     private static async Task<IResult> ListAsync(Guid? room, HttpContext http, AppDbContext db, Clock clock, CancellationToken ct)
     {
         var household = HouseholdAccess.Current(http).Household;
-        var today = clock.Today(household.TimeZone);
+        return TypedResults.Ok(await Summaries(db, household, clock.Today(household.TimeZone), room, ct));
+    }
+
+    /// <summary>The household's active tasks (of active rooms), by due date then priority (high first) and title.</summary>
+    public static async Task<List<TaskSummary>> Summaries(AppDbContext db, Household household, DateOnly today, Guid? room, CancellationToken ct)
+    {
         var rows = await db.Tasks.AsNoTracking()
             .Where(t => t.HouseholdId == household.Id && t.ArchivedAt == null && t.Room.ArchivedAt == null && (room == null || t.RoomId == room))
-            .OrderBy(t => t.NextDue).ThenBy(t => t.Title)
             .Select(t => new { Task = t, RoomName = t.Room.Name, RoomEmoji = t.Room.Emoji, Zone = t.Zone, })
             .ToListAsync(ct);
+        // Ordered here: Priority is stored as text, so SQL would sort it alphabetically.
+        rows = [.. rows.OrderBy(r => r.Task.NextDue).ThenByDescending(r => r.Task.Priority).ThenBy(r => r.Task.Title, StringComparer.Ordinal)];
         var people = await People(db, household.Id, ct);
-        return TypedResults.Ok(rows.Select(r => new TaskSummary(
+        return rows.Select(r => new TaskSummary(
             r.Task.Id, r.Task.Title, r.Task.RoomId, r.RoomName, r.RoomEmoji, r.Zone is null ? null : new RefDto(r.Zone.Id, r.Zone.Name),
-            r.Task.EstimatedMinutes, r.Task.NextDue, Due(r.Task.NextDue, today), Person(people, r.Task.AssigneeId))).ToList());
+            r.Task.EstimatedMinutes, r.Task.NextDue, Due(r.Task.NextDue, today), Person(people, r.Task.AssigneeId))).ToList();
     }
 
     private static async Task<IResult> GetAsync(Guid id, HttpContext http, AppDbContext db, Clock clock, CancellationToken ct)

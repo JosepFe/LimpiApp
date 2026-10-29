@@ -106,6 +106,77 @@ namespace LimpiApp.Api.Data.Migrations
                     b.ToTable("tasks", (string)null);
                 });
 
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.Completion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateOnly>("CompletedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("completed_on");
+
+                    b.Property<Guid>("HouseholdId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("household_id");
+
+                    b.Property<int>("Minutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("minutes");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("note");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("integer")
+                        .HasColumnName("points");
+
+                    b.Property<DateOnly>("PrevNextDue")
+                        .HasColumnType("date")
+                        .HasColumnName("prev_next_due");
+
+                    b.Property<int>("SubtasksDone")
+                        .HasColumnType("integer")
+                        .HasColumnName("subtasks_done");
+
+                    b.Property<int>("SubtasksTotal")
+                        .HasColumnType("integer")
+                        .HasColumnName("subtasks_total");
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("task_id");
+
+                    b.Property<DateTimeOffset?>("UndoneAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("undone_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_completions");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_completions_user_id");
+
+                    b.HasIndex("HouseholdId", "CompletedOn")
+                        .HasDatabaseName("ix_completions_household_id_completed_on");
+
+                    b.HasIndex("TaskId", "CompletedAt")
+                        .HasDatabaseName("ix_completions_task_id_completed_at");
+
+                    b.ToTable("completions", (string)null);
+                });
+
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.Household", b =>
                 {
                     b.Property<Guid>("Id")
@@ -504,6 +575,34 @@ namespace LimpiApp.Api.Data.Migrations
                     b.Navigation("Room");
 
                     b.Navigation("Zone");
+                });
+
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.Completion", b =>
+                {
+                    b.HasOne("LimpiApp.Api.Data.Entities.Household", null)
+                        .WithMany()
+                        .HasForeignKey("HouseholdId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_completions_households_household_id");
+
+                    b.HasOne("LimpiApp.Api.Data.Entities.CleaningTask", "Task")
+                        .WithMany()
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_completions_tasks_task_id");
+
+                    b.HasOne("LimpiApp.Api.Data.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_completions_users_user_id");
+
+                    b.Navigation("Task");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.Membership", b =>
