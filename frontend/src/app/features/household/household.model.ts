@@ -10,3 +10,28 @@ export interface Member {
 }
 
 export const ROLE_LABEL: Record<Role, string> = { owner: 'Propietario', member: 'Miembro' };
+
+export type RankingPeriod = 'week' | 'month' | 'all';
+
+/** GET /households/{id}/ranking?period=… (E06/US-006): rows by points, then by name. */
+export interface Ranking {
+  period: RankingPeriod;
+  householdStreak: number;
+  hasPoints: boolean;
+  rows: RankingRow[];
+}
+
+export interface RankingRow {
+  id: string;
+  name: string;
+  avatarColor: string;
+  points: number;
+  tasks: number;
+  streak: number;
+}
+
+export const PERIODS: { id: RankingPeriod; label: string }[] = [
+  { id: 'week', label: 'Semana' },
+  { id: 'month', label: 'Mes' },
+  { id: 'all', label: 'Total' },
+];

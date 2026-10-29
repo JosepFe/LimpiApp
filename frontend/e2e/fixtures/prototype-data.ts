@@ -211,3 +211,15 @@ export const INVITE_PREVIEW = {
   roomCount: 6,
 };
 export const INVITE_NOTHING = { status: 'invalid', householdId: null, householdName: null, inviterName: null, members: null, memberCount: 0, roomCount: 0 };
+
+/** GET /households/h-casa/ranking?period=…: #screen-ranking (Semana, Mes, Total). */
+const rankingRows = (points: [number, number, number], tasks: [number, number, number]) => [
+  { ...JOSEP, points: points[0], tasks: tasks[0], streak: 5 },
+  { ...PAU, points: points[1], tasks: tasks[1], streak: 3 },
+  { ...MARTA, points: points[2], tasks: tasks[2], streak: 1 },
+];
+export const RANKING = {
+  week: { period: 'week', householdStreak: 5, hasPoints: true, rows: rankingRows([46, 38, 17], [9, 7, 4]) },
+  month: { period: 'month', householdStreak: 5, hasPoints: true, rows: rankingRows([182, 171, 96], [34, 31, 19]) },
+  all: { period: 'all', householdStreak: 5, hasPoints: true, rows: rankingRows([640, 604, 301], [118, 109, 62]) },
+};

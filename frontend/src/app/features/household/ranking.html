@@ -1,0 +1,41 @@
+<section class="screen active" data-screen="screen-ranking" data-testid="screen-ranking">
+  <header class="page-header"><h1 class="ph-title">Hogar</h1><div class="ph-actions"></div></header>
+  <div class="tabs" role="tablist" style="margin:0"><a class="tab active" role="tab" routerLink="/ranking" data-testid="tab-ranking" aria-selected="true">Ranking</a><a class="tab" role="tab" routerLink="/members" data-testid="tab-members" aria-selected="false">Miembros</a></div>
+  <div class="content">
+    @switch (state()) {
+      @case ('loading') {
+        <div data-testid="ranking-loading"><la-skeleton-list /></div>
+      }
+      @case ('error') {
+        <div data-testid="ranking-error"><la-error-state (retry)="load()" /></div>
+      }
+      @default {
+        @let d = data()!;
+        @if (!d.hasPoints) {
+          <div data-testid="ranking-empty"><div class="empty"><div class="big" aria-hidden="true">🏆</div><h3>Aún no hay puntos</h3><p>Completa tareas para aparecer en el ranking.</p></div></div>
+        } @else {
+          <div data-testid="ranking-content">
+            <div style="margin-top:var(--s4)" class="seg" role="tablist" aria-label="Periodo">
+              @for (p of periods; track p.id) {
+                <button type="button" [class.active]="period() === p.id" [attr.aria-pressed]="period() === p.id" [attr.data-testid]="'period-' + p.id" (click)="choose(p.id)">{{ p.label }}</button>
+              }
+            </div>
+            <div style="margin-top:var(--s4)"><span class="badge today" style="height:28px;padding:0 12px;font-size:13px" data-testid="home-streak">{{ streak(d.householdStreak) }}</span></div>
+            <div>
+              <div class="podium">
+                @for (p of podium(); track p.row.id) {
+                  <div class="pod" [class]="'p' + p.place"><span class="avatar lg" [class]="p.row.avatarColor" [title]="p.row.name" [attr.aria-label]="p.row.name">{{ initial(p.row.name) }}</span><span class="nm">{{ p.row.name }}</span><span class="pt">{{ p.row.points }} pts</span><div class="blk">{{ p.place }}</div></div>
+                }
+              </div>
+              <div class="list">
+                @for (r of d.rows; track r.id; let i = $index) {
+                  <div class="row" [class.sel]="isMe(r)" data-testid="ranking-row" style="cursor:default"><b style="width:24px;text-align:center;color:var(--text-2)">{{ i + 1 }}</b><span class="avatar" [class]="r.avatarColor" [title]="r.name" [attr.aria-label]="r.name">{{ initial(r.name) }}</span><span class="body"><span class="t" style="display:block"><b>{{ r.name }}</b>{{ isMe(r) ? ' ' : '' }}@if (isMe(r)) {<span class="badge owner">tú</span>}</span><span class="s">{{ tasks(r.tasks) }}{{ r.streak ? ' · ' : '' }}@if (r.streak) {<span class="badge today">🔥 {{ r.streak }}</span>}</span></span><span class="end"><b style="font-size:17px">{{ r.points }}</b><span class="s">pts</span></span></div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      }
+    }
+  </div>
+</section>
