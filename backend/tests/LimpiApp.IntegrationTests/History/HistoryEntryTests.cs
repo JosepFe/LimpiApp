@@ -38,6 +38,7 @@ public class HistoryEntryTests(ApiFactory factory) : IntegrationTest(factory)
         var home = await ApiFactory.CreateHouseholdAsync(stranger, "Otra");
 
         Assert.Equal(HttpStatusCode.NotFound, (await stranger.GetAsync($"/households/{hid}/history/{completion}", Ct)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await stranger.GetAsync($"/households/{hid}/history", Ct)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await stranger.GetAsync($"/households/{home}/history/{completion}", Ct)).StatusCode);
         var list = await stranger.GetFromJsonAsync<JsonElement>($"/households/{home}/history", Ct);
         Assert.Equal(0, list.GetProperty("items").GetArrayLength());

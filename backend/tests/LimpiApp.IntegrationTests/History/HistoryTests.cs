@@ -10,7 +10,7 @@ namespace LimpiApp.IntegrationTests.History;
 public class HistoryTests(ApiFactory factory) : IntegrationTest(factory)
 {
     /// <summary>Josep's household (TodayTestData: 5 completions by him, days -1…-5) plus Marta and older or extra ones.</summary>
-    private async Task<(HttpClient Josep, Guid Hid, Guid BathroomId)> DataAsync(int extra = 0)
+    private async Task<(HttpClient Josep, Guid Hid, Guid BathroomId)> DataAsync(int extra = 0, bool sameTime = false)
     {
         var (josep, hid, _, bathroom) = await TodayTestData.CreateAsync(Factory);
         await using var db = Factory.CreateDbContext();
@@ -32,7 +32,13 @@ public class HistoryTests(ApiFactory factory) : IntegrationTest(factory)
         db.Completions.AddRange(Done(0, -1, "Con lejía"), Done(29, 0), Done(30, 0)); // today; the 30th day back; out of the window
         for (var i = 0; i < extra; i++)
         {
-            db.Completions.Add(Done(2, -(i + 1)));
+            var done = Done(2, -(i + 1));
+            if (sameTime)
+            {
+                done.CompletedAt = ApiFactory.PrototypeNow.AddDays(-2); // all at the same instant: the order falls to the id
+            }
+
+            db.Completions.Add(done);
         }
 
         await db.SaveChangesAsync(Ct);
@@ -76,6 +82,26 @@ public class HistoryTests(ApiFactory factory) : IntegrationTest(factory)
         Assert.Equal(27, ids.Distinct().Count());
         var garbage = await josep.GetFromJsonAsync<JsonElement>($"/households/{hid}/history?cursor=not-a-cursor", Ct);
         Assert.Equal(20, Items(garbage).Count); // an unreadable cursor starts from the top
+    }
+
+    [Fact]
+    public async Task History_Pages_WhenManyEntriesShareTheSameTime_WithoutRepeatsOrGaps()
+    {
+        var (josep, hid, _) = await DataAsync(extra: 25, sameTime: true);
+
+        var ids = new List<Guid>();
+        string? cursor = null;
+        do
+        {
+            var page = await josep.GetFromJsonAsync<JsonElement>($"/households/{hid}/history{(cursor is null ? "" : $"?cursor={cursor}")}", Ct);
+            ids.AddRange(Items(page).Select(i => i.GetProperty("id").GetGuid()));
+            cursor = page.GetProperty("nextCursor").GetString();
+        }
+        while (cursor is not null);
+
+        await using var db = Factory.CreateDbContext();
+        Assert.Equal(await db.Completions.CountAsync(c => c.CompletedOn >= TodayTestData.Today.AddDays(-29), Ct), ids.Count);
+        Assert.Equal(ids.Count, ids.Distinct().Count());
     }
 
     [Fact]

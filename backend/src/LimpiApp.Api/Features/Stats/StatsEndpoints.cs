@@ -43,9 +43,7 @@ public static class StatsEndpoints
         var last30 = done.Where(c => c.CompletedOn >= since).ToList();
 
         var rooms = await RoomsEndpoints.Summaries(db, household, today, null, ct);
-        var weeks = Enumerable.Range(0, Weeks).Select(i => firstWeek.AddDays(7 * i))
-            .Select(monday => new WeekCount(ISOWeek.GetWeekOfYear(monday.ToDateTime(TimeOnly.MinValue)), done.Count(c => MondayOf(c.CompletedOn) == monday)))
-            .ToList();
+        var weeks = WeekMondays(today).Select(w => new WeekCount(w.Week, done.Count(c => MondayOf(c.CompletedOn) == w.Monday))).ToList();
         var thisWeek = done.Where(c => c.CompletedOn >= weekStart)
             .GroupBy(c => new TasksEndpoints.PersonDto(c.UserId, c.Name, c.AvatarColor))
             .Select(g => (Person: g.Key, Points: g.Sum(c => c.Points)))
@@ -60,6 +58,13 @@ public static class StatsEndpoints
             [.. rooms.Select(r => new RoomHealth(r.Name, r.Emoji, r.Health))],
             weeks,
             [.. thisWeek.Select((p, i) => new Share(p.Person, p.Points, percents[i]))]));
+    }
+
+    /// <summary>The Mondays of the last 12 ISO weeks (this one last) with their ISO week number (…52/53, 1 across New Year).</summary>
+    public static IReadOnlyList<(DateOnly Monday, int Week)> WeekMondays(DateOnly today)
+    {
+        var first = MondayOf(today).AddDays(-7 * (Weeks - 1));
+        return [.. Enumerable.Range(0, Weeks).Select(i => first.AddDays(7 * i)).Select(m => (m, ISOWeek.GetWeekOfYear(m.ToDateTime(TimeOnly.MinValue))))];
     }
 
     public static DateOnly MondayOf(DateOnly day) => day.AddDays(-(((int)day.DayOfWeek + 6) % 7));

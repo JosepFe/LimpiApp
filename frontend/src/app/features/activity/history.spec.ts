@@ -40,6 +40,26 @@ describe('History', () => {
     expect(el.querySelector('[data-testid="history-load-more"]')).toBeNull();
   });
 
+  it('a page of «Cargar más» that arrives after a reload is dropped; a failure is said in a toast', async () => {
+    let release!: (v: unknown) => void;
+    api.get.mockResolvedValueOnce(page([item('a', '2026-10-14')], 'c1'))
+      .mockReturnValueOnce(new Promise((r) => (release = r)))
+      .mockResolvedValueOnce(page([item('z', '2026-10-14')], 'c2'))
+      .mockRejectedValueOnce(new Error('x'));
+    const { fixture, el } = await render();
+    el.querySelector<HTMLButtonElement>('[data-testid="history-load-more"]')!.click();
+    await (fixture.componentInstance as unknown as { load: () => Promise<void> }).load(); // e.g. an undo refreshed the list
+    release(page([item('old', '2026-10-01')]));
+    await new Promise((r) => setTimeout(r));
+    fixture.detectChanges();
+    expect([...el.querySelectorAll('[data-testid="history-row"]')].map((r) => r.textContent?.includes('Fregar'))).toHaveLength(1);
+
+    el.querySelector<HTMLButtonElement>('[data-testid="history-load-more"]')!.click();
+    await new Promise((r) => setTimeout(r));
+    const { ToastService } = await import('../../core/toast');
+    expect(TestBed.inject(ToastService).current()?.text).toBe('No hemos podido cargar más actividad.');
+  });
+
   it('filters, clears and opens an entry through the URL; a failed load shows the error', async () => {
     api.get.mockResolvedValue(page([item('a', '2026-10-14')]));
     const { fixture, el, router } = await render();

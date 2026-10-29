@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HouseholdApi } from '../../core/household-api';
 import { RefreshBus } from '../../core/refresh-bus';
+import { ToastService } from '../../core/toast';
 import { initial } from '../../shared/avatar';
 import { ErrorState, LoadState, SkeletonList } from '../../shared/states';
 import { byDay, dayHeader, HistoryItem, HistoryPage, time } from './activity.model';
@@ -20,6 +21,7 @@ export class History {
   private readonly api = inject(HouseholdApi);
   private readonly router = inject(Router);
   private readonly refresh = inject(RefreshBus);
+  private readonly toast = inject(ToastService);
   protected readonly initial = initial;
   protected readonly time = time;
   protected readonly state = signal<LoadState>('loading');
@@ -73,11 +75,15 @@ export class History {
   protected async more(): Promise<void> {
     const cursor = this.page()?.nextCursor;
     if (!cursor) return;
+    const load = this.loads; // a filter change or a reload meanwhile makes this page stale
     this.loadingMore.set(true);
     try {
       const page = await this.api.get<HistoryPage>(`/history${this.queryOf(this.filters(), cursor)}`);
+      if (load !== this.loads) return;
       this.page.set(page);
-      this.items.update((list) => [...list, ...page.items]);
+      this.items.update((list) => [...list, ...page.items.filter((i) => !list.some((x) => x.id === i.id))]);
+    } catch {
+      if (load === this.loads) this.toast.show('No hemos podido cargar más actividad.');
     } finally {
       this.loadingMore.set(false);
     }
