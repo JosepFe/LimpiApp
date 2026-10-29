@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { BROWSER_LOCATION } from '../../core/browser';
 
 /** #screen-login: Google or an emailed link, no passwords (E02/US-002, US-003). */
 @Component({
@@ -9,6 +10,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class Login {
   private readonly http = inject(HttpClient);
+  private readonly location = inject(BROWSER_LOCATION);
 
   /** `?error=link|google`: the API sends the browser back here when signing in failed. */
   readonly error = input<string>();
@@ -35,6 +37,13 @@ export class Login {
     } finally {
       this.busy.set(false);
     }
+  }
+
+  /** «Continuar con Google»: the API takes the browser to Google and back (E02/US-003). */
+  protected continueWithGoogle(): void {
+    this.busy.set(true);
+    const back = this.return();
+    this.location.assign(`/api/auth/google${back ? `?return=${encodeURIComponent(back)}` : ''}`);
   }
 
   protected useAnotherEmail(): void {

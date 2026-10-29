@@ -21,7 +21,7 @@
         @if (busy()) {
           <button type="button" class="btn btn-google btn-block disabled" disabled data-testid="login-google-loading"><span class="spinner"></span> Conectando…</button>
         } @else {
-          <button type="button" class="btn btn-google btn-block" data-testid="login-google">
+          <button type="button" class="btn btn-google btn-block" data-testid="login-google" (click)="continueWithGoogle()">
             <span style="font-weight:700;font-size:17px;color:var(--google-blue);width:22px;text-align:center" aria-hidden="true">G</span>
             Continuar con Google</button>
         }

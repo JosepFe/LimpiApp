@@ -32,6 +32,7 @@ public class ApiFactory(PostgresFixture db) : WebApplicationFactory<Program>
             services.AddSingleton<IStartupFilter, ThrowingEndpointFilter>();
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(Emails);
+            FakeGoogleExternalHandler.Use(services);
         });
     }
 

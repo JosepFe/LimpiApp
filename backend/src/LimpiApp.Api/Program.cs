@@ -4,6 +4,7 @@ using LimpiApp.Api.Data;
 using LimpiApp.Api.Features.Auth;
 using LimpiApp.Api.Features.Health;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,7 +22,17 @@ builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<SessionService>();
 
 builder.Services.AddAuthentication(SessionCookie.Scheme)
-    .AddScheme<AuthenticationSchemeOptions, SessionAuthenticationHandler>(SessionCookie.Scheme, null);
+    .AddScheme<AuthenticationSchemeOptions, SessionAuthenticationHandler>(SessionCookie.Scheme, null)
+    .AddGoogleSignIn(builder.Configuration);
+
+// nginx strips /api and terminates TLS (in production, behind Traefik): rebuild the public URL from its headers so
+// that Google's redirect_uri is https://<host>/api/auth/google/callback. The API port is only reachable from nginx.
+builder.Services.Configure<ForwardedHeadersOptions>(o =>
+{
+    o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedPrefix;
+    o.KnownIPNetworks.Clear();
+    o.KnownProxies.Clear();
+});
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
@@ -31,6 +42,7 @@ using (var scope = app.Services.CreateScope())
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
 }
 
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseAuthentication();
@@ -38,6 +50,7 @@ app.UseAuthorization();
 
 app.MapHealth();
 app.MapMagicLink();
+app.MapGoogleSignIn();
 
 await app.RunAsync();
 
