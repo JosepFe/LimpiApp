@@ -1,0 +1,40 @@
+<section class="screen active" data-screen="screen-rooms" data-testid="screen-rooms">
+  <header class="page-header"><h1 class="ph-title">Habitaciones</h1><div class="ph-actions"><button type="button" class="btn btn-primary btn-sm hide-mobile" data-testid="new-room-desktop" (click)="newRoom()"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-plus" /></svg> Nueva habitación</button><button type="button" class="icon-btn hide-desktop" aria-label="Nueva habitación" data-testid="new-room" (click)="newRoom()"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-plus" /></svg></button></div></header>
+  <div class="twopane" [class.has-detail]="hasDetail()">
+    <div class="pane-list">
+      <div class="content">
+        @switch (state()) {
+          @case ('loading') {
+            <div data-testid="rooms-loading"><la-skeleton-list [rows]="6" /></div>
+          }
+          @case ('error') {
+            <div data-testid="rooms-error"><la-error-state (retry)="load()" /></div>
+          }
+          @default {
+            @let d = data()!;
+            @if (d.rooms.length) {
+              <div data-testid="rooms-list">
+                <div class="hero" data-testid="rooms-summary"><la-health-ring [health]="d.summary.health" size="lg" /><div class="meta"><div class="big">Hogar: {{ d.summary.health?.label ?? 'Sin tareas' }}</div><div class="sub">{{ plural(d.summary.roomCount, 'habitación', 'habitaciones') }} · {{ plural(d.summary.overdueCount, 'tarea atrasada', 'tareas atrasadas') }}</div></div></div>
+                <div class="group-h">Todas las habitaciones <span class="count">{{ d.rooms.length }}</span></div>
+                <div class="rooms-grid">
+                  @for (room of d.rooms; track room.id) {
+                    <div class="row room-card" role="button" tabindex="0" data-testid="room-card" style="min-height:84px" (click)="open(room.id)" (keydown.enter)="open(room.id)">
+                      <span class="emo" style="font-size:28px;width:44px" aria-hidden="true">{{ room.emoji }}</span>
+                      <span class="body"><span class="t" style="display:block;font-size:16px;font-weight:600">{{ room.name }}</span>
+                        <span class="s">@if (room.overdueCount) {<span class="badge overdue">{{ plural(room.overdueCount, 'atrasada', 'atrasadas') }}</span>} @else {<span class="badge success">Al día</span>}</span>
+                        @if (room.next; as next) {<span class="s" style="margin-top:2px">{{ next.when }}: {{ next.title }}</span>}</span>
+                      <span class="end" style="align-items:center"><la-health-ring [health]="room.health" />@if (room.health; as h) {<span class="hl" [class]="'h-' + h.level">{{ h.label }}</span>}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            } @else {
+              <div data-testid="rooms-empty"><div class="empty"><div class="big" aria-hidden="true">🏠</div><h3>Aún no hay habitaciones</h3><p>Crea tu primera habitación o empieza con una plantilla.</p><button type="button" class="btn btn-primary" (click)="newRoom()">Crear habitación</button></div></div>
+            }
+          }
+        }
+      </div>
+    </div>
+    <aside class="pane-detail" aria-label="Detalle">@if (!hasDetail()) {<div class="pane-empty"><div style="font-size:40px">🏠</div><p>Selecciona una habitación para ver sus tareas</p></div>}<router-outlet /></aside>
+  </div>
+</section>

@@ -25,7 +25,12 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'today' },
       placeholder('today', 'today', 'Hoy'),
-      placeholder('rooms', 'rooms', 'Habitaciones'),
+      {
+        path: 'rooms',
+        loadComponent: () => import('./features/rooms/rooms').then((m) => m.Rooms),
+        // Replaced by the room detail in E03/US-007.
+        children: [{ path: ':id', component: Placeholder, data: { screen: 'room-detail', title: 'Habitación' } }],
+      },
       placeholder('history', 'history', 'Actividad'),
       placeholder('stats', 'stats', 'Actividad'),
       placeholder('ranking', 'ranking', 'Hogar'),

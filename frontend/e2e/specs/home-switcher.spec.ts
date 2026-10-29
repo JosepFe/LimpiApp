@@ -1,10 +1,10 @@
 // E02/US-008 · criteria 1, 2 and 4: open «Mis hogares» from the sidebar, change household (remembered) and create one.
 import type { Route } from '@playwright/test';
-import { ME, TODAY_SUMMARY } from '../fixtures/prototype-data';
+import { ME, ROOMS, TODAY_SUMMARY } from '../fixtures/prototype-data';
 import { expect, mockShell, test } from '../fixtures/test';
 
 test('the sidebar opens «Mis hogares»; choosing another household opens its Hoy and is remembered', async ({ page, api }) => {
-  mockShell(api).on('GET', '/households/h-playa/today', { summary: { pendingToday: 2 } });
+  mockShell(api).on('GET', '/households/h-playa/today', { summary: { pendingToday: 2 } }).on('GET', '/households/h-casa/rooms', ROOMS);
   await page.goto('/rooms');
   await page.getByTestId('side-home-switcher').click();
   await expect(page).toHaveURL(/\/rooms\?sheet=homes$/);

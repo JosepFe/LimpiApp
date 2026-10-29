@@ -43,3 +43,20 @@ export const PRODUCTS = [
   { id: 'p-limpiacristales', name: 'Limpiacristales', emoji: '🪟', taskCount: 2 },
   { id: 'p-aspiradora', name: 'Aspiradora', emoji: '🌀', taskCount: 4 },
 ];
+
+const health = (value: number, label: string, level: string) => ({ value, label, level });
+const room = (id: string, name: string, emoji: string, color: string, h: ReturnType<typeof health>, overdueCount: number, activeTaskCount: number, next: [string, string]) =>
+  ({ id, name, emoji, color, zones: [] as { id: string; name: string }[], health: h, overdueCount, activeTaskCount, next: { id: `t-${id}`, when: next[0], title: next[1] } });
+
+/** GET /households/h-casa/rooms: #screen-rooms («78 · Hogar: Bien · 6 habitaciones · 6 tareas atrasadas»). */
+export const ROOMS = {
+  summary: { health: health(78, 'Bien', 'good'), roomCount: 6, overdueCount: 6 },
+  rooms: [
+    { ...room('r-cocina', 'Cocina', '🍳', 'orange', health(62, 'Atención', 'warn'), 2, 4, ['Hoy', 'Fregar suelo']), zones: [{ id: 'z-nevera', name: 'Nevera' }, { id: 'z-horno', name: 'Horno' }] },
+    room('r-bano', 'Baño', '🛁', 'blue', health(88, 'Bien', 'good'), 1, 6, ['Hoy', 'Limpiar WC']),
+    room('r-dormitorio', 'Dormitorio', '🛏️', 'violet', health(95, 'Impecable', 'ok'), 0, 5, ['Hoy', 'Cambiar sábanas']),
+    room('r-salon', 'Salón', '🛋️', 'green', health(71, 'Bien', 'good'), 0, 4, ['En 3 d', 'Aspirar sofá y suelo']),
+    room('r-recibidor', 'Recibidor', '🚪', 'slate', health(100, 'Impecable', 'ok'), 0, 2, ['En 5 d', 'Barrer y fregar entrada']),
+    room('r-terraza', 'Terraza', '🌿', 'rose', health(34, 'Urgente', 'bad'), 3, 3, ['En 6 d', 'Barrer']),
+  ],
+};

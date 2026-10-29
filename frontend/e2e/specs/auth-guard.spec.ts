@@ -1,6 +1,6 @@
 // E02/US-004 · criterion 2: without a session a private screen goes to the login, which keeps where to come back.
 import type { Route } from '@playwright/test';
-import { ME } from '../fixtures/prototype-data';
+import { ME, ROOMS } from '../fixtures/prototype-data';
 import { expect, mockShell, test } from '../fixtures/test';
 
 test('without a session /rooms goes to /login?return=/rooms and the link brings the user back there', async ({ page, api }) => {
@@ -15,7 +15,7 @@ test('without a session /rooms goes to /login?return=/rooms and the link brings 
   // The API redirects the redeemed link to this return url (MagicLinkTests); then the guard lets the user in.
   expect(api.calls.find((c) => c.path === '/auth/magic-link')?.body).toEqual({ email: 'josep@example.com', returnUrl: '/rooms' });
 
-  mockShell(api);
+  mockShell(api).on('GET', '/households/h-casa/rooms', ROOMS);
   await page.goto('/rooms');
   await expect(page).toHaveURL(/\/rooms$/);
   await expect(page.getByTestId('nav-rooms')).toHaveClass(/active/);
