@@ -1,0 +1,9 @@
+/* Tests that run in Node (vitest.node.config.mts): scripts, tokens and build checks. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "vitest/globals"],
+    "noEmit": true
+  },
+  "include": ["scripts/**/*.ts", "scripts/**/*.d.mts", "src/styles/**/*.spec.ts"]
+}
