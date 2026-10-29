@@ -31,7 +31,7 @@ export const routes: Routes = [
       placeholder('ranking', 'ranking', 'Hogar'),
       placeholder('members', 'members', 'Hogar'),
       placeholder('settings', 'settings', 'Ajustes'),
-      placeholder('products', 'products', 'Productos'),
+      { path: 'products', loadComponent: () => import('./features/products/products').then((m) => m.Products) },
       {
         path: 'ui-kit',
         canMatch: [() => isDevMode()],

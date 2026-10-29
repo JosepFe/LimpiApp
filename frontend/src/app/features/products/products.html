@@ -1,0 +1,30 @@
+<section class="screen active" data-screen="screen-products" data-testid="screen-products">
+  <header class="page-header"><a class="icon-btn" routerLink="/settings" aria-label="Volver" data-testid="back"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-back" /></svg></a><h1 class="ph-title">Productos</h1><div class="ph-actions"></div></header>
+  <div class="content">
+    @switch (state()) {
+      @case ('loading') {
+        <div data-testid="products-loading"><la-skeleton-list [rows]="5" /></div>
+      }
+      @case ('error') {
+        <div data-testid="products-error"><la-error-state (retry)="load()" /></div>
+      }
+      @default {
+        @if (products().length || adding()) {
+          <div data-testid="products-list">
+            <form style="display:flex;gap:var(--s2);margin:var(--s4) 0" (submit)="$event.preventDefault(); add()">
+              <input class="input" placeholder="Nuevo producto (ej. Vinagre)" aria-label="Nuevo producto" data-testid="product-new-name" maxlength="60"
+                     [value]="newName()" (input)="newName.set($any($event.target).value)">
+              <button type="submit" class="btn btn-primary" data-testid="product-add" style="flex:none"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-plus" /></svg> Añadir</button></form>
+            <div class="list">
+              @for (p of products(); track p.id) {
+                <div class="row" data-testid="product-row"><span class="emo" aria-hidden="true">{{ p.emoji }}</span><span class="body"><span class="t">{{ p.name }}</span><span class="s">{{ tasks(p.taskCount) }}</span></span><button type="button" class="icon-btn" [attr.aria-label]="'Archivar ' + p.name" data-testid="product-archive" (click)="archive(p)"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-archive" /></svg></button></div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div data-testid="products-empty"><div class="empty"><div class="big" aria-hidden="true">🧴</div><h3>Aún no hay productos</h3><p>Añade lo que usas para limpiar y asócialo a tus tareas.</p><button type="button" class="btn btn-primary" (click)="adding.set(true)">Añadir producto</button></div></div>
+        }
+      }
+    }
+  </div>
+</section>

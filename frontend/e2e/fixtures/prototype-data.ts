@@ -33,3 +33,13 @@ export const TEMPLATES = [
   { id: 'office', name: 'Despacho', emoji: '💻', color: 'amber', taskCount: 3 },
   { id: 'terrace', name: 'Terraza', emoji: '🌿', color: 'rose', taskCount: 3 },
 ];
+
+/** #screen-products: in the order of the prototype, with the tasks that use each. */
+export const PRODUCTS = [
+  { id: 'p-desincrustante', name: 'Desincrustante', emoji: '🧴', taskCount: 3 },
+  { id: 'p-fregona', name: 'Fregona', emoji: '🪣', taskCount: 4 },
+  { id: 'p-bayetas', name: 'Bayetas microfibra', emoji: '🧽', taskCount: 5 },
+  { id: 'p-lejia', name: 'Lejía', emoji: '🧪', taskCount: 3 },
+  { id: 'p-limpiacristales', name: 'Limpiacristales', emoji: '🪟', taskCount: 2 },
+  { id: 'p-aspiradora', name: 'Aspiradora', emoji: '🌀', taskCount: 4 },
+];

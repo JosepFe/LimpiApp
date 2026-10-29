@@ -31,6 +31,12 @@ describe('routes', () => {
     expect(await (login.loadComponent as () => Promise<unknown>)()).toBeTruthy();
   });
 
+  it('every lazy screen of the shell loads', async () => {
+    for (const route of children.filter((r) => r.loadComponent && r.path !== 'ui-kit')) {
+      expect(await (route.loadComponent as () => Promise<unknown>)(), route.path).toBeTruthy();
+    }
+  });
+
   it('serves the UI kit only in development and loads it lazily', async () => {
     const kit = children.find((r) => r.path === 'ui-kit')!;
     const canMatch = kit.canMatch![0] as () => boolean;
