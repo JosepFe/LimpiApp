@@ -223,3 +223,14 @@ export const RANKING = {
   month: { period: 'month', householdStreak: 5, hasPoints: true, rows: rankingRows([182, 171, 96], [34, 31, 19]) },
   all: { period: 'all', householdStreak: 5, hasPoints: true, rows: rankingRows([640, 604, 301], [118, 109, 62]) },
 };
+
+/** GET /households/h-casa/invites/current: #screen-invite (expires in 7 days, 1 of 5 uses). */
+export const INVITE = {
+  id: 'i-casa',
+  code: INVITE_CODE,
+  url: `https://limpiapp.example.com/join/${INVITE_CODE}`,
+  expiresAt: '2026-10-21T07:00:00Z',
+  uses: 1,
+  maxUses: 5,
+  expired: false,
+};

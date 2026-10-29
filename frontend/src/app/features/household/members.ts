@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BROWSER_CONFIRM } from '../../core/browser';
 import { HouseholdApi } from '../../core/household-api';
 import { SessionStore } from '../../core/session.store';
@@ -9,11 +10,12 @@ import { initial } from '../../shared/avatar';
 import { dayMonthYear } from '../../shared/dates';
 import { ErrorState, LoadState, SkeletonList } from '../../shared/states';
 import { Member, ROLE_LABEL } from './household.model';
+import { Invite } from './invite';
 
 /** #screen-members: who is in the household, invite (owners), leave or remove someone (E06/US-002). */
 @Component({
   selector: 'la-members',
-  imports: [RouterLink, SkeletonList, ErrorState],
+  imports: [RouterLink, SkeletonList, ErrorState, Invite],
   templateUrl: './members.html',
 })
 export class Members implements OnInit {
@@ -28,6 +30,9 @@ export class Members implements OnInit {
   protected readonly initial = initial;
   protected readonly roleLabel = ROLE_LABEL;
   protected readonly since = (m: Member) => `Desde ${dayMonthYear(m.joinedOn)}`;
+  /** «Invitar» opens #screen-invite over Miembros with `?sheet=invite` (owners only). */
+  private readonly query = toSignal(inject(ActivatedRoute).queryParamMap);
+  protected readonly inviting = computed(() => this.query()?.get('sheet') === 'invite' && this.isOwner());
 
   ngOnInit(): void {
     void this.load();
@@ -41,6 +46,10 @@ export class Members implements OnInit {
     } catch {
       this.state.set('error');
     }
+  }
+
+  protected closeInvite(): void {
+    void this.router.navigate([], { queryParams: { sheet: null }, queryParamsHandling: 'merge', replaceUrl: true });
   }
 
   protected isMe(member: Member): boolean {

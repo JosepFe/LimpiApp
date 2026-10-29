@@ -17,3 +17,17 @@ export const BROWSER_CONFIRM = new InjectionToken<(message: string) => boolean>(
   providedIn: 'root',
   factory: () => (message: string) => window.confirm(message),
 });
+
+/** Clipboard and the share sheet (`navigator.share` exists on phones only), as a token so tests can replace them. */
+export interface BrowserShare {
+  copy(text: string): Promise<void>;
+  share: ((data: ShareData) => Promise<void>) | null;
+}
+
+export const BROWSER_SHARE = new InjectionToken<BrowserShare>('BROWSER_SHARE', {
+  providedIn: 'root',
+  factory: () => ({
+    copy: (text: string) => navigator.clipboard.writeText(text),
+    share: typeof navigator.share === 'function' ? (data: ShareData) => navigator.share(data) : null,
+  }),
+});

@@ -1,0 +1,35 @@
+<la-sheet screen="invite" title="Invitar al hogar" (closed)="closed.emit()">
+  @if (state() === 'error') {
+    <div class="banner error" role="alert"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-x" /></svg><span>No hemos podido crear el enlace.</span></div>
+  }
+  @if (state() === 'expired') {
+    <div class="banner error" data-testid="invite-expired"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-clock" /></svg><span>Este enlace ha caducado. Genera uno nuevo.</span></div>
+  }
+  <p style="color:var(--text-2);margin-bottom:var(--s3)">Cualquiera con este enlace podrá unirse a <b>{{ session.household()?.name }}</b>.</p>
+  @if (state() === 'loading') {
+    <div class="skel" style="height:44px"></div>
+  }
+  @if (state() !== 'loading' && state() !== 'error') {
+    @let i = invite()!;
+    <div class="copy-field"><span class="v mono" data-testid="invite-link">{{ display(i) }}</span>
+      @if (state() === 'expired') {
+        <button type="button" class="btn btn-primary btn-sm" data-testid="invite-new" [disabled]="busy()" (click)="create()"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-link" /></svg> Generar enlace nuevo</button>
+      } @else {
+        <button type="button" class="btn btn-secondary btn-sm" data-testid="invite-copy" (click)="copy()">
+          @if (state() === 'copied') {
+            <svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-check" /></svg> Copiado
+          } @else {
+            <svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-copy" /></svg> Copiar enlace
+          }
+        </button>
+      }
+    </div>
+    <dl class="kv" style="margin-top:var(--s4)"><dt>Caducidad</dt><dd>@if (state() === 'expired') {<span class="danger-t">Caducado</span>} @else {<span>{{ expiry(i) }}</span>}</dd><dt>Usos</dt><dd>{{ i.uses }} de {{ i.maxUses }}</dd></dl>
+    <button type="button" class="btn btn-secondary btn-block" style="margin-top:var(--s4)" data-testid="invite-share" (click)="share()"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-share" /></svg> Compartir</button>
+  }
+  @if (state() === 'error') {
+    <button type="button" class="btn btn-secondary btn-block" style="margin-top:var(--s4)" data-testid="retry" (click)="load()">Reintentar</button>
+  }
+  <div class="sheet-foot" sheet-foot><button type="button" class="btn btn-danger" data-testid="invite-revoke" [disabled]="!invite()" (click)="revoke()">Revocar enlace</button>
+    <button type="button" class="btn btn-primary" data-testid="invite-done" (click)="closed.emit()">Listo</button></div>
+</la-sheet>

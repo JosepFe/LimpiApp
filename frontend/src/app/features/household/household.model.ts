@@ -35,3 +35,14 @@ export const PERIODS: { id: RankingPeriod; label: string }[] = [
   { id: 'month', label: 'Mes' },
   { id: 'all', label: 'Total' },
 ];
+
+/** GET /households/{id}/invites/current and POST …/invites (E06/US-003). `expired` also means revoked or used up. */
+export interface Invite {
+  id: string;
+  code: string;
+  url: string;
+  expiresAt: string;
+  uses: number;
+  maxUses: number;
+  expired: boolean;
+}

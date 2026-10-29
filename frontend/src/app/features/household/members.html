@@ -32,3 +32,7 @@
     }
   </div>
 </section>
+
+@if (inviting()) {
+  <la-invite (closed)="closeInvite()" />
+}
