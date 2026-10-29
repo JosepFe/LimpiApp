@@ -6,6 +6,7 @@
       <span class="pts-pill" style="font-size:18px">+{{ r.points }} {{ r.points === 1 ? 'punto' : 'puntos' }}</span>
       @if (r.streak) {<span class="badge today" style="font-size:14px;height:28px;padding:0 12px">🔥 Racha de {{ r.streak }} {{ r.streak === 1 ? 'día' : 'días' }}</span>}
       <p style="color:var(--text-2)">Próxima vez: <b>{{ r.nextDueDay }}</b></p>
+      @if (photosFailed()) {<p class="help" role="alert">Alguna foto no se ha podido subir.</p>}
     </div>
   } @else {
     <div data-testid="complete-form">
@@ -31,9 +32,16 @@
       <div class="form-section"><span class="form-section-title">Nota</span></div>
       <textarea class="textarea" placeholder="¿Algo que recordar? (opcional)" aria-label="Nota" data-testid="complete-note" maxlength="1000" [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
 
-      <div class="form-section"><span class="form-section-title">Fotos</span><span class="help" style="font-size:12px;color:var(--text-3)"><span>0</span> de 3</span></div>
-      <!-- Adding photos arrives with E04/US-006. -->
-      <div class="photos"><button type="button" class="photo add" data-testid="complete-add-photo" disabled><svg class="ic" aria-hidden="true"><use href="icons.svg#i-camera" /></svg><span>Añadir foto</span></button></div>
+      <div class="form-section"><span class="form-section-title">Fotos</span><span class="help" style="font-size:12px;color:var(--text-3)"><span>{{ photos().length }}</span> de {{ maxPhotos }}</span></div>
+      <div class="photos">
+        @for (p of photos(); track p.url) {
+          <span class="photo" role="img" aria-label="Foto" [style.background]="'center / cover no-repeat url(' + p.url + ')'"><button type="button" class="rm" aria-label="Quitar foto" (click)="removePhoto(p)">×</button></span>
+        }
+        @if (photos().length < maxPhotos) {
+          <button type="button" class="photo add" data-testid="complete-add-photo" (click)="picker.click()"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-camera" /></svg><span>Añadir foto</span></button>
+        }
+        <input #picker type="file" accept="image/jpeg,image/png,image/webp" multiple hidden aria-label="Elegir fotos" (change)="addPhotos(picker)">
+      </div>
 
       <div style="margin-top:var(--s4);display:flex;justify-content:space-between;align-items:center">
         <span style="color:var(--text-2)">Puntos</span>

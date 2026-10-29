@@ -19,7 +19,12 @@ export class MockApi {
       const url = new URL(request.url());
       const path = url.pathname.replace(/^\/api/, '') + url.search;
       const key = `${request.method()} ${path}`;
-      const body = request.postDataJSON?.() ?? null;
+      let body: unknown;
+      try {
+        body = request.postDataJSON?.() ?? null;
+      } catch {
+        body = request.postData(); // not JSON (a multipart photo upload)
+      }
       this.calls.push({ method: request.method(), path, body });
       const handler = this.routes.get(key) ?? this.routes.get(`${request.method()} ${url.pathname.replace(/^\/api/, '')}`);
       if (handler === undefined) {

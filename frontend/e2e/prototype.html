@@ -233,6 +233,8 @@ body.nonav .fab{bottom:var(--s4)}
 .photo{width:88px;height:88px;border-radius:var(--r-md);background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:30px;position:relative;flex:none}
 .photo.add{border-style:dashed;color:var(--text-3);flex-direction:column;font-size:12px;gap:2px}
 .photo .rm{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:#111827;color:#fff;font-size:12px}
+/* Placeholder photos: the emoji is decoration (a real photo has no text), not content to compare. */
+.photo[data-emoji]::before,.photo-lg[data-emoji]::before{content:attr(data-emoji)}
 .photos{display:flex;gap:var(--s3);overflow-x:auto;padding:6px 0}
 .rep-row{display:flex;gap:var(--s2);align-items:center;margin-bottom:var(--s2)}
 .rep-row .input{flex:1}
@@ -858,7 +860,7 @@ body.nonav .fab{bottom:var(--s4)}
   <textarea class="textarea" placeholder="¿Algo que recordar? (opcional)" aria-label="Nota" data-testid="complete-note"></textarea>
 
   <div class="form-section"><span class="form-section-title">Fotos</span><span class="help" style="font-size:12px;color:var(--text-3)"><span data-s="with-photos">3</span><span data-s="default partial saving error">0</span> de 3</span></div>
-  <div class="photos"><span data-s="with-photos" style="display:contents"><span class="photo">🧊<button class="rm" aria-label="Quitar foto">×</button></span><span class="photo">🧽<button class="rm" aria-label="Quitar foto">×</button></span><span class="photo">✅<button class="rm" aria-label="Quitar foto">×</button></span></span>
+  <div class="photos"><span data-s="with-photos" style="display:contents"><span class="photo" data-emoji="🧊" role="img" aria-label="Foto"><button class="rm" aria-label="Quitar foto">×</button></span><span class="photo" data-emoji="🧽" role="img" aria-label="Foto"><button class="rm" aria-label="Quitar foto">×</button></span><span class="photo" data-emoji="✅" role="img" aria-label="Foto"><button class="rm" aria-label="Quitar foto">×</button></span></span>
     <button class="photo add" data-s="default partial saving error" data-toast="Elige una foto" data-testid="complete-add-photo"><svg class="ic " aria-hidden="true"><use href="#i-camera"/></svg><span>Añadir foto</span></button></div>
 
   <div style="margin-top:var(--s4);display:flex;justify-content:space-between;align-items:center">
@@ -911,7 +913,7 @@ body.nonav .fab{bottom:var(--s4)}
 <div class="group-h">Nota</div>
 <div class="card card-pad" style="color:var(--text-2)">Con desincrustante. Quedan restos en la junta de la esquina.</div>
 <div class="group-h">Fotos</div>
-<div class="photo-grid" data-s="with-photos" data-testid="entry-photos"><div class="photo-lg">🚿</div><div class="photo-lg">🧽</div><div class="photo-lg">✅</div></div>
+<div class="photo-grid" data-s="with-photos" data-testid="entry-photos"><div class="photo-lg" data-emoji="🚿" role="img" aria-label="Foto"></div><div class="photo-lg" data-emoji="🧽" role="img" aria-label="Foto"></div><div class="photo-lg" data-emoji="✅" role="img" aria-label="Foto"></div></div>
 <div data-s="default undone" class="card card-pad" style="text-align:center;color:var(--text-3)">Sin fotos</div>
 <p class="help" style="margin-top:var(--s4);font-size:12px;color:var(--text-3)">Solo quien la completó puede deshacerla durante los primeros 10 minutos.</p></div><div class="sheet-foot"><button class="btn btn-secondary" data-close data-testid="entry-close">Cerrar</button></div></div></div>
 <!--E:history-entry-->

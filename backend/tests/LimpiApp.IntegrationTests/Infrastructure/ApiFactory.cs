@@ -21,11 +21,15 @@ public class ApiFactory(PostgresFixture db) : WebApplicationFactory<Program>
 
     public RecordingEmailSender Emails { get; } = new();
 
+    /// <summary>PHOTOS_DIR of this factory: a fresh temporary folder.</summary>
+    public string PhotosDir { get; } = Directory.CreateTempSubdirectory("limpiapp-photos-").FullName;
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         // Not "Development": the developer exception page would leak stack traces.
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Db", db.ConnectionString);
+        builder.UseSetting("PHOTOS_DIR", PhotosDir);
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<TimeProvider>();

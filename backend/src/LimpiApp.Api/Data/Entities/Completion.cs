@@ -34,4 +34,6 @@ public sealed class Completion
     public DateOnly PrevNextDue { get; set; }
 
     public DateTimeOffset? UndoneAt { get; set; }
+
+    public List<CompletionPhoto> Photos { get; } = [];
 }

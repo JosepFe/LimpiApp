@@ -177,6 +177,46 @@ namespace LimpiApp.Api.Data.Migrations
                     b.ToTable("completions", (string)null);
                 });
 
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.CompletionPhoto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CompletionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("completion_id");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("content_type");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)")
+                        .HasColumnName("path");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
+                    b.HasKey("Id")
+                        .HasName("pk_completion_photos");
+
+                    b.HasIndex("CompletionId")
+                        .HasDatabaseName("ix_completion_photos_completion_id");
+
+                    b.ToTable("completion_photos", (string)null);
+                });
+
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.Household", b =>
                 {
                     b.Property<Guid>("Id")
@@ -605,6 +645,18 @@ namespace LimpiApp.Api.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.CompletionPhoto", b =>
+                {
+                    b.HasOne("LimpiApp.Api.Data.Entities.Completion", "Completion")
+                        .WithMany("Photos")
+                        .HasForeignKey("CompletionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_completion_photos_completions_completion_id");
+
+                    b.Navigation("Completion");
+                });
+
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.Membership", b =>
                 {
                     b.HasOne("LimpiApp.Api.Data.Entities.Household", "Household")
@@ -700,6 +752,11 @@ namespace LimpiApp.Api.Data.Migrations
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.CleaningTask", b =>
                 {
                     b.Navigation("Subtasks");
+                });
+
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.Completion", b =>
+                {
+                    b.Navigation("Photos");
                 });
 
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.Household", b =>

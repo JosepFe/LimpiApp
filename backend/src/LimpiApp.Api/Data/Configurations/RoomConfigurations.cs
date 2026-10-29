@@ -68,3 +68,13 @@ internal sealed class CompletionConfiguration : IEntityTypeConfiguration<Complet
         b.HasOne(c => c.User).WithMany().HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+internal sealed class CompletionPhotoConfiguration : IEntityTypeConfiguration<CompletionPhoto>
+{
+    public void Configure(EntityTypeBuilder<CompletionPhoto> b)
+    {
+        b.Property(p => p.Path).HasMaxLength(260);
+        b.Property(p => p.ContentType).HasMaxLength(40);
+        b.HasOne(p => p.Completion).WithMany(c => c.Photos).HasForeignKey(p => p.CompletionId).OnDelete(DeleteBehavior.Cascade);
+    }
+}

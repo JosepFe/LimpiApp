@@ -1,6 +1,7 @@
 // E04/US-005 · criteria 1, 2 and 4: #screen-complete default, partial, saving, error and success.
 import type { Route } from '@playwright/test';
 import { COMPLETE_RESULT, COMPLETE_TASK } from '../fixtures/prototype-data';
+import { photos } from '../fixtures/photos';
 import { mockShell, test, type MockApi } from '../fixtures/test';
 import { expectParity } from './parity';
 
@@ -40,4 +41,12 @@ test('complete · success', async ({ page, api }) => {
   await page.goto(SHEET);
   await page.getByTestId('complete-confirm').click();
   await expectParity(page, { screen: 'complete', state: 'success' });
+});
+
+// E04/US-006 · criterion 1: with three photos chosen.
+test('complete · with-photos', async ({ page, api }) => {
+  mock(api);
+  await page.goto(SHEET);
+  await page.getByLabel('Elegir fotos').setInputFiles(photos(3));
+  await expectParity(page, { screen: 'complete', state: 'with-photos' });
 });
