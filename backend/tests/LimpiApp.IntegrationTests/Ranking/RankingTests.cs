@@ -37,16 +37,22 @@ public class RankingTests(ApiFactory factory) : IntegrationTest(factory)
     }
 
     [Fact]
-    public async Task Ties_GoInAlphabeticalOrder_AndPeopleWhoLeftAreNotListed()
+    public async Task Ties_GoInSpanishAlphabeticalOrder_AndPeopleWhoLeftCountForNothing()
     {
         var data = await MembersTestData.CreateAsync(Factory);
-        await AddAsync(data, (data.PauId, Today, 5), (data.JosepId, Today, 5), (data.MartaId, Today, 9));
+        await using (var db = Factory.CreateDbContext())
+        {
+            (await db.Users.SingleAsync(u => u.Id == data.PauId, Ct)).Name = "Álvaro";
+            await db.SaveChangesAsync(Ct);
+        }
+
+        await AddAsync(data, (data.PauId, Today, 5), (data.JosepId, Today, 5), (data.MartaId, Today, 9), (data.MartaId, Today.AddDays(-1), 9));
         await data.Marta.DeleteAsync(data.Url(data.MartaId), Ct);
 
         var ranking = await data.Pau.GetFromJsonAsync<JsonElement>($"/households/{data.HouseholdId}/ranking", Ct);
 
-        Assert.Equal("week", ranking.GetProperty("period").GetString());
-        Assert.Equal([("Josep", 5, 1, 1), ("Pau", 5, 1, 1)], Rows(ranking));
+        Assert.Equal(("week", 1), (ranking.GetProperty("period").GetString(), ranking.GetProperty("householdStreak").GetInt32()));
+        Assert.Equal([("Álvaro", 5, 1, 1), ("Josep", 5, 1, 1)], Rows(ranking));
     }
 
     [Fact]

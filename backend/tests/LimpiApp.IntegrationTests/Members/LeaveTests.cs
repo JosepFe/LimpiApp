@@ -45,6 +45,18 @@ public class LeaveTests(ApiFactory factory) : IntegrationTest(factory)
     }
 
     [Fact]
+    public async Task Leave_BothOwnersAtOnce_OnlyOneGoes()
+    {
+        var data = await MembersTestData.CreateAsync(Factory);
+
+        var responses = await Task.WhenAll(data.Josep.DeleteAsync(data.Url(data.JosepId), Ct), data.Pau.DeleteAsync(data.Url(data.PauId), Ct));
+
+        Assert.Equal([HttpStatusCode.NoContent, HttpStatusCode.Conflict], responses.Select(r => r.StatusCode).Order());
+        await using var db = Factory.CreateDbContext();
+        Assert.Equal(1, await db.Memberships.CountAsync(m => m.HouseholdId == data.HouseholdId && m.Role == MemberRole.Owner, Ct));
+    }
+
+    [Fact]
     public async Task Leave_TheLastOwnerAlone_IsAllowed()
     {
         var data = await MembersTestData.CreateAsync(Factory, withPau: false);

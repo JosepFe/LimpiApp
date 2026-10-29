@@ -68,6 +68,8 @@ public static class InvitesEndpoints
 
         var now = clock.Now;
         await using var tx = await db.Database.BeginTransactionAsync(ct);
+        // Serialises link creation per household: two owners opening «Invitar» at once must not leave two active links.
+        await db.Database.ExecuteSqlInterpolatedAsync($"SELECT 1 FROM households WHERE id = {me.HouseholdId} FOR UPDATE", ct);
         await db.Invites.Where(i => i.HouseholdId == me.HouseholdId && i.RevokedAt == null)
             .ExecuteUpdateAsync(s => s.SetProperty(i => i.RevokedAt, now), ct);
         var invite = new Invite { HouseholdId = me.HouseholdId, Code = NewCode(), CreatedBy = me.UserId, CreatedAt = now, ExpiresAt = now + Invite.Lifetime };

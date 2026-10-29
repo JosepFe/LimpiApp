@@ -1,3 +1,4 @@
+using System.Globalization;
 using LimpiApp.Api.Common;
 using LimpiApp.Api.Data;
 using LimpiApp.Api.Features.Completions;
@@ -16,6 +17,9 @@ public static class RankingEndpoints
 
     private const int StreakLookbackDays = 400;
 
+    /// <summary>Alphabetical as in Spanish: «Álvaro» before «Zoe».</summary>
+    private static readonly StringComparer Alphabetical = StringComparer.Create(CultureInfo.GetCultureInfo("es-ES"), CompareOptions.IgnoreCase);
+
     public static IEndpointRouteBuilder MapRanking(this IEndpointRouteBuilder app)
     {
         app.MapHouseholdGroup("/ranking").MapGet("/", GetAsync);
@@ -31,7 +35,8 @@ public static class RankingEndpoints
     };
 
     /// <summary>
-    /// Every current member, with 0 when they did nothing; by points, then by name (D3). Undone completions do not count.
+    /// Every current member, with 0 when they did nothing; by points, then by name (D3). Undone completions do not count,
+    /// and neither do those of people who left (also for the household streak).
     /// </summary>
     private static async Task<IResult> GetAsync(string? period, HttpContext http, AppDbContext db, Clock clock, CancellationToken ct)
     {
@@ -54,6 +59,7 @@ public static class RankingEndpoints
         var since = today.AddDays(-StreakLookbackDays);
         var days = await done.Where(c => c.CompletedOn >= since).Select(c => new { c.UserId, c.CompletedOn }).Distinct().ToListAsync(ct);
 
+        var memberIds = members.Select(m => m.UserId).ToHashSet();
         var rows = members
             .Select(m =>
             {
@@ -61,9 +67,9 @@ public static class RankingEndpoints
                 var streak = StreakRules.Count(days.Where(d => d.UserId == m.UserId).Select(d => d.CompletedOn), today);
                 return new RankingRow(m.UserId, m.Name, m.AvatarColor, total?.Points ?? 0, total?.Tasks ?? 0, streak);
             })
-            .OrderByDescending(r => r.Points).ThenBy(r => r.Name, StringComparer.Ordinal)
+            .OrderByDescending(r => r.Points).ThenBy(r => r.Name, Alphabetical)
             .ToList();
         var hasPoints = start is null ? totals.Values.Any(t => t.Points > 0) : await done.AnyAsync(c => c.Points > 0, ct);
-        return TypedResults.Ok(new RankingResponse(period, StreakRules.Count(days.Select(d => d.CompletedOn), today), hasPoints, rows));
+        return TypedResults.Ok(new RankingResponse(period, StreakRules.Count(days.Where(d => memberIds.Contains(d.UserId)).Select(d => d.CompletedOn), today), hasPoints, rows));
     }
 }

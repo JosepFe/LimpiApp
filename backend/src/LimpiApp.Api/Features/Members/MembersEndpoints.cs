@@ -34,7 +34,7 @@ public static class MembersEndpoints
     /// Anyone can leave; only owners remove others (D1). The last owner cannot leave while others stay (D2).
     /// The tasks of whoever goes become «Sin asignar».
     /// </summary>
-    private static async Task<IResult> RemoveAsync(Guid uid, HttpContext http, AppDbContext db, CancellationToken ct)
+    private static async Task<IResult> RemoveAsync(Guid uid, HttpContext http, AppDbContext db, Clock clock, CancellationToken ct)
     {
         var me = HouseholdAccess.Current(http);
         var hid = me.HouseholdId;
@@ -61,6 +61,13 @@ public static class MembersEndpoints
 
         db.Memberships.Remove(target);
         await db.SaveChangesAsync(ct);
+        if (members.Count == 1)
+        {
+            // Nobody left: an old link must not let someone into a household without owners.
+            var now = clock.Now;
+            await db.Invites.Where(i => i.HouseholdId == hid && i.RevokedAt == null).ExecuteUpdateAsync(s => s.SetProperty(i => i.RevokedAt, now), ct);
+        }
+
         await db.Tasks.Where(t => t.HouseholdId == hid && t.AssigneeId == uid).ExecuteUpdateAsync(s => s.SetProperty(t => t.AssigneeId, (Guid?)null), ct);
         await tx.CommitAsync(ct);
         return TypedResults.NoContent();

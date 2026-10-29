@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using LimpiApp.IntegrationTests.Infrastructure;
 using LimpiApp.IntegrationTests.Members;
+using Microsoft.EntityFrameworkCore;
 
 namespace LimpiApp.IntegrationTests.Invites;
 
@@ -47,6 +48,31 @@ public class InvitesTests(ApiFactory factory) : IntegrationTest(factory)
     }
 
     [Fact]
+    public async Task Create_ByTwoOwnersAtOnce_LeavesOneActiveLink()
+    {
+        var data = await MembersTestData.CreateAsync(Factory);
+
+        var responses = await Task.WhenAll(data.Josep.PostAsync(InvitesUrl(data), null, Ct), data.Pau.PostAsync(InvitesUrl(data), null, Ct));
+
+        Assert.All(responses, r => Assert.Equal(HttpStatusCode.Created, r.StatusCode));
+        await using var db = Factory.CreateDbContext();
+        Assert.Equal(1, await db.Invites.CountAsync(i => i.HouseholdId == data.HouseholdId && i.RevokedAt == null, Ct));
+    }
+
+    [Fact]
+    public async Task TheLastMemberLeaving_RevokesTheLink()
+    {
+        var data = await MembersTestData.CreateAsync(Factory, withPau: false);
+        var invite = await CreateAsync(data);
+        await data.Marta.DeleteAsync(data.Url(data.MartaId), Ct);
+        Assert.Equal("valid", (await PreviewAsync(Factory.CreateBrowser(), invite.GetProperty("code").GetString()!)).GetProperty("status").GetString());
+
+        Assert.Equal(HttpStatusCode.NoContent, (await data.Josep.DeleteAsync(data.Url(data.JosepId), Ct)).StatusCode);
+
+        Assert.Equal("expired", (await PreviewAsync(Factory.CreateBrowser(), invite.GetProperty("code").GetString()!)).GetProperty("status").GetString());
+    }
+
+    [Fact]
     public async Task Current_WithoutLink_Is404_AndExpiredOnesAreFlagged()
     {
         var data = await MembersTestData.CreateAsync(Factory);
@@ -84,6 +110,7 @@ public class InvitesTests(ApiFactory factory) : IntegrationTest(factory)
         Assert.Equal(HttpStatusCode.Forbidden, (await data.Marta.DeleteAsync(url, Ct)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await stranger.DeleteAsync(url, Ct)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await stranger.PostAsync(InvitesUrl(data), null, Ct)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await stranger.GetAsync($"{InvitesUrl(data)}/current", Ct)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await stranger.DeleteAsync($"/households/{other}/invites/{invite.GetProperty("id").GetGuid()}", Ct)).StatusCode);
     }
 

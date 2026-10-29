@@ -46,9 +46,9 @@ export class Invite implements OnInit {
   protected async create(): Promise<void> {
     this.busy.set(true);
     try {
-      const fresh = !!this.invite();
+      const renewing = !!this.invite();
       this.show(await this.api.post<InviteData>('/invites', null));
-      if (fresh) this.toast.show('Enlace nuevo creado');
+      if (renewing) this.toast.show('Enlace nuevo creado');
     } catch {
       this.state.set('error');
     } finally {
