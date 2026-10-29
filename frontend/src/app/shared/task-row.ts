@@ -9,7 +9,7 @@ import { TaskSummary } from './task.model';
 @Component({
   selector: 'la-task-row',
   template: `@let t = task();
-    <div class="row" role="button" tabindex="0" data-testid="task-row" (click)="opened.emit()" (keydown.enter)="opened.emit()">
+    <div class="row" role="button" tabindex="0" data-testid="task-row" (click)="opened.emit()" (keydown.enter)="opened.emit()" (keydown.space)="$event.preventDefault(); opened.emit()">
       <button type="button" class="tc-hit" data-testid="task-check" [attr.aria-label]="'Marcar hecha: ' + t.title" [disabled]="!checkable()"
               (click)="$event.stopPropagation(); checked.emit()"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-check" /></svg></span></button>
       <span class="emo" aria-hidden="true">{{ t.roomEmoji }}</span>

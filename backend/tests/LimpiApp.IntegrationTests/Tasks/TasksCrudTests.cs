@@ -46,6 +46,22 @@ public class TasksCrudTests(ApiFactory factory) : IntegrationTest(factory)
     }
 
     [Fact]
+    public async Task Patch_KeepsAProductArchivedAfterwards_ButANewOneMustBeActive()
+    {
+        var data = await TaskTestData.CreateAsync(Factory);
+        var id = (await (await data.PostAsync(data.Request(products: [data.MopId]))).Content.ReadFromJsonAsync<JsonElement>(Ct)).GetProperty("id").GetGuid();
+        await data.Josep.DeleteAsync($"/households/{data.HouseholdId}/products/{data.MopId}", Ct);
+        await data.Josep.DeleteAsync($"/households/{data.HouseholdId}/products/{data.BleachId}", Ct);
+
+        var unchanged = await data.Josep.PatchAsJsonAsync($"/households/{data.HouseholdId}/tasks/{id}", data.Request(products: [data.MopId]), Ct);
+        var addArchived = await data.Josep.PatchAsJsonAsync($"/households/{data.HouseholdId}/tasks/{id}", data.Request(products: [data.MopId, data.BleachId]), Ct);
+
+        Assert.Equal(HttpStatusCode.OK, unchanged.StatusCode);
+        Assert.Equal(["Fregona"], (await unchanged.Content.ReadFromJsonAsync<JsonElement>(Ct)).GetProperty("products").EnumerateArray().Select(p => p.GetProperty("name").GetString()));
+        Assert.Equal(HttpStatusCode.BadRequest, addArchived.StatusCode);
+    }
+
+    [Fact]
     public async Task Delete_ArchivesTheTask_AndItLeavesTheList()
     {
         var data = await TaskTestData.CreateAsync(Factory);

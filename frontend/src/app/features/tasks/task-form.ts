@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, input, OnInit, output, signal } from '@angular/core';
 import { HouseholdApi } from '../../core/household-api';
 import { Sheet } from '../../shared/sheet';
@@ -18,11 +19,8 @@ interface SubtaskRow {
   title: string;
 }
 
-/** Today in the browser (Europe/Madrid for the household), as yyyy-mm-dd. */
-export const localToday = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
+/** Today in Madrid as yyyy-mm-dd (the households' zone; the API checks nothing about it, it is only a default). */
+export const localToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(new Date());
 
 /** #screen-task-form: new or edit a task with frequency, effort, assignee, subtasks, products and notes (E03/US-008). */
 @Component({
@@ -61,12 +59,22 @@ export class TaskForm implements OnInit {
 
   protected readonly invalid = signal(false);
   protected readonly saving = signal(false);
+  /** Saving or loading failed (not the empty title: that is `invalid`). */
+  protected readonly failed = signal<string | null>(null);
   private nextKey = 0;
 
   protected readonly zones = computed(() => this.rooms().find((r) => r.id === this.room())?.zones ?? []);
   protected readonly available = computed(() => this.allProducts().filter((p) => !this.products().some((x) => x.id === p.id)));
 
   async ngOnInit(): Promise<void> {
+    try {
+      await this.loadForm();
+    } catch {
+      this.failed.set('No hemos podido cargar los datos.');
+    }
+  }
+
+  private async loadForm(): Promise<void> {
     const [rooms, household, products] = await Promise.all([
       this.api.get<RoomsResponse>('/rooms'),
       this.api.get<{ members: Person[] }>(''),
@@ -98,6 +106,13 @@ export class TaskForm implements OnInit {
   protected chooseRoom(id: string): void {
     this.room.set(id);
     this.zone.set('');
+  }
+
+  /** 1-365; the field shows the corrected value too (the signal may not change: 1 → «0» → 1). */
+  protected setFrequency(field: HTMLInputElement): void {
+    const value = Math.min(365, Math.max(1, Math.round(+field.value) || 1));
+    this.freqValue.set(value);
+    field.value = String(value);
   }
 
   protected changeMinutes(delta: number): void {
@@ -133,6 +148,7 @@ export class TaskForm implements OnInit {
       return;
     }
     this.invalid.set(false);
+    this.failed.set(null);
     this.saving.set(true);
     const body = {
       title: this.title().trim(),
@@ -152,6 +168,9 @@ export class TaskForm implements OnInit {
       const id = this.taskId();
       const task = id ? await this.api.patch<TaskDetail>(`/tasks/${id}`, body) : await this.api.post<TaskDetail>('/tasks', body);
       this.saved.emit(task.id);
+    } catch (error) {
+      // 400: a field the API rejected (zone, assignee, product…); anything else, try again.
+      this.failed.set(error instanceof HttpErrorResponse && error.status === 400 ? 'Revisa los campos marcados.' : 'No se ha podido guardar. Inténtalo de nuevo.');
     } finally {
       this.saving.set(false);
     }

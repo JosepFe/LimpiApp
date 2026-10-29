@@ -84,7 +84,7 @@ public static class TasksEndpoints
     private static async Task<IResult> CreateAsync(TaskRequest request, HttpContext http, AppDbContext db, Clock clock, CancellationToken ct)
     {
         var household = HouseholdAccess.Current(http).Household;
-        var (errors, products) = await ValidateAsync(request, household.Id, db, ct);
+        var (errors, products) = await ValidateAsync(request, household.Id, [], db, ct);
         if (errors.Count > 0)
         {
             return TypedResults.ValidationProblem(errors);
@@ -108,7 +108,8 @@ public static class TasksEndpoints
             return TypedResults.NotFound();
         }
 
-        var (errors, products) = await ValidateAsync(request, household.Id, db, ct);
+        // Products it already has stay valid even if archived since (E03 D3): only new ones must be active.
+        var (errors, products) = await ValidateAsync(request, household.Id, task.Products.Select(p => p.Id).ToHashSet(), db, ct);
         if (errors.Count > 0)
         {
             return TypedResults.ValidationProblem(errors);
@@ -154,7 +155,7 @@ public static class TasksEndpoints
     }
 
     private static async Task<(Dictionary<string, string[]> Errors, List<Product> Products)> ValidateAsync(
-        TaskRequest r, Guid householdId, AppDbContext db, CancellationToken ct)
+        TaskRequest r, Guid householdId, HashSet<Guid> alreadyLinked, AppDbContext db, CancellationToken ct)
     {
         var errors = new Dictionary<string, string[]>();
         if (string.IsNullOrWhiteSpace(r.Title))
@@ -167,9 +168,13 @@ public static class TasksEndpoints
             errors["freqValue"] = ["La frecuencia tiene que ser al menos 1."];
         }
 
-        if ((r.Subtasks?.Count ?? 0) > MaxSubtasks || (r.Subtasks ?? []).Any(s => s.Length > 120))
+        if ((r.Subtasks?.Count ?? 0) > MaxSubtasks)
         {
             errors["subtasks"] = [$"Como mucho {MaxSubtasks} subtareas."];
+        }
+        else if ((r.Subtasks ?? []).Any(s => s.Length > 120))
+        {
+            errors["subtasks"] = ["Cada subtarea, como mucho 120 caracteres."];
         }
 
         if (!await db.Rooms.AnyAsync(x => x.Id == r.RoomId && x.HouseholdId == householdId && x.ArchivedAt == null, ct))
@@ -187,7 +192,9 @@ public static class TasksEndpoints
         }
 
         var ids = (r.ProductIds ?? []).Distinct().ToList();
-        var products = await db.Products.Where(p => ids.Contains(p.Id) && p.HouseholdId == householdId && p.ArchivedAt == null).ToListAsync(ct);
+        var products = await db.Products
+            .Where(p => ids.Contains(p.Id) && p.HouseholdId == householdId && (p.ArchivedAt == null || alreadyLinked.Contains(p.Id)))
+            .ToListAsync(ct);
         if (products.Count != ids.Count)
         {
             errors["productIds"] = ["Producto desconocido."];

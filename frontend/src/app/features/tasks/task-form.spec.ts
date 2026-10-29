@@ -47,6 +47,17 @@ describe('TaskForm', () => {
     expect(el.querySelector('output')?.textContent).toBe('5 min');
   });
 
+  it('the frequency stays between 1 and 365, also in the field', async () => {
+    const { fixture, q } = await render({ roomId: 'r1' });
+    const n = q<HTMLInputElement>('task-freq-value');
+    for (const [typed, kept] of [['0', '1'], ['400', '365'], ['', '1'], ['2.6', '3']]) {
+      n.value = typed;
+      n.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+      expect(n.value, typed).toBe(kept);
+    }
+  });
+
   it('edit loads the task and saves with PATCH without empty subtasks', async () => {
     api.patch.mockResolvedValue({ id: 't' });
     const { fixture, q } = await render({ taskId: 't' });
@@ -56,5 +67,16 @@ describe('TaskForm', () => {
     q('task-save').click();
     await fixture.whenStable();
     expect(api.patch).toHaveBeenCalledWith('/tasks/t', expect.objectContaining({ title: 'X', zoneId: 'z1', freqValue: 2, subtasks: [], notes: 'n', priority: 'low' }));
+  });
+});
+
+describe('TaskForm load error', () => {
+  it('shows «No hemos podido cargar los datos.»', async () => {
+    TestBed.configureTestingModule({ imports: [TaskForm], providers: [{ provide: HouseholdApi, useValue: { get: vi.fn().mockRejectedValue(new Error('x')) } }] });
+    const fixture = TestBed.createComponent(TaskForm);
+    fixture.detectChanges();
+    await new Promise((r) => setTimeout(r));
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')?.textContent).toContain('No hemos podido cargar los datos.');
   });
 });

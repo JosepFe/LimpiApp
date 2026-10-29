@@ -1,18 +1,20 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { BROWSER_CONFIRM } from '../../core/browser';
 import { HouseholdApi } from '../../core/household-api';
 import { RoomForm } from './room-form';
 
 describe('RoomForm', () => {
   const api = { get: vi.fn(), post: vi.fn(), patch: vi.fn(), delete: vi.fn() };
+  const confirm = vi.fn(() => true);
 
   beforeEach(() => Object.values(api).forEach((f) => f.mockReset()));
 
   async function render(roomId: string | null = null) {
     TestBed.configureTestingModule({
       imports: [RoomForm],
-      providers: [provideHttpClient(), provideHttpClientTesting(), { provide: HouseholdApi, useValue: api }],
+      providers: [provideHttpClient(), provideHttpClientTesting(), { provide: HouseholdApi, useValue: api }, { provide: BROWSER_CONFIRM, useValue: confirm }],
     });
     const fixture = TestBed.createComponent(RoomForm);
     fixture.componentRef.setInput('roomId', roomId);
@@ -68,5 +70,27 @@ describe('RoomForm', () => {
     await fixture.whenStable();
     expect(api.delete).toHaveBeenCalledWith('/rooms/r');
     expect(changed).toHaveBeenLastCalledWith({ archived: true });
+  });
+});
+
+describe('RoomForm errors', () => {
+  it('a failed load or archive shows the banner; archive asks first', async () => {
+    const api = { get: vi.fn().mockRejectedValue(new Error('x')), delete: vi.fn().mockRejectedValue(new Error('x')) };
+    const confirm = vi.fn().mockReturnValueOnce(false).mockReturnValue(true);
+    TestBed.configureTestingModule({ imports: [RoomForm], providers: [{ provide: HouseholdApi, useValue: api }, { provide: BROWSER_CONFIRM, useValue: confirm }] });
+    const fixture = TestBed.createComponent(RoomForm);
+    fixture.componentRef.setInput('roomId', 'r');
+    fixture.detectChanges();
+    await new Promise((r) => setTimeout(r));
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain('No hemos podido cargar los datos.');
+
+    el.querySelector<HTMLButtonElement>('[data-testid="room-archive"]')!.click();
+    expect(api.delete).not.toHaveBeenCalled();
+    el.querySelector<HTMLButtonElement>('[data-testid="room-archive"]')!.click();
+    await new Promise((r) => setTimeout(r));
+    fixture.detectChanges();
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain('No se ha podido archivar.');
   });
 });

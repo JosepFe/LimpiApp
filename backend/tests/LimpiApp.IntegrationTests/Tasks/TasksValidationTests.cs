@@ -62,10 +62,24 @@ public class TasksValidationTests(ApiFactory factory) : IntegrationTest(factory)
     public async Task AZoneOfAnotherRoom_OrAnUnknownProduct_IsRejected()
     {
         var data = await TaskTestData.CreateAsync(Factory);
+        var bathroom = await (await data.Josep.PostAsJsonAsync($"/households/{data.HouseholdId}/rooms",
+            new { name = "Baño", emoji = "🛁", color = "blue", zones = new[] { new { name = "Ducha" } } }, Ct)).Content.ReadFromJsonAsync<JsonElement>(Ct);
+        var shower = bathroom.GetProperty("zones")[0].GetProperty("id").GetGuid();
 
-        var fields = await FieldsInError(await data.PostAsync(data.Request(zone: Guid.NewGuid(), products: [Guid.NewGuid()])));
+        var fields = await FieldsInError(await data.PostAsync(data.Request(zone: shower, products: [Guid.NewGuid()])));
 
         Assert.Contains("zoneid", fields);
         Assert.Contains("productids", fields);
+    }
+
+    [Fact]
+    public async Task ASubtaskTooLong_SaysSo()
+    {
+        var data = await TaskTestData.CreateAsync(Factory);
+
+        var response = await data.PostAsync(data.Request(subtasks: [new string('x', 121)]));
+
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>(Ct);
+        Assert.Equal("Cada subtarea, como mucho 120 caracteres.", problem.GetProperty("errors").GetProperty("subtasks")[0].GetString());
     }
 }

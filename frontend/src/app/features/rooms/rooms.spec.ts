@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { HouseholdApi } from '../../core/household-api';
+import { RefreshBus } from '../../core/refresh-bus';
 import { Rooms } from './rooms';
 import { plural } from './rooms.model';
 
@@ -32,6 +33,24 @@ describe('Rooms', () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     el.querySelector<HTMLButtonElement>('[data-testid="new-room"]')!.click();
     expect(navigate).toHaveBeenCalledWith([], { queryParams: { sheet: 'room-new' } });
+  });
+
+  it('reloads when a sheet saves (RefreshBus) and ignores an older answer that arrives late', async () => {
+    let resolveFirst!: (v: unknown) => void;
+    const first = new Promise((r) => (resolveFirst = r));
+    const fresh = { summary: { health: null, roomCount: 1, overdueCount: 0 }, rooms: [{ id: 'r', name: 'Nueva', emoji: '🚗', color: 'slate', zones: [], health: null, overdueCount: 0, activeTaskCount: 0, next: null }] };
+    api.get.mockReset().mockReturnValueOnce(first).mockResolvedValue(fresh);
+    TestBed.configureTestingModule({ imports: [Rooms], providers: [provideRouter([]), { provide: HouseholdApi, useValue: api }] });
+    const fixture = TestBed.createComponent(Rooms);
+    fixture.detectChanges();
+    TestBed.inject(RefreshBus).bump();
+    fixture.detectChanges();
+    await new Promise((r) => setTimeout(r));
+    resolveFirst({ summary: { health: null, roomCount: 0, overdueCount: 0 }, rooms: [] });
+    await new Promise((r) => setTimeout(r));
+    fixture.detectChanges();
+    expect(api.get).toHaveBeenCalledTimes(2);
+    expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="room-card"]')?.textContent).toContain('Nueva');
   });
 
   it('plural', () => {

@@ -1,8 +1,9 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { HouseholdApi } from '../../core/household-api';
+import { RefreshBus } from '../../core/refresh-bus';
 import { HealthRing } from '../../shared/health-ring';
 import { ErrorState, LoadState, SkeletonList } from '../../shared/states';
 import { RoomForm } from './room-form';
@@ -23,9 +24,11 @@ import { plural, RoomsResponse } from './rooms.model';
     }
   `,
 })
-export class Rooms implements OnInit {
+export class Rooms {
   private readonly api = inject(HouseholdApi);
   private readonly router = inject(Router);
+  private readonly refresh = inject(RefreshBus);
+  private loads = 0;
   protected readonly plural = plural;
   protected readonly state = signal<LoadState>('loading');
   protected readonly data = signal<RoomsResponse | null>(null);
@@ -42,17 +45,24 @@ export class Rooms implements OnInit {
   protected readonly sheet = () => this.query()?.get('sheet') ?? null;
   protected readonly editRoom = () => this.query()?.get('room') ?? null;
 
-  ngOnInit(): void {
-    void this.load();
+  constructor() {
+    // Loads, and reloads when a sheet saved something (a task from the detail pane, a room…).
+    effect(() => {
+      this.refresh.version();
+      void this.load();
+    });
   }
 
   protected async load(): Promise<void> {
+    const load = ++this.loads; // a slower earlier answer must not overwrite a newer one
     this.state.set('loading');
     try {
-      this.data.set(await this.api.get<RoomsResponse>('/rooms'));
+      const data = await this.api.get<RoomsResponse>('/rooms');
+      if (load !== this.loads) return;
+      this.data.set(data);
       this.state.set('ready');
     } catch {
-      this.state.set('error');
+      if (load === this.loads) this.state.set('error');
     }
   }
 
@@ -68,10 +78,11 @@ export class Rooms implements OnInit {
     void this.router.navigate([], { queryParams: { sheet: null, room: null }, queryParamsHandling: 'merge', replaceUrl: true });
   }
 
+  /** Saved or archived: the list and an open detail reload. */
   protected async roomChanged(change: { archived: boolean }): Promise<void> {
     if (change.archived) await this.router.navigate(['/rooms'], { replaceUrl: true });
     else this.closeSheet();
-    await this.load();
+    this.refresh.bump();
   }
 
   private detailOpen(): boolean {

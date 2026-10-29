@@ -30,9 +30,24 @@ test('«Guardar tarea» sends the task and the room detail shows it', async ({ p
 
   await expect(page).toHaveURL(/\/rooms\/r-cocina$/);
   await expect(page.getByTestId('task-row').filter({ hasText: 'Limpiar campana' })).toBeVisible();
+  // on desktop the rooms list next to the detail reloads too (its cards show health and the next task)
+  expect(api.calls.filter((c) => c.path === '/households/h-casa/rooms').length).toBeGreaterThanOrEqual(2);
   expect(api.calls.find((c) => c.method === 'POST')?.body).toEqual({
     title: 'Limpiar campana', roomId: 'r-cocina', zoneId: 'z-horno', freqValue: 1, freqUnit: 'month', nextDue: '2026-10-14',
     estimatedMinutes: 30, priority: 'high', assigneeId: 'u-josep', notes: 'Con desengrasante.',
     subtasks: ['Vaciar y sacar baldas', 'Retirar lo caducado', 'Limpiar baldas y cajones'], productIds: ['p-desincrustante'],
   });
+});
+
+test('a rejected or failed save shows the banner and keeps what was typed', async ({ page, api }) => {
+  let status = 400;
+  mockTaskForm(api).on('POST', '/households/h-casa/tasks', async (route: Route) => route.fulfill({ status, json: { errors: {} } }));
+  await page.goto('/rooms/r-cocina?sheet=task-new&room=r-cocina');
+  await page.getByTestId('task-title').fill('Limpiar campana');
+  await page.getByTestId('task-save').click();
+  await expect(page.getByRole('alert')).toHaveText('Revisa los campos marcados.');
+  status = 500;
+  await page.getByTestId('task-save').click();
+  await expect(page.getByRole('alert')).toHaveText('No se ha podido guardar. Inténtalo de nuevo.');
+  await expect(page.getByTestId('task-title')).toHaveValue('Limpiar campana');
 });

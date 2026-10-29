@@ -18,7 +18,7 @@
                 <div class="group-h">Todas las habitaciones <span class="count">{{ d.rooms.length }}</span></div>
                 <div class="rooms-grid">
                   @for (room of d.rooms; track room.id) {
-                    <div class="row room-card" role="button" tabindex="0" data-testid="room-card" style="min-height:84px" (click)="open(room.id)" (keydown.enter)="open(room.id)">
+                    <div class="row room-card" role="button" tabindex="0" data-testid="room-card" style="min-height:84px" (click)="open(room.id)" (keydown.enter)="open(room.id)" (keydown.space)="$event.preventDefault(); open(room.id)">
                       <span class="emo" style="font-size:28px;width:44px" aria-hidden="true">{{ room.emoji }}</span>
                       <span class="body"><span class="t" style="display:block;font-size:16px;font-weight:600">{{ room.name }}</span>
                         <span class="s">@if (room.overdueCount) {<span class="badge overdue">{{ plural(room.overdueCount, 'atrasada', 'atrasadas') }}</span>} @else {<span class="badge success">Al día</span>}</span>

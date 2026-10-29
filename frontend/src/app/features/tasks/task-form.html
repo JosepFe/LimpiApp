@@ -1,6 +1,6 @@
 <la-sheet screen="task-form" [title]="taskId() ? 'Editar tarea' : 'Nueva tarea'" [full]="true" (closed)="closed.emit()">
-  @if (invalid()) {
-    <div class="banner error" role="alert"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-x" /></svg><span>Revisa los campos marcados.</span></div>
+  @if (invalid() || failed()) {
+    <div class="banner error" role="alert"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-x" /></svg><span>{{ invalid() ? 'Revisa los campos marcados.' : failed() }}</span></div>
   }
   <div class="form-section"><span class="form-section-title">Básico</span></div>
   <div class="field" [class.invalid]="invalid()"><label for="tf-title">Título</label>
@@ -18,7 +18,7 @@
   <div class="form-section"><span class="form-section-title">Frecuencia</span></div>
   <div class="form-row">
     <div class="field"><label for="tf-n">Cada</label><input id="tf-n" class="input" type="number" inputmode="numeric" min="1" max="365" data-testid="task-freq-value"
-         [value]="freqValue()" (input)="freqValue.set(+$any($event.target).value || 1)"></div>
+         [value]="freqValue()" (change)="setFrequency($any($event.target))"></div>
     <div class="field"><label for="tf-u">Unidad</label><select id="tf-u" class="select" data-testid="task-freq-unit" (change)="freqUnit.set($any($event.target).value)">
       @for (u of units; track u[0]) {<option [value]="u[0]" [selected]="u[0] === freqUnit()">{{ u[1][1] }}</option>}</select></div>
   </div>

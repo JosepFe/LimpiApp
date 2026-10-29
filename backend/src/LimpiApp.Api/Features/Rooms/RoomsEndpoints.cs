@@ -95,6 +95,8 @@ public static class RoomsEndpoints
             return TypedResults.NotFound();
         }
 
+        // One unit: moving tasks to «Sin zona» (ExecuteUpdate) and saving the zones commit or fail together.
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
         room.Name = request.Name.Trim();
         room.Emoji = request.Emoji;
         room.Color = request.Color;
@@ -125,6 +127,7 @@ public static class RoomsEndpoints
         }
 
         await db.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
         return TypedResults.Ok((await Summaries(db, household, clock.Today(household.TimeZone), room.Id, ct)).Single());
     }
 
@@ -198,6 +201,11 @@ public static class RoomsEndpoints
         if (string.IsNullOrWhiteSpace(request.Name))
         {
             errors["name"] = ["El nombre es obligatorio."];
+        }
+
+        if ((request.Zones ?? []).Any(z => string.IsNullOrWhiteSpace(z.Name)))
+        {
+            errors["zones"] = ["Las zonas necesitan nombre."];
         }
 
         if (!Colors.Contains(request.Color))

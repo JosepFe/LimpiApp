@@ -1,4 +1,7 @@
 <la-sheet screen="room-form" [title]="roomId() ? 'Editar habitación' : 'Nueva habitación'" [full]="true" (closed)="closed.emit()">
+  @if (failed(); as message) {
+    <div class="banner error" role="alert"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-x" /></svg><span>{{ message }}</span></div>
+  }
   <div class="field" [class.invalid]="nameMissing()"><label for="rf-name">Nombre</label>
     <input id="rf-name" class="input" [attr.placeholder]="roomId() || nameMissing() ? null : 'Ej.: Cocina'" maxlength="40" data-testid="room-name" [attr.aria-invalid]="nameMissing() || null"
            [value]="name()" (input)="name.set($any($event.target).value)">

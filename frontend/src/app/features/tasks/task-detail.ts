@@ -25,6 +25,7 @@ export class TaskDetail {
   readonly id = input.required<string>();
 
   protected readonly state = signal<LoadState>('loading');
+  private loads = 0;
   protected readonly task = signal<Task | null>(null);
   protected readonly initial = initial;
   protected readonly shortDay = shortDay;
@@ -46,12 +47,15 @@ export class TaskDetail {
   }
 
   protected async load(id = this.id()): Promise<void> {
+    const load = ++this.loads; // a slower earlier answer must not overwrite a newer one
     this.state.set('loading');
     try {
-      this.task.set(await this.api.get<Task>(`/tasks/${id}`));
+      const task = await this.api.get<Task>(`/tasks/${id}`);
+      if (load !== this.loads) return;
+      this.task.set(task);
       this.state.set('ready');
     } catch {
-      this.state.set('error');
+      if (load === this.loads) this.state.set('error');
     }
   }
 

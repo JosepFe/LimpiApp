@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, input, OnInit, output, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { BROWSER_CONFIRM } from '../../core/browser';
 import { HouseholdApi } from '../../core/household-api';
 import { Sheet } from '../../shared/sheet';
 import { Room } from './rooms.model';
@@ -30,6 +31,7 @@ interface ZoneRow {
 export class RoomForm implements OnInit {
   private readonly api = inject(HouseholdApi);
   private readonly http = inject(HttpClient);
+  private readonly confirm = inject(BROWSER_CONFIRM);
   /** Room to edit; without it, a new one. */
   readonly roomId = input<string | null>(null);
   readonly closed = output();
@@ -45,6 +47,8 @@ export class RoomForm implements OnInit {
   protected readonly fromTemplate = signal(false);
   protected readonly nameMissing = signal(false);
   protected readonly saving = signal(false);
+  /** Loading or saving failed: «No se ha podido guardar…» banner. */
+  protected readonly failed = signal<string | null>(null);
   private readonly templates = signal<Template[]>([]);
   private nextKey = 0;
 
@@ -52,6 +56,14 @@ export class RoomForm implements OnInit {
   protected readonly template = computed(() => this.templates().find((t) => t.emoji === this.emoji()) ?? null);
 
   async ngOnInit(): Promise<void> {
+    try {
+      await this.loadForm();
+    } catch {
+      this.failed.set('No hemos podido cargar los datos.');
+    }
+  }
+
+  private async loadForm(): Promise<void> {
     const id = this.roomId();
     if (id) {
       const room = await this.api.get<Room>(`/rooms/${id}`);
@@ -97,13 +109,20 @@ export class RoomForm implements OnInit {
         await this.api.post(`/rooms/${room.id}/from-template`, { templateId: template.id });
       }
       this.changed.emit({ archived: false });
+    } catch {
+      this.failed.set('No se ha podido guardar. Inténtalo de nuevo.');
     } finally {
       this.saving.set(false);
     }
   }
 
   protected async archive(): Promise<void> {
-    await this.api.delete(`/rooms/${this.roomId()}`);
-    this.changed.emit({ archived: true });
+    if (!this.confirm('¿Archivar esta habitación? Sus tareas dejarán de aparecer en Hoy.')) return;
+    try {
+      await this.api.delete(`/rooms/${this.roomId()}`);
+      this.changed.emit({ archived: true });
+    } catch {
+      this.failed.set('No se ha podido archivar. Inténtalo de nuevo.');
+    }
   }
 }

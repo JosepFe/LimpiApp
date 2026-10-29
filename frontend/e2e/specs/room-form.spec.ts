@@ -49,6 +49,32 @@ test('editing keeps the zone ids; archiving goes back to the list', async ({ pag
   expect(api.calls.find((c) => c.method === 'PATCH')?.body).toEqual({ name: 'Cocina', emoji: '🍳', color: 'orange', zones: [{ id: 'z-nevera', name: 'Nevera' }] });
 
   await page.goto('/rooms/r-cocina?sheet=room-edit&room=r-cocina');
+  page.once('dialog', (dialog) => void dialog.accept());
   await page.getByTestId('room-archive').click();
   await expect(page).toHaveURL(/\/rooms$/);
+});
+
+test('saving a room from its detail updates the detail; a failed save shows the banner and keeps the form', async ({ page, api }) => {
+  let name = 'Cocina';
+  let fail = true;
+  mockShell(api)
+    .on('GET', '/households/h-casa/rooms', ROOMS)
+    .on('GET', '/households/h-casa/rooms/r-cocina', async (route: Route) => route.fulfill({ json: { ...ROOMS.rooms[0], name } }))
+    .on('GET', '/households/h-casa/tasks?room=r-cocina', KITCHEN_TASKS)
+    .on('PATCH', '/households/h-casa/rooms/r-cocina', async (route: Route) => {
+      if (fail) return route.fulfill({ status: 500, json: {} });
+      name = 'Cocina grande';
+      return route.fulfill({ json: { ...ROOMS.rooms[0], name } });
+    });
+  await page.goto('/rooms/r-cocina');
+  await page.getByTestId('room-edit').click();
+  await page.getByTestId('room-name').fill('Cocina grande');
+  await page.getByTestId('room-save').click();
+  await expect(page.getByRole('alert')).toHaveText('No se ha podido guardar. Inténtalo de nuevo.');
+  await expect(page.getByTestId('sheet-room-form')).toBeVisible();
+
+  fail = false;
+  await page.getByTestId('room-save').click();
+  await expect(page.getByTestId('sheet-room-form')).toHaveCount(0);
+  await expect(page.locator('.ph-title').filter({ hasText: 'Cocina grande' })).toBeVisible();
 });

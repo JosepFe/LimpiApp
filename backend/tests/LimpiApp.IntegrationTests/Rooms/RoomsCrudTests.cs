@@ -51,6 +51,17 @@ public class RoomsCrudTests(ApiFactory factory) : IntegrationTest(factory)
         Assert.Equal(fridge, (await check.Tasks.SingleAsync(t => t.Title == "Limpiar nevera por dentro", Ct)).ZoneId);
     }
 
+    [Fact]
+    public async Task AZoneWithoutName_Is400()
+    {
+        var josep = await Factory.SignedInAsync();
+        var hid = await ApiFactory.CreateHouseholdAsync(josep);
+
+        var response = await josep.PostAsJsonAsync($"/households/{hid}/rooms", new { name = "Cocina", emoji = "🍳", color = "orange", zones = new[] { new { name = "  " } } }, Ct);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     [Theory]
     [InlineData("", "orange")]
     [InlineData("Cocina", "purple")]

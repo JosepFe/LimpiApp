@@ -28,6 +28,7 @@ export class RoomDetail {
 
   protected readonly plural = plural;
   protected readonly state = signal<LoadState>('loading');
+  private loads = 0;
   protected readonly room = signal<Room | null>(null);
   protected readonly tasks = signal<TaskSummary[]>([]);
   /** Zones in their order (only those with tasks), then «Sin zona». */
@@ -47,15 +48,20 @@ export class RoomDetail {
   }
 
   protected async load(id = this.id()): Promise<void> {
+    const load = ++this.loads; // a slower earlier answer must not overwrite a newer one
     this.state.set('loading');
     try {
       // The title shows as soon as the room arrives, also while its tasks load or fail (as in the prototype).
       const tasks = this.api.get<TaskSummary[]>(`/tasks?room=${id}`);
-      this.room.set(await this.api.get<Room>(`/rooms/${id}`));
-      this.tasks.set(await tasks);
+      const room = await this.api.get<Room>(`/rooms/${id}`);
+      if (load !== this.loads) return;
+      this.room.set(room);
+      const list = await tasks;
+      if (load !== this.loads) return;
+      this.tasks.set(list);
       this.state.set('ready');
     } catch {
-      this.state.set('error');
+      if (load === this.loads) this.state.set('error');
     }
   }
 
