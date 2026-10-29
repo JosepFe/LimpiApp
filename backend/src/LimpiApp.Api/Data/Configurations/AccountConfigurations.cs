@@ -58,3 +58,16 @@ internal sealed class MembershipConfiguration : IEntityTypeConfiguration<Members
         b.HasOne(m => m.User).WithMany(u => u.Memberships).HasForeignKey(m => m.UserId).OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+internal sealed class InviteConfiguration : IEntityTypeConfiguration<Invite>
+{
+    public void Configure(EntityTypeBuilder<Invite> b)
+    {
+        b.Property(i => i.Code).HasMaxLength(14);
+        b.HasIndex(i => i.Code).IsUnique();
+        b.HasIndex(i => new { i.HouseholdId, i.CreatedAt });
+        b.HasOne(i => i.Household).WithMany().HasForeignKey(i => i.HouseholdId).OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(i => i.Creator).WithMany().HasForeignKey(i => i.CreatedBy).OnDelete(DeleteBehavior.Cascade);
+        b.ToTable(t => t.HasCheckConstraint("ck_invites_uses", "uses >= 0 AND uses <= max_uses"));
+    }
+}

@@ -250,6 +250,66 @@ namespace LimpiApp.Api.Data.Migrations
                     b.ToTable("households", (string)null);
                 });
 
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.Invite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(14)
+                        .HasColumnType("character varying(14)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("HouseholdId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("household_id");
+
+                    b.Property<int>("MaxUses")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_uses");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<int>("Uses")
+                        .HasColumnType("integer")
+                        .HasColumnName("uses");
+
+                    b.HasKey("Id")
+                        .HasName("pk_invites");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_invites_code");
+
+                    b.HasIndex("CreatedBy")
+                        .HasDatabaseName("ix_invites_created_by");
+
+                    b.HasIndex("HouseholdId", "CreatedAt")
+                        .HasDatabaseName("ix_invites_household_id_created_at");
+
+                    b.ToTable("invites", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_invites_uses", "uses >= 0 AND uses <= max_uses");
+                        });
+                });
+
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.MagicLink", b =>
                 {
                     b.Property<Guid>("Id")
@@ -659,6 +719,27 @@ namespace LimpiApp.Api.Data.Migrations
                         .HasConstraintName("fk_completion_photos_completions_completion_id");
 
                     b.Navigation("Completion");
+                });
+
+            modelBuilder.Entity("LimpiApp.Api.Data.Entities.Invite", b =>
+                {
+                    b.HasOne("LimpiApp.Api.Data.Entities.User", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_invites_users_created_by");
+
+                    b.HasOne("LimpiApp.Api.Data.Entities.Household", "Household")
+                        .WithMany()
+                        .HasForeignKey("HouseholdId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_invites_households_household_id");
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("Household");
                 });
 
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.Membership", b =>
