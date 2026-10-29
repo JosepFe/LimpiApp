@@ -1,4 +1,4 @@
-# LimpiApp — local stack. Dockerfiles are added by E01/US-001 (api) and E01/US-003 (web); see E01/US-005.
+# LimpiApp — local stack. Dockerfiles for api and web are added by E01/US-005.
 name: limpiapp
 
 services:

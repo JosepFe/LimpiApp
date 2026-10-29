@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LimpiApp.Api/LimpiApp.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LimpiApp.IntegrationTests/LimpiApp.IntegrationTests.csproj" />
+    <Project Path="tests/LimpiApp.UnitTests/LimpiApp.UnitTests.csproj" />
+  </Folder>
+</Solution>

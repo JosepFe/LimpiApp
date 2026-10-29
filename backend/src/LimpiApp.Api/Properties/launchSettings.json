@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "LimpiApp.Api": {
+      "commandName": "Project",
+      "applicationUrl": "http://127.0.0.1:8091",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
