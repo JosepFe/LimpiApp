@@ -76,5 +76,7 @@ internal sealed class CompletionPhotoConfiguration : IEntityTypeConfiguration<Co
         b.Property(p => p.Path).HasMaxLength(260);
         b.Property(p => p.ContentType).HasMaxLength(40);
         b.HasOne(p => p.Completion).WithMany(c => c.Photos).HasForeignKey(p => p.CompletionId).OnDelete(DeleteBehavior.Cascade);
+        b.HasIndex(p => new { p.CompletionId, p.Position }).IsUnique();
+        b.ToTable(t => t.HasCheckConstraint("ck_completion_photos_position", "position >= 0 AND position < 3"));
     }
 }

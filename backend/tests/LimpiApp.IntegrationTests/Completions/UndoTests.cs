@@ -52,6 +52,48 @@ public class UndoTests(ApiFactory factory) : IntegrationTest(factory)
     }
 
     [Fact]
+    public async Task Undo_AfterSomeoneCompletedItAgain_OrAnEdit_KeepsTheNewerDue()
+    {
+        var (josep, hid, completion) = await PhotoTestData.CompletedAsync(Factory);
+        Guid fridge;
+        await using (var db = Factory.CreateDbContext())
+        {
+            fridge = (await db.Completions.SingleAsync(c => c.Id == completion, Ct)).TaskId;
+        }
+
+        Factory.Time.Advance(TimeSpan.FromMinutes(2));
+        await josep.PostAsJsonAsync($"/households/{hid}/tasks/{fridge}/complete", new { subtasksDone = 0, minutes = 10 }, Ct);
+        Assert.Equal(HttpStatusCode.NoContent, (await josep.PostAsync($"/households/{hid}/completions/{completion}/undo", null, Ct)).StatusCode);
+        await using (var db = Factory.CreateDbContext())
+        {
+            Assert.Equal(new DateOnly(2026, 11, 14), (await db.Tasks.SingleAsync(t => t.Id == fridge, Ct)).NextDue); // the second completion stays
+        }
+
+        var other = await OtherCompletionAsync(josep, hid, "Fregar suelo");
+        await using (var db = Factory.CreateDbContext())
+        {
+            var task = await db.Tasks.SingleAsync(t => t.Title == "Fregar suelo" && t.Room.Name == "Cocina", Ct);
+            task.NextDue = new DateOnly(2026, 12, 1); // edited by someone in the form
+            await db.SaveChangesAsync(Ct);
+        }
+
+        Assert.Equal(HttpStatusCode.NoContent, (await josep.PostAsync($"/households/{hid}/completions/{other}/undo", null, Ct)).StatusCode);
+        await using var check = Factory.CreateDbContext();
+        Assert.Equal(new DateOnly(2026, 12, 1), (await check.Tasks.SingleAsync(t => t.Title == "Fregar suelo" && t.Room.Name == "Cocina", Ct)).NextDue);
+    }
+
+    [Fact]
+    public async Task TwoUndosAtOnce_OnlyOneSucceeds()
+    {
+        var (josep, hid, completion) = await PhotoTestData.CompletedAsync(Factory);
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => josep.PostAsync($"/households/{hid}/completions/{completion}/undo", null, Ct)));
+
+        Assert.Single(responses, r => r.StatusCode == HttpStatusCode.NoContent);
+        Assert.All(responses.Where(r => r.StatusCode != HttpStatusCode.NoContent), r => Assert.Equal(HttpStatusCode.Conflict, r.StatusCode));
+    }
+
+    [Fact]
     public async Task Undo_OfAnotherHousehold_Is404()
     {
         var (_, hid, completion) = await PhotoTestData.CompletedAsync(Factory);
@@ -62,10 +104,12 @@ public class UndoTests(ApiFactory factory) : IntegrationTest(factory)
         Assert.Equal(HttpStatusCode.NotFound, (await stranger.PostAsync($"/households/{home}/completions/{completion}/undo", null, Ct)).StatusCode);
     }
 
-    private async Task<Guid> CompleteAgainAsync(HttpClient josep, Guid hid)
+    private Task<Guid> CompleteAgainAsync(HttpClient josep, Guid hid) => OtherCompletionAsync(josep, hid, "Fregar suelo");
+
+    private async Task<Guid> OtherCompletionAsync(HttpClient josep, Guid hid, string title)
     {
         await using var db = Factory.CreateDbContext();
-        var task = await db.Tasks.SingleAsync(t => t.Title == "Fregar suelo" && t.Room.Name == "Cocina", Ct);
+        var task = await db.Tasks.SingleAsync(t => t.Title == title && t.Room.Name == "Cocina", Ct);
         var body = await (await josep.PostAsJsonAsync($"/households/{hid}/tasks/{task.Id}/complete", new { subtasksDone = 0, minutes = 20 }, Ct)).Content.ReadFromJsonAsync<JsonElement>(Ct);
         return body.GetProperty("completionId").GetGuid();
     }

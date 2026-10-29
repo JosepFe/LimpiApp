@@ -42,10 +42,26 @@ public class PhotosUploadTests(ApiFactory factory) : IntegrationTest(factory)
         var fourth = await PhotoTestData.UploadAsync(josep, hid, completion, PhotoTestData.Jpeg);
 
         Assert.Equal(HttpStatusCode.BadRequest, text.StatusCode);
-        Assert.True(big.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.RequestEntityTooLarge, big.StatusCode.ToString());
+        Assert.Equal(HttpStatusCode.BadRequest, big.StatusCode); // 8 MB + 1 byte: under the request limit, rejected as a photo
         Assert.Equal(HttpStatusCode.BadRequest, fourth.StatusCode);
         await using var db = Factory.CreateDbContext();
         Assert.Equal(3, await db.CompletionPhotos.CountAsync(Ct));
+    }
+
+    [Fact]
+    public async Task FourUploadsAtOnce_KeepAtMostThreePhotos_InDistinctPositions()
+    {
+        var (josep, hid, completion) = await PhotoTestData.CompletedAsync(Factory);
+        await PhotoTestData.UploadAsync(josep, hid, completion, PhotoTestData.Jpeg);
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => PhotoTestData.UploadAsync(josep, hid, completion, PhotoTestData.Jpeg)));
+
+        Assert.All(responses, r => Assert.Contains(r.StatusCode, new[] { HttpStatusCode.Created, HttpStatusCode.BadRequest, HttpStatusCode.Conflict }));
+        await using var db = Factory.CreateDbContext();
+        var positions = await db.CompletionPhotos.Select(p => p.Position).ToListAsync(Ct);
+        Assert.InRange(positions.Count, 2, 3);
+        Assert.Equal(positions.Count, positions.Distinct().Count());
+        Assert.Equal(positions.Count, Directory.GetFiles(Factory.PhotosDir, "*", SearchOption.AllDirectories).Length);
     }
 
     [Fact]

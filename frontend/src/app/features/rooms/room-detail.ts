@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { HouseholdApi } from '../../core/household-api';
 import { RefreshBus } from '../../core/refresh-bus';
@@ -43,7 +43,8 @@ export class RoomDetail {
     // Reloads when the room changes and when a sheet saved something (a new task…).
     effect(() => {
       this.refresh.version();
-      void this.load(this.id());
+      const id = this.id();
+      untracked(() => void this.load(id)); // load() reads other signals: they must not become dependencies
     });
   }
 

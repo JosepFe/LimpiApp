@@ -1,5 +1,7 @@
 // E04/US-003 · criteria 1 and 2: «Mías», «Habitación» and «Tengo 15 min» filter Hoy; the URL keeps them.
-import { TODAY_SUMMARY } from '../fixtures/prototype-data';
+import { roomGuid, TODAY_SUMMARY } from '../fixtures/prototype-data';
+
+const BANO = roomGuid(1);
 import { expect, mockShell, test } from '../fixtures/test';
 
 const URL = '/households/h-casa/today';
@@ -11,9 +13,9 @@ const only = (...titles: string[]) => ({
 test('«Mías», a room and «Tengo 15 min» ask the API with the filter, light up and stay in the URL', async ({ page, api }) => {
   mockShell(api)
     .on('GET', `${URL}?filter=mine`, only('Limpiar nevera por dentro', 'Fregar suelo', 'Limpiar fregadero', 'Barrer terraza'))
-    .on('GET', `${URL}?filter=mine&room=r-bano`, only())
-    .on('GET', `${URL}?room=r-bano`, only('Limpiar juntas y mamparas', 'Limpiar WC', 'Limpiar lavabo y espejo'))
-    .on('GET', `${URL}?room=r-bano&max=15`, only('Limpiar WC', 'Limpiar lavabo y espejo'));
+    .on('GET', `${URL}?filter=mine&room=${BANO}`, only())
+    .on('GET', `${URL}?room=${BANO}`, only('Limpiar juntas y mamparas', 'Limpiar WC', 'Limpiar lavabo y espejo'))
+    .on('GET', `${URL}?room=${BANO}&max=15`, only('Limpiar WC', 'Limpiar lavabo y espejo'));
   await page.goto('/today');
 
   await page.getByTestId('filter-mine').click();

@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { Router } from '@angular/router';
 import { BROWSER_CONFIRM } from '../../core/browser';
 import { HouseholdApi } from '../../core/household-api';
@@ -42,7 +42,8 @@ export class TaskDetail {
   constructor() {
     effect(() => {
       this.refresh.version(); // reload after «Editar tarea» saves
-      void this.load(this.id());
+      const id = this.id();
+      untracked(() => void this.load(id)); // load() reads other signals: they must not become dependencies
     });
   }
 

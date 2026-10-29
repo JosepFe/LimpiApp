@@ -144,7 +144,9 @@ TODAY_SUMMARY.groups = {
     taskRow('t-terraza', 'Barrer terraza', TERRAZA, null, 10, ['ok', 'En 6 d'], JOSEP, '2026-10-20'),
   ],
 };
-TODAY_SUMMARY.rooms = ROOMS.rooms.map(({ id, name, emoji }) => ({ id, name, emoji }));
+/** Real room ids are GUIDs (Hoy ignores a «room» filter that is not one). */
+export const roomGuid = (i: number) => `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`;
+TODAY_SUMMARY.rooms = ROOMS.rooms.map(({ name, emoji }, i) => ({ id: roomGuid(i), name, emoji }));
 
 /** #screen-complete: «Limpiar nevera por dentro» (Cocina · Nevera, 30 min, 5 subtasks) and its «¡Hecho!». */
 export const COMPLETE_TASK = {

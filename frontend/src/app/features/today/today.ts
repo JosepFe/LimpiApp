@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -12,6 +12,8 @@ import { TaskSummary } from '../../shared/task.model';
 import { localToday } from '../tasks/task-form';
 import { plural } from '../rooms/rooms.model';
 import { apiQuery, longDay, TodayFilters, TodayResponse } from './today.model';
+
+const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * #screen-today (E04/US-002): household health, what is pending, my streak and the tasks of the day. On desktop the
@@ -34,15 +36,22 @@ export class Today {
   private readonly refresh = inject(RefreshBus);
   protected readonly session = inject(SessionStore);
   protected readonly plural = plural;
-  protected readonly date = longDay(localToday());
+  /** The household's day from the API (its time zone); the browser's only until the first answer. */
+  protected readonly date = computed(() => longDay(this.data()?.date ?? localToday()));
   protected readonly state = signal<LoadState>('loading');
   protected readonly data = signal<TodayResponse | null>(null);
   private loads = 0;
   private readonly query = toSignal(inject(ActivatedRoute).queryParamMap);
-  protected readonly filters = computed<TodayFilters>(() => {
-    const q = this.query();
-    return { mine: q?.get('f') === 'mine', room: q?.get('room') ?? null, quick: q?.get('max') === '15' };
-  });
+  protected readonly filters = computed<TodayFilters>(
+    () => {
+      const q = this.query();
+      const room = q?.get('room') ?? null;
+      // A room that is not an id (an old or hand-written link) is ignored instead of making the API fail.
+      return { mine: q?.get('f') === 'mine', room: room && GUID.test(room) ? room : null, quick: q?.get('max') === '15' };
+    },
+    // Opening or closing a sheet (?sheet=…) changes the query but not the filters: no reload for that.
+    { equal: (a, b) => a.mine === b.mine && a.room === b.room && a.quick === b.quick },
+  );
   protected readonly filtered = computed(() => {
     const f = this.filters();
     return f.mine || !!f.room || f.quick;
@@ -74,9 +83,11 @@ export class Today {
   );
 
   constructor() {
+    // Only these two drive the reload: load() reads other signals (data…) that must not become dependencies.
     effect(() => {
       this.refresh.version(); // reload after a sheet saved (new task, task done…)
-      void this.load(this.filters());
+      const filters = this.filters();
+      untracked(() => void this.load(filters));
     });
   }
 

@@ -49,3 +49,16 @@ test('when the API says it is too late, the toast says so', async ({ page, api }
   await page.getByTestId('complete-undo').click();
   await expect(page.getByRole('status')).toHaveText('Ya no se puede deshacer.');
 });
+
+test('opening and closing the sheet does not reload Hoy', async ({ page, api }) => {
+  mockDoneAndUndone(api, (route) => route.fulfill({ status: 204, body: '' }));
+  await page.goto('/today');
+  await expect(page.getByTestId('task-row').first()).toBeVisible();
+  await page.waitForTimeout(500); // a reload loop (an effect depending on what it loads) would show up here
+  const before = api.calls.filter((c) => c.path === '/households/h-casa/today').length;
+  await page.getByRole('button', { name: 'Marcar hecha: Limpiar nevera por dentro', exact: true }).click();
+  await page.getByTestId('complete-cancel').click();
+  await expect(page.getByTestId('sheet-complete')).toHaveCount(0);
+  await page.waitForTimeout(500);
+  expect(api.calls.filter((c) => c.path === '/households/h-casa/today').length).toBe(before);
+});

@@ -211,10 +211,14 @@ namespace LimpiApp.Api.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_completion_photos");
 
-                    b.HasIndex("CompletionId")
-                        .HasDatabaseName("ix_completion_photos_completion_id");
+                    b.HasIndex("CompletionId", "Position")
+                        .IsUnique()
+                        .HasDatabaseName("ix_completion_photos_completion_id_position");
 
-                    b.ToTable("completion_photos", (string)null);
+                    b.ToTable("completion_photos", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_completion_photos_position", "position >= 0 AND position < 3");
+                        });
                 });
 
             modelBuilder.Entity("LimpiApp.Api.Data.Entities.Household", b =>

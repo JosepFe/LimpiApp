@@ -41,3 +41,26 @@ describe('apiQuery', () => {
     expect(apiQuery({ mine: true, room: 'r', quick: true })).toBe('?filter=mine&room=r&max=15');
   });
 });
+
+describe('Today with the household day', () => {
+  it('the header shows the date the API answers (the household zone), and a non-id room is ignored', async () => {
+    const api = { get: vi.fn().mockResolvedValue({ date: '2026-10-15', summary: { health: null, pendingToday: 0, streak: 0 }, groups: { overdue: [], today: [], upcoming: [] }, rooms: [] }) };
+    const { provideRouter, Router } = await import('@angular/router');
+    const { signal } = await import('@angular/core');
+    const { TestBed } = await import('@angular/core/testing');
+    const { HouseholdApi } = await import('../../core/household-api');
+    const { SessionStore } = await import('../../core/session.store');
+    const { Today } = await import('./today');
+    TestBed.configureTestingModule({
+      imports: [Today],
+      providers: [provideRouter([{ path: 'today', component: Today }]), { provide: HouseholdApi, useValue: api }, { provide: SessionStore, useValue: { household: signal({ name: 'Casa' }) } }],
+    });
+    await TestBed.inject(Router).navigateByUrl('/today?room=../../x');
+    const fixture = TestBed.createComponent(Today);
+    fixture.detectChanges();
+    await new Promise((r) => setTimeout(r));
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.ph-sub')?.textContent).toBe('Jueves 15 de octubre');
+    expect(api.get).toHaveBeenCalledWith('/today');
+  });
+});

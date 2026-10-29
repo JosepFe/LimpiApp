@@ -41,14 +41,29 @@ public static class CompletionsEndpoints
         }
 
         var now = clock.Now;
-        if (completion.UndoneAt is not null || now - completion.CompletedAt > UndoWindow)
+        if (now - completion.CompletedAt > UndoWindow)
         {
             return TypedResults.Problem("Ya no se puede deshacer.", statusCode: StatusCodes.Status409Conflict);
         }
 
-        completion.UndoneAt = now;
-        completion.Task.NextDue = completion.PrevNextDue;
-        await db.SaveChangesAsync(ct);
+        // Claimed atomically: of two undos at the same moment only one counts.
+        var undone = await db.Completions.Where(c => c.Id == id && c.UndoneAt == null)
+            .ExecuteUpdateAsync(c => c.SetProperty(x => x.UndoneAt, now), ct);
+        if (undone == 0)
+        {
+            return TypedResults.Problem("Ya no se puede deshacer.", statusCode: StatusCodes.Status409Conflict);
+        }
+
+        // Back to the previous due date only if nothing newer happened: no later completion and the task still due
+        // when this one left it (an edit or someone else's completion in between is kept).
+        var task = completion.Task;
+        var newerDone = await db.Completions.AnyAsync(c => c.TaskId == task.Id && c.UndoneAt == null && c.CompletedAt > completion.CompletedAt, ct);
+        if (!newerDone && task.NextDue == DueRules.Next(completion.CompletedOn, task.FreqValue, task.FreqUnit))
+        {
+            task.NextDue = completion.PrevNextDue;
+            await db.SaveChangesAsync(ct);
+        }
+
         return TypedResults.NoContent();
     }
 

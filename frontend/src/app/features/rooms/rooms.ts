@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -49,7 +49,7 @@ export class Rooms {
     // Loads, and reloads when a sheet saved something (a task from the detail pane, a room…).
     effect(() => {
       this.refresh.version();
-      void this.load();
+      untracked(() => void this.load()); // load() reads other signals: they must not become dependencies
     });
   }
 

@@ -1,4 +1,6 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, input, OnDestroy, OnInit, output, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { HouseholdApi } from '../../core/household-api';
 import { RefreshBus } from '../../core/refresh-bus';
 import { SessionStore } from '../../core/session.store';
@@ -38,6 +40,8 @@ export function points(estimatedMinutes: number, done: number, total: number): n
 export class Complete implements OnInit, OnDestroy {
   private readonly api = inject(HouseholdApi);
   private readonly toast = inject(ToastService);
+  private readonly http = inject(HttpClient);
+  private destroyed = false;
   private readonly refresh = inject(RefreshBus);
   private readonly session = inject(SessionStore);
   readonly taskId = input.required<string>();
@@ -79,15 +83,18 @@ export class Complete implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
     this.photos().forEach((p) => URL.revokeObjectURL(p.url));
   }
 
   /** Up to 3, reduced to 1600 px in the browser before uploading. */
   protected async addPhotos(input: HTMLInputElement): Promise<void> {
-    const files = [...(input.files ?? [])].slice(0, MAX_PHOTOS - this.photos().length);
+    const files = [...(input.files ?? [])];
     input.value = '';
     for (const file of files) {
       const blob = await resizeImage(file).catch(() => file);
+      // Checked after the await: two quick picks must not go over 3, and a closed sheet keeps nothing.
+      if (this.destroyed || this.photos().length >= MAX_PHOTOS) return;
       this.photos.update((list) => [...list, { file: blob, url: URL.createObjectURL(blob) }]);
     }
   }
@@ -138,14 +145,16 @@ export class Complete implements OnInit, OnDestroy {
   /** «Listo»: closes and leaves «Tarea completada · Deshacer» a few seconds (only its author, 10 minutes: the API checks). */
   protected finish(): void {
     const result = this.result()!;
-    // The sheet is gone when the toast is used: the action talks to root services, not to this component.
-    const { api, toast, refresh, session } = this;
+    // The sheet is gone when the toast is used: the action talks to root services, not to this component, and to
+    // this household even if the user switches to another one meanwhile.
+    const { http, toast, refresh, session } = this;
+    const url = this.api.url(`/completions/${result.completionId}/undo`);
     this.closed.emit();
     toast.show('Tarea completada', {
       label: 'Deshacer',
       run: async () => {
         try {
-          await api.post(`/completions/${result.completionId}/undo`, null);
+          await firstValueFrom(http.post(url, null));
           refresh.bump();
           void session.refreshCounters();
         } catch {

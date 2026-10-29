@@ -47,6 +47,14 @@ export class MockApi {
   assertAllMocked(): void {
     expect(this.unmocked, `unmocked /api requests: ${this.unmocked.join(', ')}`).toEqual([]);
   }
+
+  /** A screen that keeps asking the same thing (an effect depending on what it loads) fails the test. */
+  assertNoRequestStorm(max = 10): void {
+    const counts = new Map<string, number>();
+    for (const c of this.calls) counts.set(`${c.method} ${c.path}`, (counts.get(`${c.method} ${c.path}`) ?? 0) + 1);
+    const storms = [...counts].filter(([, n]) => n > max).map(([k, n]) => `${k} ×${n}`);
+    expect(storms, `requests repeated more than ${max} times: ${storms.join(', ')}`).toEqual([]);
+  }
 }
 
 export const test = base.extend<{ api: MockApi }>({
@@ -57,6 +65,7 @@ export const test = base.extend<{ api: MockApi }>({
       await api.install();
       await use(api);
       api.assertAllMocked();
+      api.assertNoRequestStorm();
     },
     { auto: true },
   ],

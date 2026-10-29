@@ -73,15 +73,32 @@ public static class PhotosEndpoints
             Position = completion.Photos.Count,
             Path = $"{householdId}/{completion.Id}/{Guid.CreateVersion7()}{Extension(contentType!)}",
         };
-        var full = System.IO.Path.Combine(PhotosDir(config), photo.Path);
-        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(full)!);
-        await using (var target = File.Create(full))
+        // The row first: the unique (completion, position) index and position < 3 stop a 4th photo from two uploads
+        // at once; then the file, and if writing it fails the row goes (no row without file, no orphan file).
+        db.CompletionPhotos.Add(photo);
+        try
         {
-            await file.CopyToAsync(target, ct);
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException)
+        {
+            return TypedResults.Problem("Otra foto se estaba subiendo a la vez. Inténtalo de nuevo.", statusCode: StatusCodes.Status409Conflict);
         }
 
-        db.CompletionPhotos.Add(photo);
-        await db.SaveChangesAsync(ct);
+        var full = System.IO.Path.Combine(PhotosDir(config), photo.Path);
+        try
+        {
+            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(full)!);
+            await using var target = File.Create(full);
+            await file.CopyToAsync(target, ct);
+        }
+        catch
+        {
+            db.CompletionPhotos.Remove(photo);
+            await db.SaveChangesAsync(CancellationToken.None);
+            throw;
+        }
+
         return TypedResults.Created(Url(householdId, photo.Id), new PhotoDto(photo.Id, Url(householdId, photo.Id)));
     }
 
