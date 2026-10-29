@@ -1,0 +1,6 @@
+/* Playwright tests (e2e/) and their config: type checking only; Playwright compiles them itself. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": ["node"], "noEmit": true },
+  "include": ["e2e/**/*.ts", "playwright.config.ts"]
+}

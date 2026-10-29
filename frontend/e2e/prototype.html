@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LimpiApp Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   LimpiApp prototype - VISUAL CONTRACT
+   Tokens = ComprApp design system (mobile-first, 15px base)
+   ========================================================= */
+:root{
+  --primary:#2D7D46; --primary-light:#4CAF50; --primary-dark:#1B5E20; --on-primary:#FFFFFF; --primary-bg:rgba(45,125,70,.10);
+  --secondary:#F59E0B; --secondary-light:#FCD34D;
+  --bg:#FAFAFA; --surface:#FFFFFF; --surface-2:#F5F5F5; --border:#E5E7EB; --scrim:rgba(0,0,0,.5);
+  --text:#1A1A1A; --text-2:#4B5563; --text-3:#697080;
+  --success:#10B981; --success-text:#047857; --success-bg:rgba(5,120,86,.08);
+  --error:#EF4444;   --error-text:#C81E1E;   --error-bg:rgba(220,38,38,.08);
+  --warning:#F59E0B; --warning-text:#92400E; --warning-bg:rgba(146,64,14,.08);
+  --info:#3B82F6;    --info-text:#1D4ED8;    --info-bg:rgba(29,78,216,.08);
+  --shadow:rgba(0,0,0,.08);
+  --sh-sm:0 1px 2px var(--shadow); --sh-md:0 2px 8px var(--shadow); --sh-lg:0 4px 16px var(--shadow); --sh-xl:0 8px 32px var(--shadow);
+  --r-sm:4px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-pill:24px;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px; --s12:48px;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  --nav-h:60px; --side-w:240px;
+  /* avatars and room colors (token keys, never raw hex in the app) */
+  --av-teal:#0F766E; --av-violet:#6D28D9; --av-amber:#B45309; --av-rose:#BE185D; --av-blue:#1D4ED8; --av-green:#15803D;
+  --rc-green:#22C55E; --rc-orange:#F97316; --rc-blue:#3B82F6; --rc-violet:#8B5CF6; --rc-rose:#EC4899; --rc-teal:#14B8A6; --rc-amber:#F59E0B; --rc-slate:#64748B;
+  --terminal-bg:#111827;
+  /* DECISION-003: constant colors (same in both themes) for the toast and the toggle knob */
+  --toast-text:#F9FAFB; --toast-action:#86EFAC; --knob:#FFFFFF;
+  /* DECISION-006: Google brand blue for the "G" of the sign-in button (same in both themes) */
+  --google-blue:#4285F4;
+}
+:root[data-theme="dark"]{
+  --primary:#4CAF50; --primary-light:#66BB6A; --primary-dark:#2D7D46; --on-primary:#0B1F10; --primary-bg:rgba(76,175,80,.16);
+  --bg:#121212; --surface:#1E1E1E; --surface-2:#2A2A2A; --border:#374151; --scrim:rgba(0,0,0,.65);
+  --text:#E5E7EB; --text-2:#D1D5DB; --text-3:#9CA3AF;
+  --success-text:#34D399; --success-bg:rgba(52,211,153,.14);
+  --error-text:#FC8093;   --error-bg:rgba(251,113,133,.14);
+  --warning-text:#FBBF24; --warning-bg:rgba(251,191,36,.14);
+  --info-text:#93C5FD;    --info-bg:rgba(147,197,253,.14);
+  --shadow:rgba(0,0,0,.3);
+  --av-teal:#2DD4BF; --av-violet:#A78BFA; --av-amber:#FBBF24; --av-rose:#F472B6; --av-blue:#60A5FA; --av-green:#4ADE80;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--font);font-size:15px;line-height:1.5;color:var(--text);background:var(--bg);min-height:100vh;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+a{color:inherit;text-decoration:none}
+[hidden]{display:none !important}
+.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.sm{width:18px;height:18px}.ic.lg{width:28px;height:28px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+/* ---------- demo chrome (hidden by ?bare) ---------- */
+.demo-bar{position:sticky;top:0;z-index:100;background:#111827;color:#E5E7EB;font-size:12px;padding:6px 10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.demo-bar b{color:#fff;margin-right:4px}
+.demo-bar select,.demo-bar button{background:#1F2937;color:#E5E7EB;border:1px solid #374151;border-radius:6px;padding:3px 6px;font-size:12px}
+.demo-bar button.on{background:#2D7D46;border-color:#2D7D46;color:#fff}
+body.bare .demo-bar{display:none}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:1fr;min-height:100vh}
+.sidebar{display:none}
+.main{min-width:0;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px)}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);z-index:30}
+.bn-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:48px;font-size:11px;font-weight:500;color:var(--text-3);position:relative}
+.bn-item.active{color:var(--primary)}
+.bn-item .dot{position:absolute;top:6px;left:calc(50% + 6px);min-width:16px;height:16px;border-radius:8px;background:var(--error);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
+body.nonav .bottom-nav{display:none}
+body.nonav .main{padding-bottom:0}
+.screen{display:none}
+.screen.active{display:block}
+.content{max-width:720px;margin:0 auto;padding:0 var(--s4) var(--s6)}
+.page-header{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--border);min-height:56px;padding:var(--s2) var(--s4);display:flex;align-items:center;gap:var(--s3)}
+body:not(.bare) .page-header{top:36px}
+.ph-title{font-size:20px;font-weight:600;line-height:1.3;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph-sub{font-size:13px;color:var(--text-3);font-weight:400}
+.ph-actions{display:flex;gap:var(--s1);align-items:center}
+.icon-btn{width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--text-2)}
+.icon-btn:hover{background:var(--surface-2)}
+.home-switch{display:flex;align-items:center;gap:6px;font-weight:600;font-size:17px;min-height:44px;max-width:100%}
+.home-switch span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- buttons, chips, inputs ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:var(--r-lg);font-weight:600;font-size:15px;border:1px solid transparent;transition:background .15s}
+.btn-primary{background:var(--primary);color:var(--on-primary)}
+.btn-primary:hover{background:var(--primary-dark)}
+:root[data-theme="dark"] .btn-primary:hover{background:var(--primary-light)}
+.btn-secondary{background:var(--surface);border-color:var(--border);color:var(--text)}
+.btn-ghost{color:var(--primary);min-height:44px;padding:0 12px}
+.btn-danger{background:var(--error-bg);color:var(--error-text)}
+.btn-block{display:flex;width:100%}
+.btn-sm{min-height:36px;padding:0 12px;font-size:13px;border-radius:var(--r-md)}
+.btn[disabled],.btn.disabled{background:var(--border);color:var(--text-3);cursor:not-allowed}
+.btn-google{background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border-radius:var(--r-pill);border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:500;color:var(--text-2);white-space:nowrap}
+.chip.active{background:var(--primary-bg);border-color:var(--primary);color:var(--primary-dark)}
+:root[data-theme="dark"] .chip.active{color:var(--primary)} /* DECISION-004: contrast >= 4.5:1 in both themes */
+.chip .x{color:var(--text-3);margin-left:2px}
+.chips{display:flex;gap:var(--s2);flex-wrap:wrap}
+.chips.scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 calc(var(--s4) * -1);padding:0 var(--s4)}
+.chips.scroll::-webkit-scrollbar{display:none}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:var(--s4)}
+.field>label,.lbl{font-size:13px;font-weight:600;color:var(--text-2)}
+.field .help{font-size:12px;color:var(--text-3)}
+.field .err{font-size:12px;color:var(--error-text);display:none}
+.field.invalid .err{display:block}
+.field.invalid .input,.field.invalid .select{border-color:var(--error)}
+.input,.select,.textarea{width:100%;min-height:48px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);font-size:16px}
+.textarea{min-height:88px;resize:vertical;line-height:1.5}
+.input::placeholder,.textarea::placeholder{color:var(--text-3)}
+.select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--text-3) 50%),linear-gradient(135deg,var(--text-3) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:36px}
+.form-section{display:flex;align-items:center;justify-content:space-between;margin:var(--s6) 0 var(--s3);padding-top:var(--s4);border-top:1px solid var(--border)}
+.form-section:first-child{margin-top:0;border-top:0;padding-top:0}
+.form-section-title{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+.info-btn{width:28px;height:28px;border-radius:50%;color:var(--text-3);font-size:14px;border:1px solid var(--border)}
+.info-pop{background:var(--surface-2);border-radius:var(--r-md);padding:var(--s3);font-size:13px;color:var(--text-2);margin-bottom:var(--s3)}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:var(--surface)}
+.stepper button{width:44px;height:44px;font-size:20px;color:var(--text-2)}
+.stepper output{min-width:64px;text-align:center;font-weight:600}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--surface-2);border-radius:var(--r-lg);padding:3px;gap:3px}
+.seg button{min-height:40px;border-radius:var(--r-md);font-weight:500;font-size:14px;color:var(--text-2)}
+.seg button.active{background:var(--surface);color:var(--text);box-shadow:var(--sh-sm);font-weight:600}
+.toggle{width:46px;height:28px;border-radius:14px;background:var(--border);position:relative;flex:none}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--knob);transition:transform .15s;box-shadow:var(--sh-sm)}
+.toggle.on{background:var(--primary)}
+.toggle.on::after{transform:translateX(18px)}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:var(--s1);border-bottom:1px solid var(--border);margin:0 calc(var(--s4) * -1);padding:0 var(--s4);background:var(--surface);position:sticky;top:56px;z-index:15}
+body:not(.bare) .tabs{top:92px}
+.tab{min-height:48px;padding:0 var(--s4);font-weight:500;color:var(--text-3);border-bottom:2px solid transparent;display:inline-flex;align-items:center}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+
+/* ---------- badges, avatars, ring, progress ---------- */
+.badge{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:11px;font-size:12px;font-weight:600;white-space:nowrap}
+.badge.overdue{background:var(--error-bg);color:var(--error-text)}
+.badge.today{background:var(--warning-bg);color:var(--warning-text)}
+.badge.soon{background:var(--info-bg);color:var(--info-text)}
+.badge.ok{background:var(--surface-2);color:var(--text-3)}
+.badge.success{background:var(--success-bg);color:var(--success-text)}
+.badge.neutral{background:var(--surface-2);color:var(--text-2)}
+.badge.owner{background:var(--primary-bg);color:var(--primary)}
+.pri{font-size:12px;font-weight:600}
+.pri.high{color:var(--error-text)}.pri.medium{color:var(--warning-text)}.pri.low{color:var(--text-3)}
+.avatar{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex:none}
+:root[data-theme="dark"] .avatar{color:#111827}
+.avatar.lg{width:48px;height:48px;font-size:18px}.avatar.sm{width:24px;height:24px;font-size:11px}
+.avatar.teal{background:var(--av-teal)}.avatar.violet{background:var(--av-violet)}.avatar.amber{background:var(--av-amber)}.avatar.rose{background:var(--av-rose)}
+.ring{--v:0;--c:var(--primary);width:56px;height:56px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--v) * 1%),var(--border) 0);display:inline-flex;align-items:center;justify-content:center;position:relative;flex:none}
+.ring::before{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--surface)}
+.ring b{position:relative;font-size:15px;font-weight:700}
+.ring.sm{width:40px;height:40px}.ring.sm::before{inset:5px}.ring.sm b{font-size:12px}
+.ring.lg{width:88px;height:88px}.ring.lg::before{inset:9px}.ring.lg b{font-size:24px}
+.ring.h-ok{--c:var(--success)}.ring.h-good{--c:var(--primary)}.ring.h-warn{--c:var(--warning)}.ring.h-bad{--c:var(--error)}
+.hl{font-size:12px;font-weight:600}
+.hl.h-ok{color:var(--success-text)}.hl.h-good{color:var(--primary)}.hl.h-warn{color:var(--warning-text)}.hl.h-bad{color:var(--error-text)}
+.bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;background:var(--primary)}
+.bar.ok i{background:var(--success)}.bar.warn i{background:var(--warning)}.bar.bad i{background:var(--error)}
+
+/* ---------- cards, rows ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-sm)}
+.card-pad{padding:var(--s4)}
+.group-h{display:flex;align-items:center;gap:var(--s2);padding:var(--s4) 0 var(--s2);font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3)}
+.group-h .count{background:var(--surface-2);color:var(--text-2);border-radius:10px;padding:0 8px;font-size:12px;height:20px;display:inline-flex;align-items:center}
+.group-h.overdue{color:var(--error-text)}.group-h.today{color:var(--warning-text)}
+.list{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.row{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);min-height:64px;border-bottom:1px solid var(--border);text-align:left;width:100%;background:var(--surface)}
+.row:last-child{border-bottom:0}
+.row:hover{background:var(--surface-2)}
+.row .body{flex:1;min-width:0}
+.row .t{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .s{font-size:13px;color:var(--text-3);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.row .emo{font-size:22px;width:36px;text-align:center;flex:none}
+.row .end{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.task-check{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);flex:none;display:inline-flex;align-items:center;justify-content:center;color:transparent}
+.task-check:hover{border-color:var(--primary);color:var(--primary)}
+.task-check.done{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.row.sel{background:var(--primary-bg);box-shadow:inset 3px 0 0 var(--primary)}
+.check{display:flex;align-items:center;gap:var(--s3);min-height:48px;padding:0 var(--s1);width:100%;text-align:left}
+.check .box{width:24px;height:24px;border-radius:var(--r-sm);border:2px solid var(--border);display:inline-flex;align-items:center;justify-content:center;color:transparent;flex:none}
+.check.done .box{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.check.done .lab{color:var(--text-3);text-decoration:line-through}
+.fab{position:fixed;right:var(--s4);bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + var(--s4));width:56px;height:56px;border-radius:50%;background:var(--primary);color:var(--on-primary);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-xl);z-index:25}
+.fab-ext{width:auto;padding:0 20px;border-radius:28px;gap:8px;font-weight:600}
+body.nonav .fab{bottom:var(--s4)}
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--s3);padding:var(--s12) var(--s4)}
+.empty .big{font-size:56px;line-height:1}
+.empty h3{font-size:20px;font-weight:600}
+.empty p{color:var(--text-2);max-width:320px}
+.skel{background:linear-gradient(90deg,var(--surface-2) 25%,var(--border) 37%,var(--surface-2) 63%);background-size:400% 100%;animation:sh 1.4s ease infinite;border-radius:var(--r-md)}
+@keyframes sh{0%{background-position:100% 50%}100%{background-position:0 50%}}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}}
+.banner{display:flex;gap:var(--s3);align-items:center;padding:var(--s3) var(--s4);border-radius:var(--r-lg);font-size:14px}
+.banner.error{background:var(--error-bg);color:var(--error-text);margin:var(--s3) 0}
+.banner.install{background:var(--primary-bg);color:var(--text);border:1px solid var(--primary)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 12px);background:var(--terminal-bg);color:var(--toast-text);border-radius:var(--r-lg);padding:12px 16px;display:flex;gap:16px;align-items:center;box-shadow:var(--sh-xl);z-index:80;font-size:14px;max-width:calc(100vw - 32px)}
+.toast button{color:var(--toast-action);font-weight:600}
+
+/* ---------- overlays ---------- */
+.overlay{position:fixed;inset:0;display:none;z-index:60}
+.overlay.open{display:block}
+.scrim{position:absolute;inset:0;background:var(--scrim)}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:85vh;background:var(--surface);border-radius:var(--r-xl) var(--r-xl) 0 0;box-shadow:var(--sh-xl);display:flex;flex-direction:column}
+.sheet.full{top:0;max-height:none;border-radius:0}
+.sheet-handle{width:32px;height:4px;border-radius:2px;background:var(--border);margin:8px auto 0;flex:none}
+.sheet.full .sheet-handle{display:none}
+.sheet-head{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);border-bottom:1px solid var(--border);flex:none;min-height:56px}
+.sheet-head h2{font-size:17px;font-weight:600;flex:1}
+.sheet-body{padding:var(--s4);overflow:auto;flex:1}
+.sheet-foot{padding:var(--s3) var(--s4) calc(var(--s3) + env(safe-area-inset-bottom));border-top:1px solid var(--border);flex:none;display:flex;gap:var(--s3);align-items:center;background:var(--surface)}
+.sheet-foot .btn{flex:1}
+
+/* ---------- misc blocks ---------- */
+.hero{background:linear-gradient(135deg,var(--primary-bg),transparent);border:1px solid var(--border);border-radius:var(--r-xl);padding:var(--s4);display:flex;gap:var(--s4);align-items:center;margin-top:var(--s4)}
+.hero .meta{flex:1;min-width:0}
+.hero .big{font-size:17px;font-weight:600}
+.hero .sub{font-size:13px;color:var(--text-2)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px var(--s4);font-size:14px}
+.kv dt{color:var(--text-3)}.kv dd{font-weight:500}
+.mono{font-family:'JetBrains Mono','Fira Code',Consolas,monospace;font-size:13px}
+.copy-field{display:flex;gap:var(--s2);align-items:center;background:var(--surface-2);border-radius:var(--r-md);padding:6px 6px 6px 12px}
+.copy-field .v{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.photo{width:88px;height:88px;border-radius:var(--r-md);background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:30px;position:relative;flex:none}
+.photo.add{border-style:dashed;color:var(--text-3);flex-direction:column;font-size:12px;gap:2px}
+.photo .rm{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:#111827;color:#fff;font-size:12px}
+.photos{display:flex;gap:var(--s3);overflow-x:auto;padding:6px 0}
+.rep-row{display:flex;gap:var(--s2);align-items:center;margin-bottom:var(--s2)}
+.rep-row .input{flex:1}
+.rep-row .rm{width:40px;height:40px;color:var(--text-3);border-radius:50%}
+.add-link{color:var(--primary);font-weight:600;min-height:44px;display:inline-flex;align-items:center;gap:6px}
+.swatches{display:flex;gap:var(--s2);flex-wrap:wrap}
+.sw{width:36px;height:36px;border-radius:50%;border:3px solid transparent;box-shadow:inset 0 0 0 2px var(--surface)}
+.sw.sel{border-color:var(--text)}
+.emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.emoji-grid button{height:40px;border-radius:var(--r-md);font-size:22px;background:var(--surface-2)}
+.emoji-grid button.sel{outline:2px solid var(--primary);background:var(--primary-bg)}
+.tpl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--s3)}
+.tpl{border:2px solid var(--border);border-radius:var(--r-lg);padding:var(--s3);display:flex;flex-direction:column;gap:2px;background:var(--surface);text-align:left;min-height:84px;position:relative}
+.tpl.sel{border-color:var(--primary);background:var(--primary-bg)}
+.tpl .e{font-size:26px}.tpl .n{font-weight:600}.tpl .c{font-size:12px;color:var(--text-3)}
+.tpl .tick{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:var(--primary);color:var(--on-primary);display:none;align-items:center;justify-content:center}
+.tpl.sel .tick{display:flex}
+.podium{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--s3);align-items:end;margin:var(--s4) 0}
+.pod{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.pod .blk{width:100%;border-radius:var(--r-lg) var(--r-lg) 0 0;background:var(--primary-bg);display:flex;align-items:flex-start;justify-content:center;padding-top:8px;font-weight:700;font-size:20px;color:var(--primary)}
+.pod.p1 .blk{height:96px}.pod.p2 .blk{height:72px}.pod.p3 .blk{height:56px}
+.pod .nm{font-weight:600;font-size:14px}.pod .pt{font-size:13px;color:var(--text-2)}
+.bars{display:flex;align-items:flex-end;gap:6px;height:140px;padding:var(--s2) 0}
+.bars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%}
+.bars .b i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--primary);min-height:3px}
+.bars .b.cur i{background:var(--primary-light)}
+.bars .b span{font-size:10px;color:var(--text-3)}
+.stack{display:flex;height:14px;border-radius:7px;overflow:hidden}
+.legend{display:flex;gap:var(--s4);flex-wrap:wrap;font-size:13px;color:var(--text-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s3)}
+.kpi{padding:var(--s3);text-align:center}.kpi b{display:block;font-size:22px;font-weight:700}.kpi span{font-size:12px;color:var(--text-3)}
+.day-h{font-size:13px;font-weight:600;color:var(--text-3);padding:var(--s4) 0 var(--s2)}
+.hide-mobile{display:none}
+.logo-mark{width:64px;height:64px;border-radius:18px;background:var(--primary);color:var(--on-primary);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto var(--s3)}
+.tc-hit{width:44px;height:44px;margin:-8px -6px -8px -10px;display:flex;align-items:center;justify-content:center;flex:none;border-radius:50%}
+.pane-detail{display:none}
+.twopane>.pane-list{min-width:0}
+.step-dots{display:flex;gap:6px;justify-content:center;margin-bottom:var(--s4)}
+.step-dots i{width:24px;height:4px;border-radius:2px;background:var(--border)}
+.step-dots i.on{background:var(--primary)}
+.spinner{width:20px;height:20px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--primary);animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation:none}}
+.sep-or{display:flex;align-items:center;gap:var(--s3);color:var(--text-3);font-size:13px;margin:var(--s4) 0}
+.sep-or::before,.sep-or::after{content:"";flex:1;height:1px;background:var(--border)}
+.legal{font-size:12px;color:var(--text-3);text-align:center;margin-top:var(--s6)}
+.filters{display:flex;flex-direction:column;gap:var(--s3);padding:var(--s3) 0}
+.sticky-sum{display:grid;grid-template-columns:1fr;gap:var(--s3)}
+.plain-list{list-style:none;display:flex;flex-direction:column}
+.menu-row{display:flex;align-items:center;gap:var(--s3);min-height:56px;padding:0 var(--s4);border-bottom:1px solid var(--border);width:100%;text-align:left;background:var(--surface)}
+.menu-row:last-child{border-bottom:0}
+.menu-row .t{flex:1;font-weight:500}
+.menu-row .v{color:var(--text-3);font-size:14px}
+.danger-t{color:var(--error-text)}
+.settings-grid{display:grid;grid-template-columns:1fr;gap:var(--s4)}
+@media (min-width:1024px){.settings-grid{grid-template-columns:1fr 1fr;align-items:start}}
+.tpl-grid{grid-template-columns:repeat(2,1fr)}
+@media (min-width:768px){.tpl-grid{grid-template-columns:repeat(4,1fr)}}
+.rooms-grid{display:grid;grid-template-columns:1fr;gap:var(--s3)}
+.donut{width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--av-teal) 0 46%,var(--av-violet) 0 84%,var(--av-amber) 0 100%);position:relative;flex:none}
+.donut::before{content:"";position:absolute;inset:22px;border-radius:50%;background:var(--surface)}
+.two-col{display:grid;grid-template-columns:1fr;gap:var(--s4)}
+@media (min-width:1024px){.two-col{grid-template-columns:1fr 1fr;align-items:start}}
+.sw-row{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap}
+.kit-block{margin-bottom:var(--s6)}
+.kit-block>h2{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:var(--s3)}
+.kit-row{display:flex;gap:var(--s3);flex-wrap:wrap;align-items:center}
+.tag-time{font-variant-numeric:tabular-nums}
+.pts-pill{display:inline-flex;align-items:center;gap:6px;background:var(--success-bg);color:var(--success-text);border-radius:var(--r-pill);padding:6px 14px;font-weight:700}
+.success-box{text-align:center;padding:var(--s6) var(--s4);display:flex;flex-direction:column;align-items:center;gap:var(--s3)}
+.success-box .big{font-size:56px;line-height:1}
+.photo-lg{width:100%;aspect-ratio:4/3;border-radius:var(--r-lg);background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:40px}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2)}
+.photo-grid .photo-lg{aspect-ratio:1;font-size:28px}
+.pane-detail .page-header{top:0 !important}
+.tabs{margin:0 !important;padding:0 var(--s4)}
+@media (min-width:768px){.tabs{padding:0 var(--s6)}}
+.sheet-head h2 span{display:inline}
+
+
+/* ---------- desktop >= 1024 ---------- */
+@media (min-width:768px){
+  .content{padding-left:var(--s6);padding-right:var(--s6)}
+  .kpis{gap:var(--s4)}
+}
+@media (min-width:1024px){
+  .app{grid-template-columns:var(--side-w) 1fr}
+  body.nonav .app{grid-template-columns:1fr}
+  body.nonav .sidebar{display:none}
+  .sidebar{display:flex;flex-direction:column;gap:var(--s1);position:sticky;top:0;height:100vh;background:var(--surface);border-right:1px solid var(--border);padding:var(--s4) var(--s3)}
+  body:not(.bare) .sidebar{top:36px;height:calc(100vh - 36px)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;padding:var(--s2) var(--s3) var(--s4)}
+  .brand i{font-style:normal;width:32px;height:32px;border-radius:9px;background:var(--primary);color:var(--on-primary);display:flex;align-items:center;justify-content:center}
+  .side-link{display:flex;align-items:center;gap:var(--s3);min-height:44px;padding:0 var(--s3);border-radius:var(--r-md);color:var(--text-2);font-weight:500}
+  .side-link:hover{background:var(--surface-2)}
+  .side-link.active{background:var(--primary-bg);color:var(--primary);font-weight:600}
+  .side-link .dot{margin-left:auto;min-width:20px;height:20px;border-radius:10px;background:var(--error);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 6px}
+  .side-foot{margin-top:auto;border-top:1px solid var(--border);padding-top:var(--s3);display:flex;flex-direction:column;gap:var(--s2)}
+  .side-home{display:flex;align-items:center;gap:var(--s3);padding:var(--s2) var(--s3);border-radius:var(--r-md);text-align:left;width:100%}
+  .side-home:hover{background:var(--surface-2)}
+  .side-home .nm{font-weight:600;font-size:14px;line-height:1.2}.side-home .sb{font-size:12px;color:var(--text-3)}
+  .bottom-nav{display:none}
+  .main{padding-bottom:var(--s8)}
+  .content{max-width:1100px}
+  .page-header .hide-desktop{display:none}
+  .hide-mobile{display:inline-flex !important}
+  .hide-desktop{display:none !important}
+  .pane-detail{display:block}
+  .fab{bottom:var(--s8);right:var(--s8)}
+  .tabs{top:56px}
+  body:not(.bare) .tabs{top:92px}
+  /* two-pane */
+  .twopane{display:grid;grid-template-columns:400px 1fr;gap:var(--s6);align-items:start}
+  .twopane>.pane-detail{position:sticky;top:calc(56px + var(--s4));background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--sh-sm);max-height:calc(100vh - 56px - var(--s8));overflow:auto}
+  body:not(.bare) .twopane>.pane-detail{top:calc(92px + var(--s4))}
+  .pane-detail .pane-empty{padding:var(--s12) var(--s6);text-align:center;color:var(--text-3)}
+  /* sheets become dialogs */
+  .sheet{left:50%;top:50%;bottom:auto;right:auto;transform:translate(-50%,-50%);width:480px;max-width:calc(100vw - 48px);max-height:85vh;border-radius:var(--r-xl)}
+  .sheet.full{width:640px;max-height:90vh;top:50%}
+  .sheet-handle{display:none}
+  .toast{bottom:var(--s8)}
+}
+@media (max-width:359px){ .kpis{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body class="bare-pending">
+
+<!-- SVG icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-today" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></symbol>
+  <symbol id="i-rooms" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM22 6l-10 7L2 6"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"/></symbol>
+  <symbol id="i-drag" viewBox="0 0 24 24"><path d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM9 22V12h6v10"/></symbol>
+</svg>
+
+<!-- ============ DEMO CHROME (hidden by ?bare) ============ -->
+<div class="demo-bar" id="demoBar">
+  <b>LimpiApp prototype</b>
+  <label>Pantalla <select id="demoScreen"></select></label>
+  <label>Estado <select id="demoState"></select></label>
+  <button id="demoTheme">Tema: claro</button>
+  <span id="demoVp"></span>
+</div>
+
+<div class="app">
+
+  <!-- ============ SIDEBAR (>= 1024) ============ -->
+  <aside class="sidebar" aria-label="Navegación principal">
+    <div class="brand"><i>✨</i> LimpiApp</div>
+    <a class="side-link" data-nav="today" data-testid="nav-today" href="#screen-today"><svg class="ic"><use href="#i-today"/></svg> Hoy <span class="dot">6</span></a>
+    <a class="side-link" data-nav="rooms" data-testid="nav-rooms" href="#screen-rooms"><svg class="ic"><use href="#i-rooms"/></svg> Habitaciones</a>
+    <a class="side-link" data-nav="activity" data-testid="nav-activity" href="#screen-history"><svg class="ic"><use href="#i-activity"/></svg> Actividad</a>
+    <a class="side-link" data-nav="household" data-testid="nav-household" href="#screen-ranking"><svg class="ic"><use href="#i-users"/></svg> Hogar</a>
+    <a class="side-link" data-nav="settings" data-testid="nav-settings" href="#screen-settings"><svg class="ic"><use href="#i-settings"/></svg> Ajustes</a>
+    <div class="side-foot">
+      <button class="side-home" data-testid="side-home-switcher" onclick="go('home-switcher')">
+        <span class="avatar teal">C</span>
+        <span style="flex:1;min-width:0"><span class="nm" style="display:block">Casa Pau y Josep</span><span class="sb">3 miembros</span></span>
+        <svg class="ic sm"><use href="#i-down"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+<!--S:login-->
+<section class="screen" id="screen-login" data-testid="screen-login">
+<div class="content" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;max-width:420px">
+  <div style="text-align:center;margin-bottom:var(--s8)">
+    <div class="logo-mark" aria-hidden="true">✨</div>
+    <h1 style="font-size:28px;font-weight:700">LimpiApp</h1>
+    <p style="color:var(--text-2);margin-top:4px">La casa limpia, entre todos.</p>
+  </div>
+
+  <div data-s="default error loading">
+    <div class="banner error" data-s="error" role="alert" data-testid="login-error"><svg class="ic sm" aria-hidden="true"><use href="#i-x"/></svg><span>No hemos podido iniciar sesión. Inténtalo de nuevo.</span></div>
+    <button class="btn btn-google btn-block" data-testid="login-google" data-s="default error" data-toast="Conectando con Google…">
+      <span style="font-weight:700;font-size:17px;color:var(--google-blue);width:22px;text-align:center" aria-hidden="true">G</span>
+      Continuar con Google</button>
+    <button class="btn btn-google btn-block disabled" disabled data-s="loading" data-testid="login-google-loading"><span class="spinner"></span> Conectando…</button>
+
+    <div class="sep-or">o con tu email</div>
+
+    <div class="field">
+      <label for="login-email">Email</label>
+      <input id="login-email" class="input" type="email" inputmode="email" autocomplete="email" placeholder="tu@email.com" value="josep@example.com" data-testid="login-email">
+    </div>
+    <button class="btn btn-primary btn-block" data-s="default error" data-testid="login-magic" data-state-to="link-sent"><svg class="ic sm" aria-hidden="true"><use href="#i-mail"/></svg> Enviarme un enlace</button>
+    <button class="btn btn-primary btn-block disabled" disabled data-s="loading"><span class="spinner"></span> Enviando…</button>
+    <p class="legal">Al continuar aceptas el uso de tus datos para gestionar tu hogar. Sin contraseñas.</p>
+  </div>
+
+  <div data-s="link-sent" class="success-box" data-testid="login-link-sent">
+    <div class="big" aria-hidden="true">📬</div>
+    <h2 style="font-size:20px">Revisa tu correo</h2>
+    <p style="color:var(--text-2)">Te hemos enviado un enlace de acceso a <b>josep@example.com</b>. Ábrelo desde este dispositivo.</p>
+    <button class="btn btn-secondary btn-block" data-state-to="default" data-testid="login-resend">Usar otro email</button>
+  </div>
+</div></section>
+<!--E:login-->
+<!--S:onboarding-->
+<section class="screen" id="screen-onboarding" data-testid="screen-onboarding">
+<div class="content" style="max-width:640px;padding-top:var(--s8)">
+  <div data-s="default step-templates error">
+    <div class="step-dots" aria-label="Paso"><i class="on"></i><i data-s="step-templates" style="background:var(--primary)"></i></div>
+    <div data-s="default error">
+      <h1 style="font-size:24px;font-weight:700">Crea tu hogar</h1>
+      <p style="color:var(--text-2);margin:4px 0 var(--s6)">Dale un nombre. Podrás invitar a quien vive contigo después.</p>
+      <div class="banner error" data-s="error" role="alert"><svg class="ic sm" aria-hidden="true"><use href="#i-x"/></svg><span>No hemos podido crear el hogar. Inténtalo de nuevo.</span></div>
+      <div class="field"><label for="ob-name">Nombre del hogar</label>
+        <input id="ob-name" class="input" value="Casa Pau y Josep" data-testid="onboarding-name" maxlength="60"></div>
+      <div class="field"><label for="ob-tz">Zona horaria</label>
+        <select id="ob-tz" class="select" data-testid="onboarding-timezone"><option>Europe/Madrid</option><option>Atlantic/Canary</option><option>Europe/London</option></select>
+        <span class="help">Define cuándo cambia el día para recurrencias y rachas.</span></div>
+      <button class="btn btn-primary btn-block" data-state-to="step-templates" data-testid="onboarding-next">Siguiente</button>
+    </div>
+    <div data-s="step-templates">
+      <h1 style="font-size:24px;font-weight:700">¿Qué habitaciones tienes?</h1>
+      <p style="color:var(--text-2);margin:4px 0 var(--s4)">Elige plantillas: cada una trae tareas sugeridas que podrás editar.</p>
+      <div class="tpl-grid" data-testid="template-grid"><button class="tpl sel" data-toggle="sel" data-testid="template-card" aria-pressed="true"><span class="tick"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="e">🍳</span><span class="n">Cocina</span><span class="c">6 tareas</span></button><button class="tpl sel" data-toggle="sel" data-testid="template-card" aria-pressed="true"><span class="tick"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="e">🛁</span><span class="n">Baño</span><span class="c">6 tareas</span></button><button class="tpl sel" data-toggle="sel" data-testid="template-card" aria-pressed="true"><span class="tick"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="e">🛏️</span><span class="n">Dormitorio</span><span class="c">5 tareas</span></button><button class="tpl sel" data-toggle="sel" data-testid="template-card" aria-pressed="true"><span class="tick"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="e">🛋️</span><span class="n">Salón</span><span class="c">4 tareas</span></button><button class="tpl" data-toggle="sel" data-testid="template-card" aria-pressed="false"><span class="tick"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="e">🚪</span><span class="n">Recibidor</span><span class="c">2 tareas</span></button><button class="tpl" data-toggle="sel" data-testid="template-card" aria-pressed="false"><span class="tick"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="e">🧺</span><span class="n">Lavadero</span><span class="c">3 tareas</span></button><button class="tpl" data-toggle="sel" data-testid="template-card" aria-pressed="false"><span class="tick"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="e">💻</span><span class="n">Despacho</span><span class="c">3 tareas</span></button><button class="tpl sel" data-toggle="sel" data-testid="template-card" aria-pressed="true"><span class="tick"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="e">🌿</span><span class="n">Terraza</span><span class="c">3 tareas</span></button></div>
+      <p class="help" style="margin:var(--s3) 0 var(--s4);font-size:12px;color:var(--text-3)"><span data-testid="template-summary">5 habitaciones · 24 tareas</span></p>
+      <div style="display:flex;gap:var(--s3)">
+        <button class="btn btn-secondary" data-state-to="default" style="flex:0 0 auto">Atrás</button>
+        <button class="btn btn-primary" style="flex:1" data-state-to="creating" data-testid="onboarding-create">Crear hogar</button>
+      </div>
+    </div>
+  </div>
+  <div data-s="creating" class="success-box" data-testid="onboarding-creating" style="padding-top:96px">
+    <span class="spinner" style="width:40px;height:40px"></span>
+    <h2 style="font-size:20px">Preparando tu hogar…</h2>
+    <p style="color:var(--text-2)">Creando habitaciones y tareas sugeridas.</p>
+  </div>
+</div></section>
+<!--E:onboarding-->
+<!--S:join-->
+<section class="screen" id="screen-join" data-testid="screen-join">
+<div class="content" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;max-width:420px">
+  <div style="text-align:center;margin-bottom:var(--s6)"><div class="logo-mark" aria-hidden="true">✨</div></div>
+  <div data-s="default" data-testid="join-valid">
+    <div class="card card-pad" style="text-align:center">
+      <p style="color:var(--text-3);font-size:13px">Pau te invita a unirte a</p>
+      <h1 style="font-size:24px;font-weight:700;margin:4px 0 var(--s4)">Casa Pau y Josep</h1>
+      <div style="display:flex;justify-content:center;margin-bottom:var(--s2)"><span class="avatar teal lg" title="Josep" aria-label="Josep">J</span><span style="margin-left:-8px"><span class="avatar violet lg" title="Pau" aria-label="Pau">P</span></span><span style="margin-left:-8px"><span class="avatar amber lg" title="Marta" aria-label="Marta">M</span></span></div>
+      <p style="color:var(--text-2);font-size:14px">3 miembros · 6 habitaciones</p>
+    </div>
+    <button class="btn btn-primary btn-block" style="margin-top:var(--s4)" data-go="today" data-toast="Te has unido al hogar" data-testid="join-accept">Unirme al hogar</button>
+    <button class="btn btn-ghost btn-block" data-go="login">Ahora no</button>
+  </div>
+  <div data-s="invalid" class="empty" data-testid="join-invalid"><div class="big">🔗</div><h3>Enlace no válido</h3><p>Este enlace de invitación no existe o se ha escrito mal. Pide uno nuevo a quien te invitó.</p><button class="btn btn-secondary" data-go="today">Ir a mis hogares</button></div>
+  <div data-s="expired" class="empty" data-testid="join-expired"><div class="big">⌛</div><h3>Invitación caducada</h3><p>Esta invitación ha caducado o se ha revocado. Pide un enlace nuevo.</p><button class="btn btn-secondary" data-go="today">Ir a mis hogares</button></div>
+  <div data-s="already-member" class="empty" data-testid="join-already"><div class="big">🏠</div><h3>Ya eres miembro</h3><p>Ya formas parte de <b>Casa Pau y Josep</b>.</p><button class="btn btn-primary" data-go="today">Ir a Hoy</button></div>
+</div></section>
+<!--E:join-->
+<!--S:today-->
+<section class="screen" id="screen-today" data-testid="screen-today"><header class="page-header"><button class="home-switch hide-desktop" data-go="home-switcher" data-testid="home-switch"><span>Casa Pau y Josep</span><svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button><h1 class="ph-title">Hoy<span class="ph-sub" style="display:block">Miércoles 14 de octubre</span></h1><div class="ph-actions"><button class="btn btn-primary btn-sm hide-mobile" data-go="task-form" data-testid="new-task-desktop"><svg class="ic sm" aria-hidden="true"><use href="#i-plus"/></svg> Nueva tarea</button></div></header><div class="twopane"><div class="pane-list">
+<div class="content">
+  
+<div class="hero" data-s="default no-results" data-testid="home-summary">
+  <span class="ring h-good lg" style="--v:78" role="img" aria-label="Salud 78%"><b>78</b></span>
+  <div class="meta"><div class="big">Hogar: Bien</div><div class="sub">78 % limpio · 6 tareas pendientes hoy</div>
+  <div style="margin-top:6px"><span class="badge today" data-testid="home-streak">🔥 Racha de 5 días</span></div></div>
+</div>
+  
+<div class="filters" data-s="default no-results" data-testid="today-filters">
+  <div class="seg" role="tablist" aria-label="Asignación" data-pick="active">
+    <button class="active" data-testid="filter-all">Todas</button><button data-testid="filter-mine">Mías</button></div>
+  <div class="chips scroll">
+    <button class="chip" data-testid="filter-room"><svg class="ic sm" aria-hidden="true"><use href="#i-rooms"/></svg> Habitación <svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
+    <button class="chip" data-toggle="active" data-testid="filter-time"><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> Tengo 15 min</button>
+  </div>
+</div>
+  
+<div data-s="default" data-testid="today-groups">
+  <div class="group-h overdue">Atrasadas <span class="count">3</span></div><div class="list"><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Limpiar horno"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🍳</span><span class="body"><span class="t" style="display:block">Limpiar horno</span><span class="s"><span>Cocina · Horno</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 45 min</span></span></span><span class="end"><span class="badge overdue">Atrasada 6 d</span><span class="avatar violet sm" title="Pau" aria-label="Pau">P</span></span></div><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Limpiar nevera por dentro"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🍳</span><span class="body"><span class="t" style="display:block">Limpiar nevera por dentro</span><span class="s"><span>Cocina · Nevera</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 30 min</span></span></span><span class="end"><span class="badge overdue">Atrasada 3 d</span><span class="avatar teal sm" title="Josep" aria-label="Josep">J</span></span></div><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Limpiar juntas y mamparas"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🛁</span><span class="body"><span class="t" style="display:block">Limpiar juntas y mamparas</span><span class="s"><span>Baño</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 30 min</span></span></span><span class="end"><span class="badge overdue">Atrasada 2 d</span><span class="badge neutral">Sin asignar</span></span></div></div>
+  <div class="group-h today">Hoy <span class="count">3</span></div><div class="list"><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Limpiar WC"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🛁</span><span class="body"><span class="t" style="display:block">Limpiar WC</span><span class="s"><span>Baño</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 8 min</span></span></span><span class="end"><span class="badge today">Hoy</span><span class="avatar violet sm" title="Pau" aria-label="Pau">P</span></span></div><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Fregar suelo"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🍳</span><span class="body"><span class="t" style="display:block">Fregar suelo</span><span class="s"><span>Cocina</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 20 min</span></span></span><span class="end"><span class="badge today">Hoy</span><span class="avatar teal sm" title="Josep" aria-label="Josep">J</span></span></div><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Cambiar sábanas"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🛏️</span><span class="body"><span class="t" style="display:block">Cambiar sábanas</span><span class="s"><span>Dormitorio</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 15 min</span></span></span><span class="end"><span class="badge today">Hoy</span><span class="avatar amber sm" title="Marta" aria-label="Marta">M</span></span></div></div>
+  <div class="group-h">Próximos 7 días <span class="count">5</span></div><div class="list"><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Limpiar lavabo y espejo"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🛁</span><span class="body"><span class="t" style="display:block">Limpiar lavabo y espejo</span><span class="s"><span>Baño</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 10 min</span></span></span><span class="end"><span class="badge soon">Mañana</span><span class="avatar violet sm" title="Pau" aria-label="Pau">P</span></span></div><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Limpiar fregadero"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🍳</span><span class="body"><span class="t" style="display:block">Limpiar fregadero</span><span class="s"><span>Cocina</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 5 min</span></span></span><span class="end"><span class="badge soon">En 2 d</span><span class="avatar teal sm" title="Josep" aria-label="Josep">J</span></span></div><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Aspirar sofá y suelo"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🛋️</span><span class="body"><span class="t" style="display:block">Aspirar sofá y suelo</span><span class="s"><span>Salón</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 20 min</span></span></span><span class="end"><span class="badge soon">En 3 d</span><span class="avatar amber sm" title="Marta" aria-label="Marta">M</span></span></div><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Quitar polvo"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🛋️</span><span class="body"><span class="t" style="display:block">Quitar polvo</span><span class="s"><span>Salón</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 15 min</span></span></span><span class="end"><span class="badge ok">En 4 d</span><span class="badge neutral">Sin asignar</span></span></div><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Barrer terraza"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🌿</span><span class="body"><span class="t" style="display:block">Barrer terraza</span><span class="s"><span>Terraza</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 10 min</span></span></span><span class="end"><span class="badge ok">En 6 d</span><span class="avatar teal sm" title="Josep" aria-label="Josep">J</span></span></div></div>
+</div>
+  <div data-s="loading" data-testid="today-loading"><div class="list"><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div></div></div>
+  <div data-s="empty" data-testid="today-empty"><div class="empty"><div class="big" aria-hidden="true">✨</div><h3>Todo limpio</h3><p>No hay tareas pendientes. Disfruta de la casa brillante.</p><button class="btn btn-secondary" data-go="rooms">Ver habitaciones</button></div></div>
+  <div data-s="error" data-testid="today-error"><div class="empty"><div class="big" aria-hidden="true">⚠️</div><h3>Algo ha salido mal</h3><p>No hemos podido cargar los datos.</p><button class="btn btn-secondary" data-testid="retry" data-toast="Reintentando…">Reintentar</button></div></div>
+  <div data-s="no-results" data-testid="today-no-results"><div class="empty"><div class="big" aria-hidden="true">🔍</div><h3>Sin resultados</h3><p>Ninguna tarea coincide con los filtros.</p><button class="btn btn-secondary" data-state-to="default">Quitar filtros</button></div></div>
+</div>
+<button class="fab hide-desktop" data-go="task-form" aria-label="Añadir tarea" data-testid="fab-new-task"><svg class="ic lg" aria-hidden="true"><use href="#i-plus"/></svg></button></div><aside class="pane-detail" data-pane="task-detail" aria-label="Detalle"><div class="pane-empty" hidden><div style="font-size:40px">🧽</div><p>Selecciona una tarea para ver su detalle</p></div><div class="pane-fill" hidden></div></aside></div></section>
+<!--E:today-->
+<!--S:task-detail-->
+<section class="screen" id="screen-task-detail" data-testid="screen-task-detail"><div class="pane-home">
+<div class="pane-body" data-owner="task-detail" data-testid="task-detail-body">
+  <header class="page-header">
+    <button class="icon-btn hide-desktop" data-back aria-label="Volver" data-testid="back"><svg class="ic " aria-hidden="true"><use href="#i-back"/></svg></button>
+    <h1 class="ph-title">Detalle de tarea</h1>
+    <div class="ph-actions">
+      <button class="icon-btn" data-go="task-form" data-go-state="edit" aria-label="Editar tarea" data-testid="task-edit"><svg class="ic " aria-hidden="true"><use href="#i-edit"/></svg></button>
+      <button class="icon-btn" data-toast="Más acciones: duplicar, archivar, eliminar" aria-label="Más acciones"><svg class="ic " aria-hidden="true"><use href="#i-more"/></svg></button>
+    </div>
+  </header>
+  <div class="content" style="padding-top:var(--s4)">
+    <div data-s="loading" data-testid="task-detail-loading">
+      <div class="skel" style="height:28px;width:70%;margin-bottom:12px"></div><div class="skel" style="height:16px;width:40%;margin-bottom:24px"></div>
+      <div class="skel" style="height:120px;margin-bottom:16px"></div><div class="skel" style="height:160px"></div></div>
+    <div data-s="error" data-testid="task-detail-error"><div class="empty"><div class="big" aria-hidden="true">⚠️</div><h3>Algo ha salido mal</h3><p>No hemos podido cargar la tarea.</p><button class="btn btn-secondary" data-testid="retry" data-toast="Reintentando…">Reintentar</button></div></div>
+
+    <div data-s="default overdue never-done">
+      <div data-s="default"><h2 style="font-size:22px;font-weight:700;line-height:1.3">Fregar suelo</h2>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px"><span style="color:var(--text-2)">🍳 Cocina</span><span class="badge today">Hoy</span></div></div>
+      <div data-s="overdue"><h2 style="font-size:22px;font-weight:700;line-height:1.3">Limpiar horno</h2>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px"><span style="color:var(--text-2)">🍳 Cocina · Horno</span><span class="badge overdue">Atrasada 6 d</span></div></div>
+      <div data-s="never-done"><h2 style="font-size:22px;font-weight:700;line-height:1.3">Limpiar microondas</h2>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px"><span style="color:var(--text-2)">🍳 Cocina</span><span class="badge today">Hoy</span><span class="badge neutral">Nunca hecha</span></div></div>
+
+      <button class="btn btn-primary btn-block" style="margin:var(--s4) 0" data-go="complete" data-testid="task-complete"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg> Marcar hecha</button>
+
+      <div class="card card-pad">
+        <dl class="kv">
+          <dt>Frecuencia</dt><dd>Cada 1 semana</dd>
+          <dt>Tiempo estimado</dt><dd>20 min</dd>
+          <dt>Prioridad</dt><dd><span class="pri medium">Media</span></dd>
+          <dt>Asignada a</dt><dd style="display:flex;align-items:center;gap:8px"><span class="avatar teal sm" title="Josep" aria-label="Josep">J</span> Josep</dd>
+          <dt>Última vez</dt><dd><span data-s="default overdue">mié 7 oct · Josep</span><span data-s="never-done">Nunca</span></dd>
+        </dl>
+      </div>
+
+      <div class="group-h">Subtareas <span class="count">5</span></div>
+      <ul class="list plain-list" style="padding:var(--s2) var(--s4)" data-testid="task-checklist"><li class="check" style="cursor:default"><span class="box" style="color:transparent"></span><span class="lab">Quitar sillas y objetos del suelo</span></li><li class="check" style="cursor:default"><span class="box" style="color:transparent"></span><span class="lab">Barrer o aspirar</span></li><li class="check" style="cursor:default"><span class="box" style="color:transparent"></span><span class="lab">Fregar con producto</span></li><li class="check" style="cursor:default"><span class="box" style="color:transparent"></span><span class="lab">Repasar esquinas y rodapiés</span></li><li class="check" style="cursor:default"><span class="box" style="color:transparent"></span><span class="lab">Aclarar la fregona y secar</span></li></ul>
+
+      <div class="group-h">Productos</div>
+      <div class="chips"><span class="chip">🪣 Fregona</span><span class="chip">🌀 Aspiradora</span><span class="chip">🧪 Lejía</span></div>
+
+      <div class="group-h">Notas</div>
+      <div class="card card-pad" style="color:var(--text-2)">Usar la fregona de microfibra azul. Fregar primero la zona de la entrada.</div>
+
+      <div class="group-h">Últimas veces</div>
+      <div data-s="default overdue"><div class="list"><div class="row" style="min-height:56px"><span class="avatar teal sm" title="Josep" aria-label="Josep">J</span><span class="body"><span class="t">Josep</span><span class="s">mié 7 oct · 20 min</span></span><span class="badge success">+9 pts</span></div><div class="row" style="min-height:56px"><span class="avatar violet sm" title="Pau" aria-label="Pau">P</span><span class="body"><span class="t">Pau</span><span class="s">mié 30 sep · 25 min</span></span><span class="badge success">+9 pts</span></div><div class="row" style="min-height:56px"><span class="avatar teal sm" title="Josep" aria-label="Josep">J</span><span class="body"><span class="t">Josep</span><span class="s">mié 23 sep · 20 min</span></span><span class="badge success">+9 pts</span></div><div class="row" style="min-height:56px"><span class="avatar amber sm" title="Marta" aria-label="Marta">M</span><span class="body"><span class="t">Marta</span><span class="s">mié 16 sep · 15 min</span></span><span class="badge success">+6 pts</span></div><div class="row" style="min-height:56px"><span class="avatar teal sm" title="Josep" aria-label="Josep">J</span><span class="body"><span class="t">Josep</span><span class="s">mié 9 sep · 20 min</span></span><span class="badge success">+9 pts</span></div></div></div>
+      <div data-s="never-done" class="card card-pad" style="text-align:center;color:var(--text-3)">Aún no se ha hecho esta tarea.</div>
+    </div>
+  </div>
+</div></div></section>
+<!--E:task-detail-->
+<!--S:rooms-->
+<section class="screen" id="screen-rooms" data-testid="screen-rooms"><header class="page-header"><h1 class="ph-title">Habitaciones</h1><div class="ph-actions"><button class="btn btn-primary btn-sm hide-mobile" data-go="room-form" data-go-state="new" data-testid="new-room-desktop"><svg class="ic sm" aria-hidden="true"><use href="#i-plus"/></svg> Nueva habitación</button><button class="icon-btn hide-desktop" data-go="room-form" data-go-state="new" aria-label="Nueva habitación" data-testid="new-room"><svg class="ic " aria-hidden="true"><use href="#i-plus"/></svg></button></div></header><div class="twopane"><div class="pane-list">
+<div class="content">
+  <div data-s="default" data-testid="rooms-list">
+    <div class="hero" data-testid="rooms-summary"><span class="ring h-good lg" style="--v:78" role="img" aria-label="Salud 78%"><b>78</b></span><div class="meta"><div class="big">Hogar: Bien</div><div class="sub">6 habitaciones · 6 tareas atrasadas</div></div></div>
+    <div class="group-h">Todas las habitaciones <span class="count">6</span></div>
+    <div class="rooms-grid"><div class="row room-card" role="button" tabindex="0" data-go="room-detail" data-testid="room-card" style="min-height:84px"><span class="emo" style="font-size:28px;width:44px" aria-hidden="true">🍳</span><span class="body"><span class="t" style="display:block;font-size:16px;font-weight:600">Cocina</span><span class="s"><span class="badge overdue">2 atrasadas</span></span><span class="s" style="margin-top:2px">Hoy: Fregar suelo</span></span><span class="end" style="align-items:center"><span class="ring h-warn " style="--v:62" role="img" aria-label="Salud 62%"><b>62</b></span><span class="hl h-warn">Atención</span></span></div><div class="row room-card" role="button" tabindex="0" data-go="room-detail" data-testid="room-card" style="min-height:84px"><span class="emo" style="font-size:28px;width:44px" aria-hidden="true">🛁</span><span class="body"><span class="t" style="display:block;font-size:16px;font-weight:600">Baño</span><span class="s"><span class="badge overdue">1 atrasada</span></span><span class="s" style="margin-top:2px">Hoy: Limpiar WC</span></span><span class="end" style="align-items:center"><span class="ring h-good " style="--v:88" role="img" aria-label="Salud 88%"><b>88</b></span><span class="hl h-good">Bien</span></span></div><div class="row room-card" role="button" tabindex="0" data-go="room-detail" data-testid="room-card" style="min-height:84px"><span class="emo" style="font-size:28px;width:44px" aria-hidden="true">🛏️</span><span class="body"><span class="t" style="display:block;font-size:16px;font-weight:600">Dormitorio</span><span class="s"><span class="badge success">Al día</span></span><span class="s" style="margin-top:2px">Hoy: Cambiar sábanas</span></span><span class="end" style="align-items:center"><span class="ring h-ok " style="--v:95" role="img" aria-label="Salud 95%"><b>95</b></span><span class="hl h-ok">Impecable</span></span></div><div class="row room-card" role="button" tabindex="0" data-go="room-detail" data-testid="room-card" style="min-height:84px"><span class="emo" style="font-size:28px;width:44px" aria-hidden="true">🛋️</span><span class="body"><span class="t" style="display:block;font-size:16px;font-weight:600">Salón</span><span class="s"><span class="badge success">Al día</span></span><span class="s" style="margin-top:2px">En 3 d: Aspirar sofá y suelo</span></span><span class="end" style="align-items:center"><span class="ring h-good " style="--v:71" role="img" aria-label="Salud 71%"><b>71</b></span><span class="hl h-good">Bien</span></span></div><div class="row room-card" role="button" tabindex="0" data-go="room-detail" data-testid="room-card" style="min-height:84px"><span class="emo" style="font-size:28px;width:44px" aria-hidden="true">🚪</span><span class="body"><span class="t" style="display:block;font-size:16px;font-weight:600">Recibidor</span><span class="s"><span class="badge success">Al día</span></span><span class="s" style="margin-top:2px">En 5 d: Barrer y fregar entrada</span></span><span class="end" style="align-items:center"><span class="ring h-ok " style="--v:100" role="img" aria-label="Salud 100%"><b>100</b></span><span class="hl h-ok">Impecable</span></span></div><div class="row room-card" role="button" tabindex="0" data-go="room-detail" data-testid="room-card" style="min-height:84px"><span class="emo" style="font-size:28px;width:44px" aria-hidden="true">🌿</span><span class="body"><span class="t" style="display:block;font-size:16px;font-weight:600">Terraza</span><span class="s"><span class="badge overdue">3 atrasadas</span></span><span class="s" style="margin-top:2px">En 6 d: Barrer</span></span><span class="end" style="align-items:center"><span class="ring h-bad " style="--v:34" role="img" aria-label="Salud 34%"><b>34</b></span><span class="hl h-bad">Urgente</span></span></div></div>
+  </div>
+  <div data-s="loading" data-testid="rooms-loading"><div class="list"><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div></div></div>
+  <div data-s="empty" data-testid="rooms-empty"><div class="empty"><div class="big" aria-hidden="true">🏠</div><h3>Aún no hay habitaciones</h3><p>Crea tu primera habitación o empieza con una plantilla.</p><button class="btn btn-primary" data-go="room-form" data-go-state="new">Crear habitación</button></div></div>
+  <div data-s="error" data-testid="rooms-error"><div class="empty"><div class="big" aria-hidden="true">⚠️</div><h3>Algo ha salido mal</h3><p>No hemos podido cargar los datos.</p><button class="btn btn-secondary" data-testid="retry" data-toast="Reintentando…">Reintentar</button></div></div>
+</div></div><aside class="pane-detail" data-pane="room-detail" aria-label="Detalle"><div class="pane-empty" hidden><div style="font-size:40px">🏠</div><p>Selecciona una habitación para ver sus tareas</p></div><div class="pane-fill" hidden></div></aside></div></section>
+<!--E:rooms-->
+<!--S:room-detail-->
+<section class="screen" id="screen-room-detail" data-testid="screen-room-detail"><div class="pane-home">
+<div class="pane-body" data-owner="room-detail" data-testid="room-detail-body">
+  <header class="page-header">
+    <button class="icon-btn hide-desktop" data-back aria-label="Volver" data-testid="back"><svg class="ic " aria-hidden="true"><use href="#i-back"/></svg></button>
+    <h1 class="ph-title">🍳 Cocina</h1>
+    <div class="ph-actions">
+      <button class="btn btn-primary btn-sm hide-mobile" data-go="task-form" data-go-state="new" data-testid="add-task-desktop"><svg class="ic sm" aria-hidden="true"><use href="#i-plus"/></svg> Añadir tarea</button>
+      <button class="icon-btn" data-go="room-form" data-go-state="edit" aria-label="Editar habitación" data-testid="room-edit"><svg class="ic " aria-hidden="true"><use href="#i-edit"/></svg></button>
+    </div>
+  </header>
+  <div class="content" style="padding-top:var(--s4)">
+    <div data-s="default empty">
+      <div class="card card-pad" style="display:flex;gap:var(--s4);align-items:center" data-testid="room-health">
+        <span data-s="default"><span class="ring h-warn lg" style="--v:62" role="img" aria-label="Salud 62%"><b>62</b></span></span><span data-s="empty"><span class="ring lg" style="--v:0"><b>–</b></span></span>
+        <div><div style="font-weight:600;font-size:17px"><span data-s="default">Atención</span><span data-s="empty">Sin tareas</span></div>
+        <div class="sub" style="font-size:13px;color:var(--text-2)"><span data-s="default">2 atrasadas · 4 tareas activas</span><span data-s="empty">Añade tareas para medir la limpieza</span></div></div></div>
+    </div>
+    <div data-s="default" data-testid="room-zones">
+      <div class="group-h">Nevera <span class="count">1</span></div><div class="list"><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Limpiar nevera por dentro"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🍳</span><span class="body"><span class="t" style="display:block">Limpiar nevera por dentro</span><span class="s"><span>Nevera</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 30 min</span></span></span><span class="end"><span class="badge overdue">Atrasada 3 d</span><span class="avatar teal sm" title="Josep" aria-label="Josep">J</span></span></div></div>
+      <div class="group-h">Horno <span class="count">1</span></div><div class="list"><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Limpiar horno"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🍳</span><span class="body"><span class="t" style="display:block">Limpiar horno</span><span class="s"><span>Horno</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 45 min</span></span></span><span class="end"><span class="badge overdue">Atrasada 6 d</span><span class="avatar violet sm" title="Pau" aria-label="Pau">P</span></span></div></div>
+      <div class="group-h">Sin zona <span class="count">2</span></div><div class="list"><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Fregar suelo"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🍳</span><span class="body"><span class="t" style="display:block">Fregar suelo</span><span class="s"><span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 20 min</span></span></span><span class="end"><span class="badge today">Hoy</span><span class="avatar teal sm" title="Josep" aria-label="Josep">J</span></span></div><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Limpiar fregadero"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🍳</span><span class="body"><span class="t" style="display:block">Limpiar fregadero</span><span class="s"><span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 5 min</span></span></span><span class="end"><span class="badge soon">En 2 d</span><span class="avatar teal sm" title="Josep" aria-label="Josep">J</span></span></div></div>
+    </div>
+    <div data-s="empty" data-testid="room-empty"><div class="empty"><div class="big" aria-hidden="true">🧹</div><h3>Esta habitación no tiene tareas</h3><p>Añade una tarea o usa las sugeridas de la plantilla.</p><button class="btn btn-primary" data-go="task-form" data-go-state="new">Añadir tarea</button></div></div>
+    <div data-s="loading" data-testid="room-loading"><div class="skel" style="height:104px;margin-bottom:16px"></div><div class="list"><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div></div></div>
+    <div data-s="error" data-testid="room-error"><div class="empty"><div class="big" aria-hidden="true">⚠️</div><h3>Algo ha salido mal</h3><p>No hemos podido cargar los datos.</p><button class="btn btn-secondary" data-testid="retry" data-toast="Reintentando…">Reintentar</button></div></div>
+  </div>
+  <button class="fab hide-desktop" data-go="task-form" data-go-state="new" aria-label="Añadir tarea" data-testid="fab-add-task"><svg class="ic lg" aria-hidden="true"><use href="#i-plus"/></svg></button>
+</div></div></section>
+<!--E:room-detail-->
+<!--S:history-->
+<section class="screen" id="screen-history" data-testid="screen-history"><header class="page-header"><h1 class="ph-title">Actividad</h1><div class="ph-actions"></div></header><div class="tabs" role="tablist" style="margin:0"><button class="tab active" role="tab" data-go="history" data-testid="tab-history" aria-selected="true">Historial</button><button class="tab" role="tab" data-go="stats" data-testid="tab-stats" aria-selected="false">Estadísticas</button></div><div class="content">
+<div data-s="default no-results" data-testid="history-filters">
+  <div class="chips scroll" style="margin-top:var(--s3)">
+    <button class="chip"><svg class="ic sm" aria-hidden="true"><use href="#i-users"/></svg> Todos <svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
+    <button class="chip"><svg class="ic sm" aria-hidden="true"><use href="#i-rooms"/></svg> Habitación <svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
+    <button class="chip"><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> Últimos 30 días <svg class="ic sm" aria-hidden="true"><use href="#i-down"/></svg></button>
+  </div>
+</div>
+<div data-s="default" data-testid="history-list">
+  <div class="day-h">Hoy · mié 14 oct</div>
+  <div class="list">
+    <div class="row" role="button" tabindex="0" data-go="history-entry" data-testid="history-row"><span class="avatar violet " title="Pau" aria-label="Pau">P</span><span class="body"><span class="t" style="display:block;white-space:normal"><b>Pau</b> limpió Dormitorio: Aspirar suelo</span><span class="s"><span>08:40</span><span aria-hidden="true">·</span><span>15 min</span></span></span><span class="end"><span class="badge success">+5 pts</span></span></div>
+    <div class="row" role="button" tabindex="0" data-go="history-entry" data-testid="history-row"><span class="avatar amber " title="Marta" aria-label="Marta">M</span><span class="body"><span class="t" style="display:block;white-space:normal"><b>Marta</b> limpió Recibidor: Barrer y fregar entrada</span><span class="s"><span>09:15</span><span aria-hidden="true">·</span><span>10 min</span></span></span><span class="end"><span class="badge success">+3 pts</span></span></div>
+  </div>
+  <div class="day-h">Ayer · mar 13 oct</div>
+  <div class="list">
+    <div class="row" role="button" tabindex="0" data-go="history-entry" data-testid="history-row"><span class="avatar teal " title="Josep" aria-label="Josep">J</span><span class="body"><span class="t" style="display:block;white-space:normal"><b>Josep</b> limpió Baño: Limpiar ducha/bañera</span><span class="s"><span>19:42</span><span aria-hidden="true">·</span><span>20 min</span><span class="badge neutral"><svg class="ic sm" aria-hidden="true"><use href="#i-camera"/></svg> 2</span></span><span class="s" style="display:block;margin-top:2px">“Con desincrustante”</span></span><span class="end"><span class="badge success">+8 pts</span></span></div>
+    <div class="row" role="button" tabindex="0" data-go="history-entry" data-testid="history-row"><span class="avatar violet " title="Pau" aria-label="Pau">P</span><span class="body"><span class="t" style="display:block;white-space:normal"><b>Pau</b> limpió Baño: Cambiar toallas</span><span class="s"><span>18:05</span><span aria-hidden="true">·</span><span>5 min</span></span></span><span class="end"><span class="badge success">+1 pts</span></span></div>
+  </div>
+  <div class="day-h">Lunes · lun 12 oct</div>
+  <div class="list">
+    <div class="row" role="button" tabindex="0" data-go="history-entry" data-testid="history-row"><span class="avatar amber " title="Marta" aria-label="Marta">M</span><span class="body"><span class="t" style="display:block;white-space:normal"><b>Marta</b> limpió Dormitorio: Quitar polvo</span><span class="s"><span>20:10</span><span aria-hidden="true">·</span><span>10 min</span></span></span><span class="end"><span class="badge success">+2 pts</span></span></div>
+    <div class="row" role="button" tabindex="0" data-go="history-entry" data-testid="history-row"><span class="avatar teal " title="Josep" aria-label="Josep">J</span><span class="body"><span class="t" style="display:block;white-space:normal"><b>Josep</b> limpió Cocina: Limpiar microondas</span><span class="s"><span>12:30</span><span aria-hidden="true">·</span><span>10 min</span></span></span><span class="end"><span class="badge success">+2 pts</span></span></div>
+  </div>
+  <div style="text-align:center;margin:var(--s4) 0"><button class="btn btn-secondary" data-toast="Cargando más…" data-testid="history-load-more">Cargar más</button></div>
+</div>
+<div data-s="loading" data-testid="history-loading"><div class="list"><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div></div></div>
+<div data-s="empty" data-testid="history-empty"><div class="empty"><div class="big" aria-hidden="true">📒</div><h3>Aún no hay actividad</h3><p>Cuando alguien marque una tarea como hecha, aparecerá aquí.</p></div></div>
+<div data-s="error" data-testid="history-error"><div class="empty"><div class="big" aria-hidden="true">⚠️</div><h3>Algo ha salido mal</h3><p>No hemos podido cargar los datos.</p><button class="btn btn-secondary" data-testid="retry" data-toast="Reintentando…">Reintentar</button></div></div>
+<div data-s="no-results" data-testid="history-no-results"><div class="empty"><div class="big" aria-hidden="true">🔍</div><h3>Sin resultados</h3><p>No hay actividad con estos filtros.</p><button class="btn btn-secondary" data-state-to="default">Quitar filtros</button></div></div></div></section>
+<!--E:history-->
+<!--S:stats-->
+<section class="screen" id="screen-stats" data-testid="screen-stats"><header class="page-header"><h1 class="ph-title">Actividad</h1><div class="ph-actions"></div></header><div class="tabs" role="tablist" style="margin:0"><button class="tab" role="tab" data-go="history" data-testid="tab-history" aria-selected="false">Historial</button><button class="tab active" role="tab" data-go="stats" data-testid="tab-stats" aria-selected="true">Estadísticas</button></div><div class="content">
+<div data-s="default" data-testid="stats-content">
+  <div class="kpis" style="margin-top:var(--s4)">
+    <div class="card kpi"><b>24</b><span>Completadas</span></div><div class="card kpi"><b>410</b><span>Minutos</span></div><div class="card kpi"><b style="color:var(--error-text)">6</b><span>Atrasadas</span></div></div>
+  <div class="two-col" style="margin-top:var(--s4)">
+    <div class="card card-pad"><div class="group-h" style="padding-top:0">Salud por habitación</div><div style="margin-bottom:var(--s3)"><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px"><span>🍳 Cocina</span><span class="hl h-warn">62 % · Atención</span></div><div class="bar warn"><i style="width:62%"></i></div></div><div style="margin-bottom:var(--s3)"><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px"><span>🛁 Baño</span><span class="hl h-good">88 % · Bien</span></div><div class="bar ok"><i style="width:88%"></i></div></div><div style="margin-bottom:var(--s3)"><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px"><span>🛏️ Dormitorio</span><span class="hl h-ok">95 % · Impecable</span></div><div class="bar ok"><i style="width:95%"></i></div></div><div style="margin-bottom:var(--s3)"><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px"><span>🛋️ Salón</span><span class="hl h-good">71 % · Bien</span></div><div class="bar ok"><i style="width:71%"></i></div></div><div style="margin-bottom:var(--s3)"><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px"><span>🚪 Recibidor</span><span class="hl h-ok">100 % · Impecable</span></div><div class="bar ok"><i style="width:100%"></i></div></div><div style="margin-bottom:var(--s3)"><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px"><span>🌿 Terraza</span><span class="hl h-bad">34 % · Urgente</span></div><div class="bar bad"><i style="width:34%"></i></div></div></div>
+    <div class="card card-pad"><div class="group-h" style="padding-top:0">Tareas por semana</div>
+      <div class="bars" role="img" aria-label="Completadas por semana, últimas 12 semanas"><div class="b"><i style="height:33%"></i><span>31</span></div><div class="b"><i style="height:44%"></i><span>32</span></div><div class="b"><i style="height:38%"></i><span>33</span></div><div class="b"><i style="height:55%"></i><span>34</span></div><div class="b"><i style="height:50%"></i><span>35</span></div><div class="b"><i style="height:66%"></i><span>36</span></div><div class="b"><i style="height:61%"></i><span>37</span></div><div class="b"><i style="height:77%"></i><span>38</span></div><div class="b"><i style="height:72%"></i><span>39</span></div><div class="b"><i style="height:88%"></i><span>40</span></div><div class="b"><i style="height:83%"></i><span>41</span></div><div class="b cur"><i style="height:100%"></i><span>42</span></div></div>
+      <p style="font-size:12px;color:var(--text-3)">Últimas 12 semanas (nº de semana ISO)</p></div>
+  </div>
+  <div class="card card-pad" style="margin-top:var(--s4)"><div class="group-h" style="padding-top:0">Reparto del trabajo (semana)</div>
+    <div style="display:flex;gap:var(--s6);align-items:center;flex-wrap:wrap"><span class="donut" role="img" aria-label="Josep 46 %, Pau 38 %, Marta 16 %"></span>
+      <div class="legend" style="flex-direction:column;gap:8px"><span><i style="background:var(--av-teal)"></i>Josep · 46 %</span><span><i style="background:var(--av-violet)"></i>Pau · 38 %</span><span><i style="background:var(--av-amber)"></i>Marta · 16 %</span></div></div></div>
+</div>
+<div data-s="loading" data-testid="stats-loading"><div class="kpis" style="margin-top:16px"><div class="skel" style="height:72px"></div><div class="skel" style="height:72px"></div><div class="skel" style="height:72px"></div></div><div class="skel" style="height:220px;margin-top:16px"></div></div>
+<div data-s="empty" data-testid="stats-empty"><div class="empty"><div class="big" aria-hidden="true">📊</div><h3>Aún no hay suficientes datos</h3><p>Las estadísticas aparecen tras unos días de actividad.</p></div></div>
+<div data-s="error" data-testid="stats-error"><div class="empty"><div class="big" aria-hidden="true">⚠️</div><h3>Algo ha salido mal</h3><p>No hemos podido cargar los datos.</p><button class="btn btn-secondary" data-testid="retry" data-toast="Reintentando…">Reintentar</button></div></div></div></section>
+<!--E:stats-->
+<!--S:ranking-->
+<section class="screen" id="screen-ranking" data-testid="screen-ranking"><header class="page-header"><h1 class="ph-title">Hogar</h1><div class="ph-actions"></div></header><div class="tabs" role="tablist" style="margin:0"><button class="tab active" role="tab" data-go="ranking" data-testid="tab-ranking" aria-selected="true">Ranking</button><button class="tab" role="tab" data-go="members" data-testid="tab-members" aria-selected="false">Miembros</button></div><div class="content">
+<div data-s="default" data-testid="ranking-content">
+  <div style="margin-top:var(--s4)" class="seg" data-pick="active" role="tablist" aria-label="Periodo">
+    <button class="active" data-period="week" data-testid="period-week">Semana</button><button data-period="month" data-testid="period-month">Mes</button><button data-period="all" data-testid="period-all">Total</button></div>
+  <div style="margin-top:var(--s4)"><span class="badge today" style="height:28px;padding:0 12px;font-size:13px" data-testid="home-streak">🔥 Racha del hogar: 5 días</span></div>
+  <div data-p="week"><div class="podium"><div class="pod p2"><span class="avatar violet lg" title="Pau" aria-label="Pau">P</span><span class="nm">Pau</span><span class="pt">38 pts</span><div class="blk">2</div></div><div class="pod p1"><span class="avatar teal lg" title="Josep" aria-label="Josep">J</span><span class="nm">Josep</span><span class="pt">46 pts</span><div class="blk">1</div></div><div class="pod p3"><span class="avatar amber lg" title="Marta" aria-label="Marta">M</span><span class="nm">Marta</span><span class="pt">17 pts</span><div class="blk">3</div></div></div><div class="list"><div class="row sel" data-testid="ranking-row" style="cursor:default"><b style="width:24px;text-align:center;color:var(--text-2)">1</b><span class="avatar teal " title="Josep" aria-label="Josep">J</span><span class="body"><span class="t" style="display:block"><b>Josep</b> <span class="badge owner">tú</span></span><span class="s">9 tareas · <span class="badge today">🔥 5</span></span></span><span class="end"><b style="font-size:17px">46</b><span class="s">pts</span></span></div><div class="row" data-testid="ranking-row" style="cursor:default"><b style="width:24px;text-align:center;color:var(--text-2)">2</b><span class="avatar violet " title="Pau" aria-label="Pau">P</span><span class="body"><span class="t" style="display:block"><b>Pau</b></span><span class="s">7 tareas · <span class="badge today">🔥 3</span></span></span><span class="end"><b style="font-size:17px">38</b><span class="s">pts</span></span></div><div class="row" data-testid="ranking-row" style="cursor:default"><b style="width:24px;text-align:center;color:var(--text-2)">3</b><span class="avatar amber " title="Marta" aria-label="Marta">M</span><span class="body"><span class="t" style="display:block"><b>Marta</b></span><span class="s">4 tareas · <span class="badge today">🔥 1</span></span></span><span class="end"><b style="font-size:17px">17</b><span class="s">pts</span></span></div></div></div><div data-p="month" hidden><div class="podium"><div class="pod p2"><span class="avatar violet lg" title="Pau" aria-label="Pau">P</span><span class="nm">Pau</span><span class="pt">171 pts</span><div class="blk">2</div></div><div class="pod p1"><span class="avatar teal lg" title="Josep" aria-label="Josep">J</span><span class="nm">Josep</span><span class="pt">182 pts</span><div class="blk">1</div></div><div class="pod p3"><span class="avatar amber lg" title="Marta" aria-label="Marta">M</span><span class="nm">Marta</span><span class="pt">96 pts</span><div class="blk">3</div></div></div><div class="list"><div class="row sel" data-testid="ranking-row" style="cursor:default"><b style="width:24px;text-align:center;color:var(--text-2)">1</b><span class="avatar teal " title="Josep" aria-label="Josep">J</span><span class="body"><span class="t" style="display:block"><b>Josep</b> <span class="badge owner">tú</span></span><span class="s">34 tareas · <span class="badge today">🔥 5</span></span></span><span class="end"><b style="font-size:17px">182</b><span class="s">pts</span></span></div><div class="row" data-testid="ranking-row" style="cursor:default"><b style="width:24px;text-align:center;color:var(--text-2)">2</b><span class="avatar violet " title="Pau" aria-label="Pau">P</span><span class="body"><span class="t" style="display:block"><b>Pau</b></span><span class="s">31 tareas · <span class="badge today">🔥 3</span></span></span><span class="end"><b style="font-size:17px">171</b><span class="s">pts</span></span></div><div class="row" data-testid="ranking-row" style="cursor:default"><b style="width:24px;text-align:center;color:var(--text-2)">3</b><span class="avatar amber " title="Marta" aria-label="Marta">M</span><span class="body"><span class="t" style="display:block"><b>Marta</b></span><span class="s">19 tareas · <span class="badge today">🔥 1</span></span></span><span class="end"><b style="font-size:17px">96</b><span class="s">pts</span></span></div></div></div><div data-p="all" hidden><div class="podium"><div class="pod p2"><span class="avatar violet lg" title="Pau" aria-label="Pau">P</span><span class="nm">Pau</span><span class="pt">604 pts</span><div class="blk">2</div></div><div class="pod p1"><span class="avatar teal lg" title="Josep" aria-label="Josep">J</span><span class="nm">Josep</span><span class="pt">640 pts</span><div class="blk">1</div></div><div class="pod p3"><span class="avatar amber lg" title="Marta" aria-label="Marta">M</span><span class="nm">Marta</span><span class="pt">301 pts</span><div class="blk">3</div></div></div><div class="list"><div class="row sel" data-testid="ranking-row" style="cursor:default"><b style="width:24px;text-align:center;color:var(--text-2)">1</b><span class="avatar teal " title="Josep" aria-label="Josep">J</span><span class="body"><span class="t" style="display:block"><b>Josep</b> <span class="badge owner">tú</span></span><span class="s">118 tareas · <span class="badge today">🔥 5</span></span></span><span class="end"><b style="font-size:17px">640</b><span class="s">pts</span></span></div><div class="row" data-testid="ranking-row" style="cursor:default"><b style="width:24px;text-align:center;color:var(--text-2)">2</b><span class="avatar violet " title="Pau" aria-label="Pau">P</span><span class="body"><span class="t" style="display:block"><b>Pau</b></span><span class="s">109 tareas · <span class="badge today">🔥 3</span></span></span><span class="end"><b style="font-size:17px">604</b><span class="s">pts</span></span></div><div class="row" data-testid="ranking-row" style="cursor:default"><b style="width:24px;text-align:center;color:var(--text-2)">3</b><span class="avatar amber " title="Marta" aria-label="Marta">M</span><span class="body"><span class="t" style="display:block"><b>Marta</b></span><span class="s">62 tareas · <span class="badge today">🔥 1</span></span></span><span class="end"><b style="font-size:17px">301</b><span class="s">pts</span></span></div></div></div>
+</div>
+<div data-s="loading" data-testid="ranking-loading"><div class="list"><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div></div></div>
+<div data-s="empty" data-testid="ranking-empty"><div class="empty"><div class="big" aria-hidden="true">🏆</div><h3>Aún no hay puntos</h3><p>Completa tareas para aparecer en el ranking.</p></div></div>
+<div data-s="error" data-testid="ranking-error"><div class="empty"><div class="big" aria-hidden="true">⚠️</div><h3>Algo ha salido mal</h3><p>No hemos podido cargar los datos.</p><button class="btn btn-secondary" data-testid="retry" data-toast="Reintentando…">Reintentar</button></div></div></div></section>
+<!--E:ranking-->
+<!--S:members-->
+<section class="screen" id="screen-members" data-testid="screen-members"><header class="page-header"><h1 class="ph-title">Hogar</h1><div class="ph-actions"></div></header><div class="tabs" role="tablist" style="margin:0"><button class="tab" role="tab" data-go="ranking" data-testid="tab-ranking" aria-selected="false">Ranking</button><button class="tab active" role="tab" data-go="members" data-testid="tab-members" aria-selected="true">Miembros</button></div><div class="content">
+<div data-s="default" data-testid="members-content">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--s4)"><div class="group-h" style="padding:0">Miembros <span class="count">3</span></div>
+    <button class="btn btn-primary btn-sm" data-go="invite" data-testid="invite-open"><svg class="ic sm" aria-hidden="true"><use href="#i-plus"/></svg> Invitar</button></div>
+  <div style="margin-top:var(--s3)"><div class="list"><div class="row" data-testid="member-row"><span class="avatar teal lg" title="Josep" aria-label="Josep">J</span><span class="body"><span class="t" style="display:block"><b>Josep</b> <span class="badge neutral">tú</span></span><span class="s"><span class="badge owner">Propietario</span><span>Desde 2 mar 2026</span></span></span><button class="btn btn-ghost btn-sm danger-t" data-toast="Has salido del hogar" data-testid="leave-home">Salir</button></div><div class="row" data-testid="member-row"><span class="avatar violet lg" title="Pau" aria-label="Pau">P</span><span class="body"><span class="t" style="display:block"><b>Pau</b></span><span class="s"><span class="badge owner">Propietario</span><span>Desde 2 mar 2026</span></span></span><button class="icon-btn" data-toast="Acciones de Pau: cambiar rol, quitar del hogar" aria-label="Acciones de Pau" data-testid="member-actions"><svg class="ic " aria-hidden="true"><use href="#i-more"/></svg></button></div><div class="row" data-testid="member-row"><span class="avatar amber lg" title="Marta" aria-label="Marta">M</span><span class="body"><span class="t" style="display:block"><b>Marta</b></span><span class="s"><span class="badge neutral">Miembro</span><span>Desde 18 abr 2026</span></span></span><button class="icon-btn" data-toast="Acciones de Marta: cambiar rol, quitar del hogar" aria-label="Acciones de Marta" data-testid="member-actions"><svg class="ic " aria-hidden="true"><use href="#i-more"/></svg></button></div></div></div>
+</div>
+<div data-s="loading" data-testid="members-loading"><div class="list"><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div></div></div>
+<div data-s="error" data-testid="members-error"><div class="empty"><div class="big" aria-hidden="true">⚠️</div><h3>Algo ha salido mal</h3><p>No hemos podido cargar los datos.</p><button class="btn btn-secondary" data-testid="retry" data-toast="Reintentando…">Reintentar</button></div></div></div></section>
+<!--E:members-->
+<!--S:products-->
+<section class="screen" id="screen-products" data-testid="screen-products"><header class="page-header"><button class="icon-btn"  data-go="settings" aria-label="Volver" data-testid="back"><svg class="ic " aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="ph-title">Productos</h1><div class="ph-actions"></div></header><div class="content">
+<div data-s="default" data-testid="products-list">
+  <div style="display:flex;gap:var(--s2);margin:var(--s4) 0">
+    <input class="input" placeholder="Nuevo producto (ej. Vinagre)" aria-label="Nuevo producto" data-testid="product-new-name">
+    <button class="btn btn-primary" data-toast="Producto añadido" data-testid="product-add" style="flex:none"><svg class="ic sm" aria-hidden="true"><use href="#i-plus"/></svg> Añadir</button></div>
+  <div class="list"><div class="row" role="button" tabindex="0" data-toast="Editar Desincrustante" data-testid="product-row"><span class="emo" aria-hidden="true">🧴</span><span class="body"><span class="t">Desincrustante</span><span class="s">Usado en 3 tareas</span></span><button class="icon-btn" data-toast="Desincrustante archivado" aria-label="Archivar Desincrustante" data-testid="product-archive"><svg class="ic " aria-hidden="true"><use href="#i-archive"/></svg></button></div><div class="row" role="button" tabindex="0" data-toast="Editar Fregona" data-testid="product-row"><span class="emo" aria-hidden="true">🪣</span><span class="body"><span class="t">Fregona</span><span class="s">Usado en 4 tareas</span></span><button class="icon-btn" data-toast="Fregona archivado" aria-label="Archivar Fregona" data-testid="product-archive"><svg class="ic " aria-hidden="true"><use href="#i-archive"/></svg></button></div><div class="row" role="button" tabindex="0" data-toast="Editar Bayetas microfibra" data-testid="product-row"><span class="emo" aria-hidden="true">🧽</span><span class="body"><span class="t">Bayetas microfibra</span><span class="s">Usado en 5 tareas</span></span><button class="icon-btn" data-toast="Bayetas microfibra archivado" aria-label="Archivar Bayetas microfibra" data-testid="product-archive"><svg class="ic " aria-hidden="true"><use href="#i-archive"/></svg></button></div><div class="row" role="button" tabindex="0" data-toast="Editar Lejía" data-testid="product-row"><span class="emo" aria-hidden="true">🧪</span><span class="body"><span class="t">Lejía</span><span class="s">Usado en 3 tareas</span></span><button class="icon-btn" data-toast="Lejía archivado" aria-label="Archivar Lejía" data-testid="product-archive"><svg class="ic " aria-hidden="true"><use href="#i-archive"/></svg></button></div><div class="row" role="button" tabindex="0" data-toast="Editar Limpiacristales" data-testid="product-row"><span class="emo" aria-hidden="true">🪟</span><span class="body"><span class="t">Limpiacristales</span><span class="s">Usado en 2 tareas</span></span><button class="icon-btn" data-toast="Limpiacristales archivado" aria-label="Archivar Limpiacristales" data-testid="product-archive"><svg class="ic " aria-hidden="true"><use href="#i-archive"/></svg></button></div><div class="row" role="button" tabindex="0" data-toast="Editar Aspiradora" data-testid="product-row"><span class="emo" aria-hidden="true">🌀</span><span class="body"><span class="t">Aspiradora</span><span class="s">Usado en 4 tareas</span></span><button class="icon-btn" data-toast="Aspiradora archivado" aria-label="Archivar Aspiradora" data-testid="product-archive"><svg class="ic " aria-hidden="true"><use href="#i-archive"/></svg></button></div></div>
+</div>
+<div data-s="loading" data-testid="products-loading"><div class="list"><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div></div></div>
+<div data-s="empty" data-testid="products-empty"><div class="empty"><div class="big" aria-hidden="true">🧴</div><h3>Aún no hay productos</h3><p>Añade lo que usas para limpiar y asócialo a tus tareas.</p><button class="btn btn-primary" data-toast="Producto añadido">Añadir producto</button></div></div>
+<div data-s="error" data-testid="products-error"><div class="empty"><div class="big" aria-hidden="true">⚠️</div><h3>Algo ha salido mal</h3><p>No hemos podido cargar los datos.</p><button class="btn btn-secondary" data-testid="retry" data-toast="Reintentando…">Reintentar</button></div></div></div></section>
+<!--E:products-->
+<!--S:settings-->
+<section class="screen" id="screen-settings" data-testid="screen-settings"><header class="page-header"><h1 class="ph-title">Ajustes</h1><div class="ph-actions"></div></header><div class="content">
+<div data-s="default install-available error" class="settings-grid" style="margin-top:var(--s4)">
+  <div style="grid-column:1/-1;display:flex;flex-direction:column;gap:var(--s3)">
+    <div class="banner install" data-s="install-available" data-testid="install-banner"><svg class="ic " aria-hidden="true"><use href="#i-download"/></svg><span style="flex:1"><b>Instala LimpiApp</b><br><span style="font-size:13px;color:var(--text-2)">Acceso directo y uso a pantalla completa.</span></span><button class="btn btn-primary btn-sm" data-toast="Instalando…" data-testid="install-btn">Instalar</button></div>
+    <div class="banner error" data-s="error" role="alert" style="margin:0"><svg class="ic sm" aria-hidden="true"><use href="#i-x"/></svg><span>No se han podido guardar los ajustes.</span></div>
+  </div>
+
+  <div>
+    <div class="group-h" style="padding-top:0">Perfil</div>
+    <div class="card card-pad">
+      <div style="display:flex;align-items:center;gap:var(--s4);margin-bottom:var(--s4)"><span class="avatar teal lg" title="Josep" aria-label="Josep">J</span><div><div style="font-weight:600">Josep</div><div style="font-size:13px;color:var(--text-3)">josep@example.com</div></div></div>
+      <div class="field"><label for="st-name">Tu nombre</label><input id="st-name" class="input" value="Josep" data-testid="settings-name"></div>
+      <div class="field" style="margin-bottom:0"><span class="lbl">Color del avatar</span><div class="swatches" data-pick="sel" data-testid="settings-avatar-color"><button class="sw sel" style="background:var(--av-teal)" aria-label="Color teal"></button><button class="sw" style="background:var(--av-violet)" aria-label="Color violet"></button><button class="sw" style="background:var(--av-amber)" aria-label="Color amber"></button><button class="sw" style="background:var(--av-rose)" aria-label="Color rose"></button><button class="sw" style="background:var(--av-blue)" aria-label="Color blue"></button><button class="sw" style="background:var(--av-green)" aria-label="Color green"></button></div></div>
+    </div>
+    <div class="group-h">Apariencia</div>
+    <div class="card card-pad"><div class="seg" data-pick="active" data-testid="settings-theme"><button class="active">Sistema</button><button>Claro</button><button>Oscuro</button></div></div>
+  </div>
+
+  <div>
+    <div class="group-h" style="padding-top:0">Hogar</div>
+    <div class="card card-pad">
+      <div class="field"><label for="st-home">Nombre del hogar</label><input id="st-home" class="input" value="Casa Pau y Josep" data-testid="settings-home-name"></div>
+      <div class="field" style="margin-bottom:0"><label for="st-tz">Zona horaria</label><select id="st-tz" class="select" data-testid="settings-timezone"><option>Europe/Madrid</option><option>Atlantic/Canary</option></select></div>
+    </div>
+    <div class="list" style="margin-top:var(--s4)">
+      <button class="menu-row" data-go="products" data-testid="settings-products"><span style="color:var(--text-2)">🧴</span><span class="t">Productos</span><span class="v">6</span><svg class="ic sm" aria-hidden="true"><use href="#i-right"/></svg></button>
+      <button class="menu-row" data-go="members" data-testid="settings-members"><span style="color:var(--text-2)"><svg class="ic sm" aria-hidden="true"><use href="#i-users"/></svg></span><span class="t">Miembros</span><span class="v">3</span><svg class="ic sm" aria-hidden="true"><use href="#i-right"/></svg></button>
+      <button class="menu-row" data-go="home-switcher" data-testid="settings-switch"><span style="color:var(--text-2)"><svg class="ic sm" aria-hidden="true"><use href="#i-home"/></svg></span><span class="t">Cambiar de hogar</span><svg class="ic sm" aria-hidden="true"><use href="#i-right"/></svg></button>
+    </div>
+  </div>
+
+  <div style="grid-column:1/-1">
+    <button class="btn btn-secondary btn-block danger-t" data-go="login" data-testid="settings-logout"><svg class="ic sm" aria-hidden="true"><use href="#i-logout"/></svg> Cerrar sesión</button>
+    <p class="legal" data-testid="settings-version">LimpiApp 0.1.0 · build 2026.10.14</p>
+  </div>
+</div></div></section>
+<!--E:settings-->
+<!--S:ui-kit-->
+<section class="screen" id="screen-ui-kit" data-testid="screen-ui-kit"><header class="page-header"><button class="icon-btn"  data-go="settings" aria-label="Volver" data-testid="back"><svg class="ic " aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="ph-title">UI kit<span class="ph-sub" style="display:block">Solo demo · claro y oscuro con ?theme=dark</span></h1><div class="ph-actions"></div></header><div class="content" style="padding-top:var(--s4)">
+<div class="kit-block"><h2>Botones</h2><div class="kit-row">
+  <button class="btn btn-primary">Primario</button><button class="btn btn-secondary">Secundario</button><button class="btn btn-ghost">Texto</button>
+  <button class="btn btn-danger">Peligro</button><button class="btn btn-primary" disabled>Deshabilitado</button><button class="btn btn-primary btn-sm">Pequeño</button></div></div>
+<div class="kit-block"><h2>Chips y selector</h2><div class="kit-row"><span class="chip">Normal</span><span class="chip active">Activo</span><span class="chip">🧴 Producto <span class="x">×</span></span></div>
+  <div class="seg" style="margin-top:12px;max-width:320px"><button class="active">Semana</button><button>Mes</button><button>Total</button></div></div>
+<div class="kit-block"><h2>Estado de vencimiento</h2><div class="kit-row"><span class="badge overdue">Atrasada 6 d</span><span class="badge today">Hoy</span><span class="badge soon">Mañana</span><span class="badge ok">En 2 sem</span><span class="badge neutral">Sin asignar</span><span class="badge success">+9 pts</span></div></div>
+<div class="kit-block"><h2>Salud de habitación</h2><div class="kit-row"><span class="ring h-ok " style="--v:100" role="img" aria-label="Salud 100%"><b>100</b></span><span class="ring h-good " style="--v:78" role="img" aria-label="Salud 78%"><b>78</b></span><span class="ring h-warn " style="--v:55" role="img" aria-label="Salud 55%"><b>55</b></span><span class="ring h-bad " style="--v:34" role="img" aria-label="Salud 34%"><b>34</b></span><span class="ring h-warn sm" style="--v:62" role="img" aria-label="Salud 62%"><b>62</b></span><span class="ring h-good lg" style="--v:88" role="img" aria-label="Salud 88%"><b>88</b></span></div>
+  <div class="kit-row" style="margin-top:8px"><span class="hl h-ok">Impecable ≥ 90</span><span class="hl h-good">Bien 70–89</span><span class="hl h-warn">Atención 40–69</span><span class="hl h-bad">Urgente &lt; 40</span></div></div>
+<div class="kit-block"><h2>Progreso</h2><div style="display:grid;gap:10px;max-width:360px"><div class="bar ok"><i style="width:90%"></i></div><div class="bar"><i style="width:70%"></i></div><div class="bar warn"><i style="width:45%"></i></div><div class="bar bad"><i style="width:20%"></i></div></div></div>
+<div class="kit-block"><h2>Avatares</h2><div class="kit-row"><span class="avatar teal lg" title="Josep" aria-label="Josep">J</span><span class="avatar violet lg" title="Pau" aria-label="Pau">P</span><span class="avatar amber lg" title="Marta" aria-label="Marta">M</span><span class="avatar teal " title="Josep" aria-label="Josep">J</span><span class="avatar violet " title="Pau" aria-label="Pau">P</span><span class="avatar amber " title="Marta" aria-label="Marta">M</span><span class="avatar teal sm" title="Josep" aria-label="Josep">J</span></div></div>
+<div class="kit-block"><h2>Formularios</h2><div style="max-width:360px">
+  <div class="field"><label>Normal</label><input class="input" placeholder="Escribe aquí"></div>
+  <div class="field invalid"><label>Con error</label><input class="input" value="" aria-invalid="true"><span class="err">Campo obligatorio.</span></div>
+  <div class="field"><label>Selector</label><select class="select"><option>Opción</option></select></div>
+  <div style="display:flex;gap:12px;align-items:center"><span class="toggle on" role="switch" aria-checked="true"></span><span class="toggle" role="switch" aria-checked="false"></span>
+  <div class="stepper"><button aria-label="Menos">−</button><output>30 min</output><button aria-label="Más">+</button></div></div></div></div>
+<div class="kit-block"><h2>Pestañas</h2><div class="tabs" style="margin:0;position:static"><button class="tab active">Historial</button><button class="tab">Estadísticas</button></div></div>
+<div class="kit-block"><h2>Avisos y toast</h2><div style="display:grid;gap:8px;max-width:520px">
+  <div class="banner error" style="margin:0"><svg class="ic sm" aria-hidden="true"><use href="#i-x"/></svg><span>Ha ocurrido un error.</span></div>
+  <div class="banner install"><svg class="ic " aria-hidden="true"><use href="#i-download"/></svg><span>Instala LimpiApp</span></div>
+  <div class="toast" style="position:static;transform:none;width:fit-content"><span>Tarea completada</span><button>Deshacer</button></div></div></div>
+<div class="kit-block"><h2>Estados vacíos y carga</h2><div class="two-col"><div class="card"><div class="empty"><div class="big" aria-hidden="true">✨</div><h3>Todo limpio</h3><p>No hay tareas pendientes.</p></div></div><div class="card card-pad"><div class="list"><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div><div class="row"><span class="skel" style="width:36px;height:36px;border-radius:50%"></span><span class="body"><span class="skel" style="display:block;height:14px;width:60%;margin-bottom:8px"></span><span class="skel" style="display:block;height:12px;width:40%"></span></span><span class="skel" style="width:64px;height:22px"></span></div></div></div></div></div>
+<div class="kit-block"><h2>Lista y tarea</h2><div class="list"><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Limpiar horno"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🍳</span><span class="body"><span class="t" style="display:block">Limpiar horno</span><span class="s"><span>Cocina · Horno</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 45 min</span></span></span><span class="end"><span class="badge overdue">Atrasada 6 d</span><span class="avatar violet sm" title="Pau" aria-label="Pau">P</span></span></div><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Limpiar WC"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🛁</span><span class="body"><span class="t" style="display:block">Limpiar WC</span><span class="s"><span>Baño</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 8 min</span></span></span><span class="end"><span class="badge today">Hoy</span><span class="avatar violet sm" title="Pau" aria-label="Pau">P</span></span></div><div class="row" role="button" tabindex="0" data-go="task-detail" data-testid="task-row"><button class="tc-hit" data-go="complete" data-testid="task-check" aria-label="Marcar hecha: Limpiar lavabo y espejo"><span class="task-check"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span></button><span class="emo" aria-hidden="true">🛁</span><span class="body"><span class="t" style="display:block">Limpiar lavabo y espejo</span><span class="s"><span>Baño</span> <span aria-hidden="true">·</span> <span><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg> 10 min</span></span></span><span class="end"><span class="badge soon">Mañana</span><span class="avatar violet sm" title="Pau" aria-label="Pau">P</span></span></div></div></div></div></section>
+<!--E:ui-kit-->
+  </main>
+
+  <!-- ============ BOTTOM NAV (< 1024) ============ -->
+  <nav class="bottom-nav" aria-label="Navegación principal">
+    <a class="bn-item" data-nav="today" data-testid="bnav-today" href="#screen-today"><svg class="ic"><use href="#i-today"/></svg>Hoy<span class="dot">6</span></a>
+    <a class="bn-item" data-nav="rooms" data-testid="bnav-rooms" href="#screen-rooms"><svg class="ic"><use href="#i-rooms"/></svg>Habitaciones</a>
+    <a class="bn-item" data-nav="activity" data-testid="bnav-activity" href="#screen-history"><svg class="ic"><use href="#i-activity"/></svg>Actividad</a>
+    <a class="bn-item" data-nav="household" data-testid="bnav-household" href="#screen-ranking"><svg class="ic"><use href="#i-users"/></svg>Hogar</a>
+    <a class="bn-item" data-nav="settings" data-testid="bnav-settings" href="#screen-settings"><svg class="ic"><use href="#i-settings"/></svg>Ajustes</a>
+  </nav>
+</div>
+
+<!-- ============ OVERLAYS (sheets / full-sheets) ============ -->
+<!--S:task-form-->
+<div class="overlay" id="screen-task-form" data-parent="room-detail" role="dialog" aria-modal="true" aria-label="Tarea"><div class="scrim" data-close></div><div class="sheet full" data-testid="sheet-task-form"><div class="sheet-handle"></div><div class="sheet-head"><h2><span data-s="new validation-error saving">Nueva tarea</span><span data-s="edit">Editar tarea</span></h2><button class="icon-btn" data-close aria-label="Cerrar" data-testid="sheet-close"><svg class="ic " aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="sheet-body">
+<div class="banner error" data-s="validation-error" role="alert"><svg class="ic sm" aria-hidden="true"><use href="#i-x"/></svg><span>Revisa los campos marcados.</span></div>
+<div class="form-section"><span class="form-section-title">Básico</span></div>
+<div class="field" data-s="new"><label for="tf-title">Título</label><input id="tf-title" class="input" placeholder="Ej.: Limpiar el horno" maxlength="80" data-testid="task-title"></div>
+<div class="field" data-s="edit saving"><label for="tf-title2">Título</label><input id="tf-title2" class="input" value="Limpiar nevera por dentro" maxlength="80" data-testid="task-title"></div>
+<div class="field invalid" data-s="validation-error"><label for="tf-title3">Título</label><input id="tf-title3" class="input" aria-invalid="true" data-testid="task-title"><span class="err">El título es obligatorio.</span></div>
+<div class="form-row">
+  <div class="field"><label for="tf-room">Habitación</label><select id="tf-room" class="select" data-testid="task-room"><option>🍳 Cocina</option><option>🛁 Baño</option><option>🛏️ Dormitorio</option><option>🛋️ Salón</option></select></div>
+  <div class="field"><label for="tf-zone">Zona</label><select id="tf-zone" class="select" data-testid="task-zone"><option>Sin zona</option><option>Nevera</option><option>Horno</option></select></div>
+</div>
+
+<div class="form-section"><span class="form-section-title">Frecuencia</span></div>
+<div class="form-row">
+  <div class="field"><label for="tf-n">Cada</label><input id="tf-n" class="input" type="number" inputmode="numeric" min="1" max="365" value="1" data-testid="task-freq-value"></div>
+  <div class="field"><label for="tf-u">Unidad</label><select id="tf-u" class="select" data-testid="task-freq-unit"><option>días</option><option>semanas</option><option selected>meses</option></select></div>
+</div>
+<div class="field"><label for="tf-d">Primera vez que toca</label><input id="tf-d" class="input" type="date" value="2026-10-14" data-testid="task-first-due"><span class="help">Después se calcula desde el día en que se haga.</span></div>
+
+<div class="form-section"><span class="form-section-title">Esfuerzo</span></div>
+<div class="field"><span class="lbl">Tiempo estimado</span>
+  <div class="stepper" role="group" aria-label="Minutos"><button aria-label="Menos">−</button><output>30 min</output><button aria-label="Más">+</button></div></div>
+<div class="field"><span class="lbl">Prioridad</span>
+  <div class="seg" data-pick="active" data-testid="task-priority"><button>Baja</button><button class="active">Media</button><button>Alta</button></div></div>
+
+<div class="form-section"><span class="form-section-title">Asignación</span></div>
+<div class="field"><label for="tf-as">Responsable</label><select id="tf-as" class="select" data-testid="task-assignee"><option>Sin asignar</option><option selected>Josep</option><option>Pau</option><option>Marta</option></select></div>
+
+<div class="form-section"><span class="form-section-title">Subtareas</span><span class="help" style="font-size:12px;color:var(--text-3)">3 de 20</span></div>
+<div data-testid="task-checklist-editor"><div class="rep-row"><span style="color:var(--text-3)"><svg class="ic sm" aria-hidden="true"><use href="#i-drag"/></svg></span><input class="input" value="Vaciar y sacar baldas" aria-label="Subtarea"><button class="rm" aria-label="Quitar subtarea"><svg class="ic sm" aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="rep-row"><span style="color:var(--text-3)"><svg class="ic sm" aria-hidden="true"><use href="#i-drag"/></svg></span><input class="input" value="Retirar lo caducado" aria-label="Subtarea"><button class="rm" aria-label="Quitar subtarea"><svg class="ic sm" aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="rep-row"><span style="color:var(--text-3)"><svg class="ic sm" aria-hidden="true"><use href="#i-drag"/></svg></span><input class="input" value="Limpiar baldas y cajones" aria-label="Subtarea"><button class="rm" aria-label="Quitar subtarea"><svg class="ic sm" aria-hidden="true"><use href="#i-x"/></svg></button></div></div>
+<button class="add-link" data-toast="Subtarea añadida" data-testid="task-add-subtask"><svg class="ic sm" aria-hidden="true"><use href="#i-plus"/></svg> Añadir subtarea</button>
+
+<div class="form-section"><span class="form-section-title">Productos</span></div>
+<div class="chips"><span class="chip">🧴 Desincrustante <span class="x">×</span></span><span class="chip">🧽 Bayetas microfibra <span class="x">×</span></span>
+  <button class="chip" data-toast="Elige un producto" data-testid="task-add-product"><svg class="ic sm" aria-hidden="true"><use href="#i-plus"/></svg> Añadir</button></div>
+
+<div class="form-section"><span class="form-section-title">Notas</span></div>
+<div class="field"><textarea class="textarea" placeholder="Trucos, avisos, cómo hacerlo…" aria-label="Notas" data-testid="task-notes"></textarea></div>
+</div><div class="sheet-foot"><button class="btn btn-secondary" data-close data-testid="task-cancel">Cancelar</button>
+<button class="btn btn-primary" data-s="new edit validation-error" data-state-to="saving" data-testid="task-save">Guardar tarea</button>
+<button class="btn btn-primary disabled" disabled data-s="saving"><span class="spinner"></span> Guardando…</button></div></div></div>
+<!--E:task-form-->
+<!--S:complete-->
+<div class="overlay" id="screen-complete" data-parent="today" role="dialog" aria-modal="true" aria-label="Marcar como hecha"><div class="scrim" data-close></div><div class="sheet" data-testid="sheet-complete"><div class="sheet-handle"></div><div class="sheet-head"><h2>Marcar como hecha</h2><button class="icon-btn" data-close aria-label="Cerrar" data-testid="sheet-close"><svg class="ic " aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="sheet-body">
+<div data-s="default partial with-photos saving error" data-testid="complete-form">
+  <div style="display:flex;gap:12px;align-items:center;margin-bottom:var(--s3)"><span class="emo" style="font-size:28px">🍳</span>
+    <div><div style="font-weight:600;font-size:17px">Limpiar nevera por dentro</div><div style="font-size:13px;color:var(--text-3)">Cocina · Nevera</div></div></div>
+  <div class="banner error" data-s="error" role="alert"><svg class="ic sm" aria-hidden="true"><use href="#i-x"/></svg><span>No se ha podido guardar. Inténtalo de nuevo.</span></div>
+
+  <div class="form-section"><span class="form-section-title">Subtareas</span><span class="help js-count" style="font-size:12px;color:var(--text-3)" data-s="default saving error with-photos">5 de 5</span><span class="help js-count" style="font-size:12px;color:var(--text-3)" data-s="partial">3 de 5</span></div>
+  <ul class="plain-list" data-s="default saving error with-photos" data-testid="complete-checklist"><li><button class="check done" data-toggle="done" data-testid="complete-check"><span class="box"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lab">Vaciar y sacar baldas</span></button></li><li><button class="check done" data-toggle="done" data-testid="complete-check"><span class="box"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lab">Retirar lo caducado</span></button></li><li><button class="check done" data-toggle="done" data-testid="complete-check"><span class="box"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lab">Limpiar baldas y cajones</span></button></li><li><button class="check done" data-toggle="done" data-testid="complete-check"><span class="box"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lab">Limpiar paredes y gomas</span></button></li><li><button class="check done" data-toggle="done" data-testid="complete-check"><span class="box"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lab">Secar y recolocar</span></button></li></ul>
+  <ul class="plain-list" data-s="partial" data-testid="complete-checklist"><li><button class="check done" data-toggle="done" data-testid="complete-check"><span class="box"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lab">Vaciar y sacar baldas</span></button></li><li><button class="check done" data-toggle="done" data-testid="complete-check"><span class="box"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lab">Retirar lo caducado</span></button></li><li><button class="check done" data-toggle="done" data-testid="complete-check"><span class="box"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lab">Limpiar baldas y cajones</span></button></li><li><button class="check" data-toggle="done" data-testid="complete-check"><span class="box"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lab">Limpiar paredes y gomas</span></button></li><li><button class="check" data-toggle="done" data-testid="complete-check"><span class="box"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lab">Secar y recolocar</span></button></li></ul>
+
+  <div class="form-section"><span class="form-section-title">Tiempo dedicado</span></div>
+  <div class="stepper" role="group" aria-label="Minutos"><button aria-label="Menos">−</button><output data-testid="complete-minutes">30 min</output><button aria-label="Más">+</button></div>
+
+  <div class="form-section"><span class="form-section-title">Nota</span></div>
+  <textarea class="textarea" placeholder="¿Algo que recordar? (opcional)" aria-label="Nota" data-testid="complete-note"></textarea>
+
+  <div class="form-section"><span class="form-section-title">Fotos</span><span class="help" style="font-size:12px;color:var(--text-3)"><span data-s="with-photos">3</span><span data-s="default partial saving error">0</span> de 3</span></div>
+  <div class="photos"><span data-s="with-photos" style="display:contents"><span class="photo">🧊<button class="rm" aria-label="Quitar foto">×</button></span><span class="photo">🧽<button class="rm" aria-label="Quitar foto">×</button></span><span class="photo">✅<button class="rm" aria-label="Quitar foto">×</button></span></span>
+    <button class="photo add" data-s="default partial saving error" data-toast="Elige una foto" data-testid="complete-add-photo"><svg class="ic " aria-hidden="true"><use href="#i-camera"/></svg><span>Añadir foto</span></button></div>
+
+  <div style="margin-top:var(--s4);display:flex;justify-content:space-between;align-items:center">
+    <span style="color:var(--text-2)">Puntos</span>
+    <span class="pts-pill" data-testid="complete-points"><span class="js-pts" data-base="9" data-s="default saving error with-photos">+9 pts</span><span class="js-pts" data-base="9" data-s="partial">+5 pts</span></span></div>
+</div>
+<div data-s="success" class="success-box" data-testid="complete-success">
+  <div class="big" aria-hidden="true">🎉</div>
+  <h3 style="font-size:22px">¡Hecho!</h3>
+  <span class="pts-pill" style="font-size:18px">+9 puntos</span>
+  <span class="badge today" style="font-size:14px;height:28px;padding:0 12px">🔥 Racha de 6 días</span>
+  <p style="color:var(--text-2)">Próxima vez: <b>mié 14 nov</b></p>
+</div></div><div class="sheet-foot"><button class="btn btn-secondary" data-s="default partial with-photos error" data-close data-testid="complete-cancel">Cancelar</button>
+<button class="btn btn-primary js-confirm" data-s="default partial with-photos error" data-state-to="success" data-testid="complete-confirm">Confirmar</button>
+<button class="btn btn-primary disabled" disabled data-s="saving"><span class="spinner"></span> Guardando…</button>
+<button class="btn btn-secondary" data-s="success" data-toast="Completada deshecha" data-close data-testid="complete-undo">Deshacer</button>
+<button class="btn btn-primary" data-s="success" data-close data-testid="complete-done">Listo</button></div></div></div>
+<!--E:complete-->
+<!--S:room-form-->
+<div class="overlay" id="screen-room-form" data-parent="rooms" role="dialog" aria-modal="true" aria-label="Habitación"><div class="scrim" data-close></div><div class="sheet full" data-testid="sheet-room-form"><div class="sheet-handle"></div><div class="sheet-head"><h2><span data-s="new validation-error">Nueva habitación</span><span data-s="edit">Editar habitación</span></h2><button class="icon-btn" data-close aria-label="Cerrar" data-testid="sheet-close"><svg class="ic " aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="sheet-body">
+<div class="field" data-s="new"><label for="rf-name">Nombre</label><input id="rf-name" class="input" placeholder="Ej.: Cocina" maxlength="40" data-testid="room-name"></div>
+<div class="field" data-s="edit"><label for="rf-name2">Nombre</label><input id="rf-name2" class="input" value="Cocina" maxlength="40" data-testid="room-name"></div>
+<div class="field invalid" data-s="validation-error"><label for="rf-name3">Nombre</label><input id="rf-name3" class="input" aria-invalid="true" data-testid="room-name"><span class="err">El nombre es obligatorio.</span></div>
+<div class="field"><span class="lbl">Icono</span><div class="emoji-grid" data-pick="sel" data-testid="room-emoji"><button class="sel" aria-label="Icono 🍳">🍳</button><button class="" aria-label="Icono 🛁">🛁</button><button class="" aria-label="Icono 🛏️">🛏️</button><button class="" aria-label="Icono 🛋️">🛋️</button><button class="" aria-label="Icono 🚪">🚪</button><button class="" aria-label="Icono 🧺">🧺</button><button class="" aria-label="Icono 💻">💻</button><button class="" aria-label="Icono 🌿">🌿</button><button class="" aria-label="Icono 🚿">🚿</button><button class="" aria-label="Icono 🪟">🪟</button><button class="" aria-label="Icono 🧸">🧸</button><button class="" aria-label="Icono 🚗">🚗</button><button class="" aria-label="Icono 📚">📚</button><button class="" aria-label="Icono 🍽️">🍽️</button><button class="" aria-label="Icono 🪴">🪴</button><button class="" aria-label="Icono 🏠">🏠</button></div></div>
+<div class="field"><span class="lbl">Color</span><div class="swatches" data-pick="sel" data-testid="room-color"><button class="sw" style="background:var(--rc-green)" aria-label="Color green"></button><button class="sw sel" style="background:var(--rc-orange)" aria-label="Color orange"></button><button class="sw" style="background:var(--rc-blue)" aria-label="Color blue"></button><button class="sw" style="background:var(--rc-violet)" aria-label="Color violet"></button><button class="sw" style="background:var(--rc-rose)" aria-label="Color rose"></button><button class="sw" style="background:var(--rc-teal)" aria-label="Color teal"></button><button class="sw" style="background:var(--rc-amber)" aria-label="Color amber"></button><button class="sw" style="background:var(--rc-slate)" aria-label="Color slate"></button></div></div>
+<div class="form-section"><span class="form-section-title">Zonas</span><span style="font-size:12px;color:var(--text-3)">opcional</span></div>
+<div data-testid="room-zones-editor" data-s="edit validation-error"><div class="rep-row"><span style="color:var(--text-3)"><svg class="ic sm" aria-hidden="true"><use href="#i-drag"/></svg></span><input class="input" value="Nevera" aria-label="Zona"><button class="rm" aria-label="Quitar zona"><svg class="ic sm" aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="rep-row"><span style="color:var(--text-3)"><svg class="ic sm" aria-hidden="true"><use href="#i-drag"/></svg></span><input class="input" value="Horno" aria-label="Zona"><button class="rm" aria-label="Quitar zona"><svg class="ic sm" aria-hidden="true"><use href="#i-x"/></svg></button></div></div>
+<div data-testid="room-zones-editor" data-s="new"></div>
+<button class="add-link" data-toast="Zona añadida" data-testid="room-add-zone"><svg class="ic sm" aria-hidden="true"><use href="#i-plus"/></svg> Añadir zona</button>
+<div data-s="new">
+  <div class="form-section"><span class="form-section-title">Plantilla</span></div>
+  <button class="check" data-toggle="done" data-testid="room-from-template"><span class="box"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lab" style="flex:1">Rellenar con tareas sugeridas (Cocina: 6 tareas)</span></button>
+</div>
+<div data-s="edit">
+  <div class="form-section"><span class="form-section-title">Zona de peligro</span></div>
+  <button class="btn btn-danger btn-block" data-toast="Habitación archivada" data-close data-testid="room-archive"><svg class="ic sm" aria-hidden="true"><use href="#i-archive"/></svg> Archivar habitación</button>
+  <p class="help" style="margin-top:6px;font-size:12px;color:var(--text-3)">Sus tareas dejarán de aparecer en Hoy. Puedes restaurarla cuando quieras.</p>
+</div></div><div class="sheet-foot"><button class="btn btn-secondary" data-close data-testid="room-cancel">Cancelar</button>
+<button class="btn btn-primary" data-toast="Habitación guardada" data-close data-testid="room-save">Guardar</button></div></div></div>
+<!--E:room-form-->
+<!--S:history-entry-->
+<div class="overlay" id="screen-history-entry" data-parent="history" role="dialog" aria-modal="true" aria-label="Detalle de actividad"><div class="scrim" data-close></div><div class="sheet" data-testid="sheet-history-entry"><div class="sheet-handle"></div><div class="sheet-head"><h2>Detalle de actividad</h2><button class="icon-btn" data-close aria-label="Cerrar" data-testid="sheet-close"><svg class="ic " aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="sheet-body">
+<div style="display:flex;gap:12px;align-items:center"><span class="avatar teal lg" title="Josep" aria-label="Josep">J</span><div><div style="font-weight:600;font-size:17px">Josep</div><div style="font-size:13px;color:var(--text-3)">mar 13 oct · 19:42</div></div>
+  <span class="badge neutral" data-s="undone" style="margin-left:auto">Deshecha</span><span class="badge success" data-s="default with-photos" style="margin-left:auto">+8 pts</span></div>
+<div class="banner error" data-s="undone" style="margin-top:var(--s3)"><svg class="ic sm" aria-hidden="true"><use href="#i-x"/></svg><span>Esta tarea se deshizo. No cuenta para puntos ni rachas.</span></div>
+<div class="card card-pad" style="margin-top:var(--s4)">
+  <dl class="kv">
+    <dt>Tarea</dt><dd>Limpiar ducha/bañera</dd><dt>Habitación</dt><dd>🛁 Baño</dd>
+    <dt>Subtareas</dt><dd>4 de 5</dd><dt>Tiempo</dt><dd>20 min</dd></dl></div>
+<div class="group-h">Nota</div>
+<div class="card card-pad" style="color:var(--text-2)">Con desincrustante. Quedan restos en la junta de la esquina.</div>
+<div class="group-h">Fotos</div>
+<div class="photo-grid" data-s="with-photos" data-testid="entry-photos"><div class="photo-lg">🚿</div><div class="photo-lg">🧽</div><div class="photo-lg">✅</div></div>
+<div data-s="default undone" class="card card-pad" style="text-align:center;color:var(--text-3)">Sin fotos</div>
+<p class="help" style="margin-top:var(--s4);font-size:12px;color:var(--text-3)">Solo quien la completó puede deshacerla durante los primeros 10 minutos.</p></div><div class="sheet-foot"><button class="btn btn-secondary" data-close data-testid="entry-close">Cerrar</button></div></div></div>
+<!--E:history-entry-->
+<!--S:invite-->
+<div class="overlay" id="screen-invite" data-parent="members" role="dialog" aria-modal="true" aria-label="Invitar al hogar"><div class="scrim" data-close></div><div class="sheet" data-testid="sheet-invite"><div class="sheet-handle"></div><div class="sheet-head"><h2>Invitar al hogar</h2><button class="icon-btn" data-close aria-label="Cerrar" data-testid="sheet-close"><svg class="ic " aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="sheet-body">
+<div class="banner error" data-s="error" role="alert"><svg class="ic sm" aria-hidden="true"><use href="#i-x"/></svg><span>No hemos podido crear el enlace.</span></div>
+<div class="banner error" data-s="expired" data-testid="invite-expired"><svg class="ic sm" aria-hidden="true"><use href="#i-clock"/></svg><span>Este enlace ha caducado. Genera uno nuevo.</span></div>
+<p style="color:var(--text-2);margin-bottom:var(--s3)">Cualquiera con este enlace podrá unirse a <b>Casa Pau y Josep</b>.</p>
+<div class="copy-field" data-s="default copied expired"><span class="v mono" data-testid="invite-link">limpiapp.example.com/join/k3Jx9QmZ2vLpA8</span>
+  <button class="btn btn-secondary btn-sm" data-state-to="copied" data-toast="Enlace copiado" data-testid="invite-copy"><span data-s="default expired"><svg class="ic sm" aria-hidden="true"><use href="#i-copy"/></svg> Copiar enlace</span><span data-s="copied"><svg class="ic sm" aria-hidden="true"><use href="#i-check"/></svg> Copiado</span></button></div>
+<dl class="kv" style="margin-top:var(--s4)"><dt>Caducidad</dt><dd><span data-s="default copied error">Caduca en 7 días</span><span data-s="expired" class="danger-t">Caducado</span></dd><dt>Usos</dt><dd>1 de 5</dd></dl>
+<button class="btn btn-secondary btn-block" style="margin-top:var(--s4)" data-toast="Compartiendo…" data-testid="invite-share"><svg class="ic sm" aria-hidden="true"><use href="#i-share"/></svg> Compartir</button></div><div class="sheet-foot"><button class="btn btn-danger" data-toast="Enlace revocado" data-close data-testid="invite-revoke">Revocar enlace</button>
+<button class="btn btn-primary" data-close data-testid="invite-done">Listo</button></div></div></div>
+<!--E:invite-->
+<!--S:home-switcher-->
+<div class="overlay" id="screen-home-switcher" data-parent="today" role="dialog" aria-modal="true" aria-label="Mis hogares"><div class="scrim" data-close></div><div class="sheet" data-testid="sheet-home-switcher"><div class="sheet-handle"></div><div class="sheet-head"><h2>Mis hogares</h2><button class="icon-btn" data-close aria-label="Cerrar" data-testid="sheet-close"><svg class="ic " aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="sheet-body">
+<div data-s="default" data-testid="home-list">
+  <div class="list">
+    <button class="row sel" data-keep data-close data-testid="home-row"><span class="avatar teal">C</span><span class="body"><span class="t">Casa Pau y Josep</span><span class="s">3 miembros · Propietario</span></span><span style="color:var(--primary)"><svg class="ic " aria-hidden="true"><use href="#i-check"/></svg></span></button>
+    <button class="row" data-toast="Cambiando de hogar…" data-close data-testid="home-row"><span class="avatar violet">B</span><span class="body"><span class="t">Casa de la playa</span><span class="s">2 miembros · Miembro</span></span></button>
+  </div>
+  <button class="menu-row card" style="margin-top:var(--s3);border-radius:var(--r-lg)" data-state-to="empty-name" data-testid="home-create"><span style="color:var(--primary)"><svg class="ic " aria-hidden="true"><use href="#i-plus"/></svg></span><span class="t">Crear otro hogar</span></button>
+  <button class="menu-row card" style="margin-top:var(--s2);border-radius:var(--r-lg)" data-toast="Pega el enlace de invitación" data-testid="home-join"><span style="color:var(--primary)"><svg class="ic " aria-hidden="true"><use href="#i-link"/></svg></span><span class="t">Unirme con enlace</span></button>
+</div>
+<div data-s="empty-name" data-testid="home-create-form">
+  <div class="field invalid"><label for="hs-name">Nombre del nuevo hogar</label><input id="hs-name" class="input" aria-invalid="true" placeholder="Ej.: Casa de la playa" data-testid="home-name"><span class="err">El nombre es obligatorio.</span></div>
+  <div style="display:flex;gap:var(--s3)"><button class="btn btn-secondary" data-state-to="default">Atrás</button><button class="btn btn-primary" style="flex:1" data-testid="home-create-submit">Crear hogar</button></div>
+</div></div></div></div>
+<!--E:home-switcher-->
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(function(){
+'use strict';
+var DS = ['default','loading','empty','error','no-results'];
+var SCREENS = {
+  'login':        {k:'page', nav:null, states:['default','link-sent','error','loading']},
+  'onboarding':   {k:'page', nav:null, states:['default','step-templates','creating','error']},
+  'join':         {k:'page', nav:null, states:['default','invalid','expired','already-member']},
+  'today':        {k:'page', nav:'today', states:['default','loading','empty','error','no-results']},
+  'task-detail':  {k:'page', nav:'today', pane:'today', states:['default','overdue','never-done','loading','error']},
+  'task-form':    {k:'full', parent:'room-detail', states:['new','edit','validation-error','saving']},
+  'complete':     {k:'sheet', parent:'today', states:['default','partial','with-photos','saving','error','success']},
+  'rooms':        {k:'page', nav:'rooms', states:['default','loading','empty','error']},
+  'room-detail':  {k:'page', nav:'rooms', pane:'rooms', states:['default','empty','loading','error']},
+  'room-form':    {k:'full', parent:'rooms', states:['new','edit','validation-error']},
+  'history':      {k:'page', nav:'activity', states:['default','loading','empty','error','no-results']},
+  'history-entry':{k:'sheet', parent:'history', states:['default','with-photos','undone']},
+  'stats':        {k:'page', nav:'activity', states:['default','loading','empty','error']},
+  'ranking':      {k:'page', nav:'household', states:['default','loading','empty','error']},
+  'members':      {k:'page', nav:'household', states:['default','loading','error']},
+  'invite':       {k:'sheet', parent:'members', states:['default','copied','expired','error']},
+  'home-switcher':{k:'sheet', parent:'today', states:['default','empty-name']},
+  'products':     {k:'page', nav:'settings', states:['default','loading','empty','error']},
+  'settings':     {k:'page', nav:'settings', states:['default','install-available','error']},
+  'ui-kit':       {k:'page', nav:'settings', states:['default']}
+};
+var NONAV = {login:1, onboarding:1, join:1};
+var q = new URLSearchParams(location.search);
+var root = document.documentElement;
+var body = document.body;
+var mq = window.matchMedia('(min-width:1024px)');
+var toastTimer;
+
+function $(s, c){ return (c||document).querySelector(s); }
+function $$(s, c){ return Array.prototype.slice.call((c||document).querySelectorAll(s)); }
+function curId(){ var h = location.hash.replace('#screen-',''); return SCREENS[h] ? h : 'today'; }
+function getState(id){
+  var s = q.get('state') || 'default', st = SCREENS[id].states;
+  if (s === 'default') return st[0];
+  return st.indexOf(s) >= 0 ? s : st[0];
+}
+function applyTheme(){
+  var t = q.get('theme');
+  if (t === 'dark') root.setAttribute('data-theme','dark'); else root.removeAttribute('data-theme');
+  var b = $('#demoTheme'); if (b) b.textContent = 'Tema: ' + (t === 'dark' ? 'oscuro' : 'claro');
+}
+function applyStateTo(el, state){
+  $$('[data-s]', el).forEach(function(n){
+    var list = n.getAttribute('data-s').split(' ');
+    n.hidden = list.indexOf(state) < 0;
+  });
+  el.setAttribute('data-state', state);
+}
+function render(){
+  var id = curId(), meta = SCREENS[id], pageId = id, overlayId = null;
+  if (meta.k !== 'page') { pageId = meta.parent; overlayId = id; }
+  var pageMeta = SCREENS[pageId];
+  // desktop: detail pages render inside their parent's two-pane
+  var shownPage = pageId, paneOwner = null;
+  if (pageMeta.pane && mq.matches) { shownPage = pageMeta.pane; paneOwner = pageId; }
+  $$('.screen').forEach(function(s){ s.classList.remove('active'); });
+  var pageEl = $('#screen-' + shownPage); pageEl.classList.add('active');
+  // states
+  var activeId = overlayId || pageId;
+  var state = getState(activeId);
+  $$('.screen,.overlay').forEach(function(s){ var sid = s.id.replace('screen-',''); applyStateTo(s, (sid === activeId) ? state : SCREENS[sid].states[0]); });
+  if (shownPage !== pageId) applyStateTo(pageEl, SCREENS[shownPage].states[0]);
+  // pane content (desktop two-pane)
+  $$('.pane-detail').forEach(function(p){
+    var detailId = p.getAttribute('data-pane'), isOn = paneOwner === detailId;
+    var pb = $('.pane-body[data-owner="' + detailId + '"]');
+    var fill = $('.pane-fill', p), empty = $('.pane-empty', p);
+    if (mq.matches) { if (pb.parentNode !== fill) fill.appendChild(pb); }
+    else { var home = $('#screen-' + detailId + ' .pane-home'); if (pb.parentNode !== home) home.appendChild(pb); }
+    empty.hidden = !(mq.matches && !isOn);
+    fill.hidden = !(mq.matches && isOn);
+    applyStateTo(pb, isOn || !mq.matches && pageId === detailId ? state : SCREENS[detailId].states[0]);
+  });
+  $$('.row.sel').forEach(function(r){ r.classList.remove('sel'); });
+  if (paneOwner) {
+    var first = $('#screen-' + shownPage + ' .pane-list [data-go="' + paneOwner + '"]');
+    if (first) first.classList.add('sel');
+  }
+  // overlays
+  $$('.overlay').forEach(function(o){ o.classList.toggle('open', o.id === 'screen-' + overlayId); });
+  body.style.overflow = overlayId ? 'hidden' : '';
+  // nav
+  var nav = pageMeta.nav;
+  body.classList.toggle('nonav', !!NONAV[pageId]);
+  $$('[data-nav]').forEach(function(a){ a.classList.toggle('active', a.getAttribute('data-nav') === nav); a.setAttribute('aria-current', a.getAttribute('data-nav') === nav ? 'page' : 'false'); });
+  // tabs
+  $$('.tab').forEach(function(t){ t.classList.toggle('active', t.getAttribute('data-go') === pageId); });
+  // demo bar
+  var ds = $('#demoScreen'), dst = $('#demoState');
+  if (ds) { ds.value = id; dst.innerHTML = SCREENS[id].states.map(function(s){ return '<option' + (s === state ? ' selected' : '') + '>' + s + '</option>'; }).join(''); }
+  var vp = $('#demoVp'); if (vp) vp.textContent = innerWidth + '×' + innerHeight + (mq.matches ? ' · desktop' : ' · móvil');
+  window.scrollTo(0, 0);
+}
+function go(id, state){
+  if (state) { q.set('state', state); } else { q.delete('state'); }
+  history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q.toString() : '') + '#screen-' + id);
+  render();
+}
+window.go = go;
+function setState(s){
+  if (s === 'default') q.delete('state'); else q.set('state', s);
+  history.replaceState(null, '', location.pathname + '?' + q.toString() + location.hash);
+  render();
+}
+function toast(msg, action){
+  var t = $('#toast'); t.innerHTML = '<span>' + msg + '</span>' + (action ? '<button data-toast-undo>' + action + '</button>' : '');
+  t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function(){ t.hidden = true; }, 3500);
+}
+function closeOverlay(){ var m = SCREENS[curId()]; if (m.k !== 'page') go(m.parent); }
+function updateChecks(scope){
+  var checks = $$('.check', scope), done = checks.filter(function(c){ return c.classList.contains('done'); }).length;
+  $$('.js-count', scope).forEach(function(n){ n.textContent = done + ' de ' + checks.length; });
+  $$('.js-confirm', scope.closest ? scope : document).forEach(function(b){ b.disabled = done === 0; b.classList.toggle('disabled', done === 0); });
+  $$('.js-pts', scope).forEach(function(n){ var base = +n.getAttribute('data-base') || 9; n.textContent = '+' + Math.max(1, Math.round(base * done / Math.max(1, checks.length))) + ' pts'; });
+}
+
+document.addEventListener('click', function(e){
+  var t = e.target;
+  var el;
+  if ((el = t.closest('[data-close]'))) { closeOverlay(); return; }
+  if ((el = t.closest('[data-back]'))) { var m = SCREENS[curId()]; if (m.nav === 'today') go('today'); else if (m.nav === 'rooms') go('rooms'); else if (m.nav === 'settings') go('settings'); else history.back(); return; }
+  if ((el = t.closest('[data-state-to]'))) { setState(el.getAttribute('data-state-to')); var msg0 = el.getAttribute('data-toast'); if (msg0) toast(msg0); return; }
+  if ((el = t.closest('[data-toggle]'))) { var cls = el.getAttribute('data-toggle') || 'on'; el.classList.toggle(cls); if (el.classList.contains('check')) updateChecks(el.closest('.sheet') || document); return; }
+  var grp = t.closest('[data-pick]');
+  if (grp) { var item = t.closest('[data-pick] > *'); if (item) { var c = grp.getAttribute('data-pick'); $$(':scope > *', grp).forEach(function(n){ n.classList.remove(c); }); item.classList.add(c); } }
+  if ((el = t.closest('[data-period]'))) {
+    var p = el.getAttribute('data-period');
+    $$('[data-period]').forEach(function(b){ b.classList.toggle('active', b === el); });
+    $$('[data-p]').forEach(function(n){ n.hidden = n.getAttribute('data-p') !== p; });
+    return;
+  }
+  if ((el = t.closest('[data-toast]'))) { toast(el.getAttribute('data-toast'), el.getAttribute('data-toast-action')); }
+  if ((el = t.closest('[data-copy]'))) { el.textContent = 'Copiado'; }
+  if ((el = t.closest('[data-go]'))) {
+    var target = el.getAttribute('data-go'), st = el.getAttribute('data-go-state');
+    if (!SCREENS[target]) return;
+    e.preventDefault();
+    go(target, st);
+  }
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') closeOverlay();
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[role=button][data-go]')) { e.preventDefault(); e.target.click(); }
+});
+window.addEventListener('hashchange', render);
+if (mq.addEventListener) mq.addEventListener('change', render);
+window.addEventListener('resize', function(){ var vp = $('#demoVp'); if (vp) vp.textContent = innerWidth + '×' + innerHeight + (mq.matches ? ' · desktop' : ' · móvil'); });
+
+// init
+if (q.has('bare')) body.classList.add('bare');
+applyTheme();
+var ds = $('#demoScreen');
+if (ds) {
+  ds.innerHTML = Object.keys(SCREENS).map(function(k){ return '<option value="' + k + '">screen-' + k + '</option>'; }).join('');
+  ds.addEventListener('change', function(){ go(ds.value); });
+  $('#demoState').addEventListener('change', function(e){ setState(e.target.value); });
+  $('#demoTheme').addEventListener('click', function(){ if (q.get('theme') === 'dark') q.delete('theme'); else q.set('theme','dark'); history.replaceState(null,'',location.pathname + '?' + q.toString() + location.hash); applyTheme(); });
+}
+render();
+})();
+
+</script>
+</body>
+</html>
