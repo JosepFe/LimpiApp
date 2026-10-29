@@ -6,7 +6,7 @@ import { Placeholder } from '../features/placeholder/placeholder';
 import { Shell } from './shell';
 
 class FakeSession {
-  me = signal(null);
+  me = signal({ households: [{ id: 'h-casa', name: 'Casa Pau y Josep', role: 'owner', memberCount: 3 }] });
   pendingToday = signal(6);
   household = signal({ id: 'h-casa', name: 'Casa Pau y Josep', role: 'owner', memberCount: 3 });
 }
@@ -28,13 +28,30 @@ describe('Shell', () => {
     const fixture = TestBed.createComponent(Shell);
     fixture.detectChanges();
     await fixture.whenStable();
-    return { el: fixture.nativeElement as HTMLElement };
+    return { el: fixture.nativeElement as HTMLElement, fixture };
   }
+  const renderWithFixture = render;
 
   it('shows the household and the «Hoy» counter', async () => {
     const { el } = await render('/today');
     expect(el.querySelector('[data-testid="side-home-switcher"]')?.textContent).toContain('Casa Pau y Josep');
     expect(el.querySelector('[data-testid="nav-today"]')?.textContent).toContain('6');
+  });
+
+  it('the household button opens «Mis hogares» with ?sheet=homes, and closing removes it', async () => {
+    const { el, fixture } = await renderWithFixture('/today');
+    el.querySelector<HTMLButtonElement>('[data-testid="side-home-switcher"]')!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/today?sheet=homes');
+    expect(el.querySelector('[data-testid="sheet-home-switcher"]')).not.toBeNull();
+    expect(el.querySelector('[data-testid="side-home-switcher"] .avatar')?.className).toContain('teal');
+
+    el.querySelector<HTMLButtonElement>('[data-testid="sheet-close"]')!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(TestBed.inject(Router).url).toBe('/today');
+    expect(el.querySelector('[data-testid="sheet-home-switcher"]')).toBeNull();
   });
 
   it('highlights Actividad on both of its tabs, in the sidebar and the bottom bar', async () => {

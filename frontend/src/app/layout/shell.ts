@@ -1,8 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { SessionStore } from '../core/session.store';
+import { avatarColor } from '../shared/avatar';
+import { HomeSwitcher } from './home-switcher';
 
 interface NavItem {
   nav: string;
@@ -24,12 +26,17 @@ export const NAV: NavItem[] = [
 /** Sidebar (≥ 1024 px) and bottom bar (phones) of the prototype around every signed-in screen. */
 @Component({
   selector: 'la-shell',
-  imports: [RouterOutlet, RouterLink],
+  imports: [RouterOutlet, RouterLink, HomeSwitcher],
   templateUrl: './shell.html',
 })
 export class Shell {
   protected readonly session = inject(SessionStore);
   protected readonly nav = NAV;
+  /** Same colour as in «Mis hogares»: by the household's position in the user's list. */
+  protected readonly householdColor = computed(() => {
+    const households = this.session.me()?.households ?? [];
+    return avatarColor(Math.max(0, households.findIndex((h) => h.id === this.session.household()?.id)));
+  });
   private readonly router = inject(Router);
   private readonly url = toSignal(
     this.router.events.pipe(
@@ -38,6 +45,17 @@ export class Shell {
     ),
     { initialValue: this.router.url },
   );
+
+  /** Sheets open over the current screen with `?sheet=…`: shareable, and the back button closes them. */
+  protected readonly sheet = toSignal(inject(ActivatedRoute).queryParamMap.pipe(map((p) => p.get('sheet'))));
+
+  protected openSheet(name: string): void {
+    void this.router.navigate([], { queryParams: { sheet: name }, queryParamsHandling: 'merge' });
+  }
+
+  protected closeSheet(): void {
+    void this.router.navigate([], { queryParams: { sheet: null }, queryParamsHandling: 'merge', replaceUrl: true });
+  }
 
   protected isActive(item: NavItem): boolean {
     const path = this.url().split(/[?#]/)[0];

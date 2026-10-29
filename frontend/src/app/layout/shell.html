@@ -8,8 +8,8 @@
     }
     <div class="side-foot">
       @if (session.household(); as household) {
-        <button type="button" class="side-home" data-testid="side-home-switcher">
-          <span class="avatar teal">{{ household.name.charAt(0) }}</span>
+        <button type="button" class="side-home" data-testid="side-home-switcher" (click)="openSheet('homes')">
+          <span class="avatar" [class]="householdColor()">{{ household.name.charAt(0) }}</span>
           <span style="flex:1;min-width:0"><span class="nm" style="display:block">{{ household.name }}</span><span class="sb">{{ household.memberCount }} miembros</span></span>
           <svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-down" /></svg>
         </button>
@@ -29,3 +29,7 @@
     }
   </nav>
 </div>
+
+@if (sheet() === 'homes') {
+  <la-home-switcher (closed)="closeSheet()" />
+}

@@ -1,0 +1,29 @@
+<la-sheet screen="home-switcher" title="Mis hogares" (closed)="closed.emit()">
+  @if (!creating()) {
+    <div data-testid="home-list">
+      <div class="list">
+        @for (home of session.me()?.households ?? []; track home.id; let i = $index) {
+          @let selected = home.id === session.household()?.id;
+          <button type="button" class="row" [class.sel]="selected" data-testid="home-row" (click)="choose(home.id)">
+            <span class="avatar" [class]="avatarColor(i)">{{ initial(home.name) }}</span>
+            <span class="body"><span class="t">{{ home.name }}</span><span class="s">{{ home.memberCount }} miembros · {{ home.role === 'owner' ? 'Propietario' : 'Miembro' }}</span></span>
+            @if (selected) {<span style="color:var(--primary)"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-check" /></svg></span>}
+          </button>
+        }
+      </div>
+      <button type="button" class="menu-row card" style="margin-top:var(--s3);border-radius:var(--r-lg)" data-testid="home-create" (click)="creating.set(true)"><span style="color:var(--primary)"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-plus" /></svg></span><span class="t">Crear otro hogar</span></button>
+      <button type="button" class="menu-row card" style="margin-top:var(--s2);border-radius:var(--r-lg)" data-testid="home-join" (click)="join()"><span style="color:var(--primary)"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-link" /></svg></span><span class="t">Unirme con enlace</span></button>
+    </div>
+  } @else {
+    <div data-testid="home-create-form">
+      <div class="field" [class.invalid]="nameMissing()"><label for="hs-name">Nombre del nuevo hogar</label>
+        <input id="hs-name" class="input" placeholder="Ej.: Casa de la playa" data-testid="home-name" maxlength="60" [attr.aria-invalid]="nameMissing() || null"
+               [value]="name()" (input)="name.set($any($event.target).value)">
+        @if (nameMissing()) {<span class="err">El nombre es obligatorio.</span>}</div>
+      <div style="display:flex;gap:var(--s3)">
+        <button type="button" class="btn btn-secondary" (click)="creating.set(false)">Atrás</button>
+        <button type="button" class="btn btn-primary" style="flex:1" data-testid="home-create-submit" [disabled]="saving()" (click)="create()">Crear hogar</button>
+      </div>
+    </div>
+  }
+</la-sheet>

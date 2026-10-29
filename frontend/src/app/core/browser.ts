@@ -5,3 +5,9 @@ export const BROWSER_LOCATION = new InjectionToken<Pick<Location, 'assign'>>('BR
   providedIn: 'root',
   factory: () => window.location,
 });
+
+/** `window.prompt`, as a token so tests can answer it. */
+export const BROWSER_PROMPT = new InjectionToken<(message: string) => string | null>('BROWSER_PROMPT', {
+  providedIn: 'root',
+  factory: () => (message: string) => window.prompt(message),
+});
