@@ -61,7 +61,8 @@ public class PhotosUploadTests(ApiFactory factory) : IntegrationTest(factory)
         var positions = await db.CompletionPhotos.Select(p => p.Position).ToListAsync(Ct);
         Assert.InRange(positions.Count, 2, 3);
         Assert.Equal(positions.Count, positions.Distinct().Count());
-        Assert.Equal(positions.Count, Directory.GetFiles(Factory.PhotosDir, "*", SearchOption.AllDirectories).Length);
+        // Only this completion's folder: PHOTOS_DIR is shared by the tests of this class, which may run before.
+        Assert.Equal(positions.Count, Directory.GetFiles(Path.Combine(Factory.PhotosDir, hid.ToString(), completion.ToString())).Length);
     }
 
     [Fact]
