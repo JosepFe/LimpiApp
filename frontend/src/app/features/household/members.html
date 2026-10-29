@@ -1,0 +1,34 @@
+<section class="screen active" data-screen="screen-members" data-testid="screen-members">
+  <header class="page-header"><h1 class="ph-title">Hogar</h1><div class="ph-actions"></div></header>
+  <div class="tabs" role="tablist" style="margin:0"><a class="tab" role="tab" routerLink="/ranking" data-testid="tab-ranking" aria-selected="false">Ranking</a><a class="tab active" role="tab" routerLink="/members" data-testid="tab-members" aria-selected="true">Miembros</a></div>
+  <div class="content">
+    @switch (state()) {
+      @case ('loading') {
+        <div data-testid="members-loading"><la-skeleton-list /></div>
+      }
+      @case ('error') {
+        <div data-testid="members-error"><la-error-state (retry)="load()" /></div>
+      }
+      @default {
+        <div data-testid="members-content">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--s4)"><div class="group-h" style="padding:0">Miembros <span class="count">{{ members().length }}</span></div>
+            @if (isOwner()) {
+              <a class="btn btn-primary btn-sm" routerLink="." [queryParams]="{ sheet: 'invite' }" data-testid="invite-open"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-plus" /></svg> Invitar</a>
+            }
+          </div>
+          <div style="margin-top:var(--s3)"><div class="list">
+            @for (m of members(); track m.id) {
+              <div class="row" data-testid="member-row"><span class="avatar lg" [class]="m.avatarColor" [title]="m.name" [attr.aria-label]="m.name">{{ initial(m.name) }}</span><span class="body"><span class="t" style="display:block"><b>{{ m.name }}</b>{{ isMe(m) ? ' ' : '' }}@if (isMe(m)) {<span class="badge neutral">tú</span>}</span><span class="s"><span class="badge" [class.owner]="m.role === 'owner'" [class.neutral]="m.role !== 'owner'">{{ roleLabel[m.role] }}</span><span>{{ since(m) }}</span></span></span>
+                @if (isMe(m)) {
+                  <button type="button" class="btn btn-ghost btn-sm danger-t" data-testid="leave-home" (click)="leave(m)">Salir</button>
+                } @else if (isOwner()) {
+                  <button type="button" class="icon-btn" [attr.aria-label]="'Acciones de ' + m.name" data-testid="member-actions" (click)="remove(m)"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-more" /></svg></button>
+                }
+              </div>
+            }
+          </div></div>
+        </div>
+      }
+    }
+  </div>
+</section>

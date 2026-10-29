@@ -39,7 +39,7 @@ export const routes: Routes = [
       { path: 'history', loadComponent: () => import('./features/activity/history').then((m) => m.History) },
       { path: 'stats', loadComponent: () => import('./features/activity/stats').then((m) => m.Stats) },
       placeholder('ranking', 'ranking', 'Hogar'),
-      placeholder('members', 'members', 'Hogar'),
+      { path: 'members', loadComponent: () => import('./features/household/members').then((m) => m.Members) },
       placeholder('settings', 'settings', 'Ajustes'),
       { path: 'products', loadComponent: () => import('./features/products/products').then((m) => m.Products) },
       {

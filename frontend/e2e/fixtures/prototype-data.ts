@@ -191,3 +191,10 @@ export const STATS = {
   weeks: [6, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15, 18].map((count, i) => ({ week: 31 + i, count })),
   share: [{ person: JOSEP, points: 46, percent: 46 }, { person: PAU, points: 38, percent: 38 }, { person: MARTA, points: 16, percent: 16 }],
 };
+
+/** GET /households/h-casa/members: #screen-members. */
+export const MEMBERS = [
+  { ...JOSEP, role: 'owner', joinedOn: '2026-03-02' },
+  { ...PAU, role: 'owner', joinedOn: '2026-03-02' },
+  { ...MARTA, role: 'member', joinedOn: '2026-04-18' },
+];

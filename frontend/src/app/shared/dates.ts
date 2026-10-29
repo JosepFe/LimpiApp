@@ -13,3 +13,9 @@ export function shortDay(iso: string): string {
   const d = madridDay(iso);
   return `${WEEKDAYS[d.getUTCDay()]} ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;
 }
+
+/** «2 mar 2026»: day, short month and year («Desde 2 mar 2026» in Miembros). */
+export function dayMonthYear(iso: string): string {
+  const d = madridDay(iso);
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
