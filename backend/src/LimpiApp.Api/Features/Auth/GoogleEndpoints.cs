@@ -40,7 +40,8 @@ public static class GoogleEndpoints
             o.ClientSecret = config["GOOGLE_CLIENT_SECRET"] ?? string.Empty;
             o.SignInScheme = ExternalScheme;
             o.CallbackPath = "/auth/google/callback";
-            o.ClaimActions.MapJsonKey(EmailVerifiedClaim, "verified_email");
+            // The handler reads https://www.googleapis.com/oauth2/v3/userinfo, which says "email_verified" (v2 said "verified_email").
+            o.ClaimActions.MapJsonKey(EmailVerifiedClaim, "email_verified");
             o.Events.OnRemoteFailure = ctx =>
             {
                 ctx.Response.Redirect(Failed); // cancelled or refused at Google

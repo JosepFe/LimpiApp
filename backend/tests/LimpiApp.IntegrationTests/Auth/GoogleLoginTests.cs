@@ -109,7 +109,7 @@ public sealed class GoogleStartTests(GoogleApiFactory factory) : IClassFixture<G
         Assert.DoesNotContain("evil", Uri.UnescapeDataString(response.Headers.GetValues("Set-Cookie").First()), StringComparison.Ordinal);
     }
 
-    /// <summary>The real claim actions of the Google handler over a userinfo v2 answer (what Google sends).</summary>
+    /// <summary>The real claim actions of the Google handler over the userinfo v3 answer it asks for (what Google sends).</summary>
     [Theory]
     [InlineData(true, "True")]
     [InlineData(false, "False")]
@@ -117,7 +117,7 @@ public sealed class GoogleStartTests(GoogleApiFactory factory) : IClassFixture<G
     {
         var options = factory.Services.GetRequiredService<IOptionsMonitor<GoogleOptions>>().Get(GoogleDefaults.AuthenticationScheme);
         using var userInfo = JsonDocument.Parse($$"""
-            {"id":"1234567890","email":"pau@example.com","verified_email":{{(verified ? "true" : "false")}},"name":"Pau García","given_name":"Pau","family_name":"García","picture":"https://x/y.jpg"}
+            {"sub":"1234567890","email":"pau@example.com","email_verified":{{(verified ? "true" : "false")}},"name":"Pau García","given_name":"Pau","family_name":"García","picture":"https://x/y.jpg"}
             """);
         var identity = new ClaimsIdentity();
 
@@ -126,6 +126,7 @@ public sealed class GoogleStartTests(GoogleApiFactory factory) : IClassFixture<G
             action.Run(userInfo.RootElement, identity, "Google");
         }
 
+        Assert.Equal("https://www.googleapis.com/oauth2/v3/userinfo", options.UserInformationEndpoint);
         Assert.Equal("1234567890", identity.FindFirst(ClaimTypes.NameIdentifier)?.Value);
         Assert.Equal("pau@example.com", identity.FindFirst(ClaimTypes.Email)?.Value);
         Assert.Equal("Pau", identity.FindFirst(ClaimTypes.GivenName)?.Value);
