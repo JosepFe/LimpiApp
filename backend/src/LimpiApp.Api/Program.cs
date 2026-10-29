@@ -6,6 +6,7 @@ using LimpiApp.Api.Data;
 using LimpiApp.Api.Features.Auth;
 using LimpiApp.Api.Features.Health;
 using LimpiApp.Api.Features.Households;
+using LimpiApp.Api.Features.Rooms;
 using LimpiApp.Api.Features.Templates;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -60,6 +61,7 @@ app.MapGoogleSignIn();
 app.MapMe();
 app.MapTemplates();
 app.MapHouseholds();
+app.MapRooms();
 
 await app.RunAsync();
 

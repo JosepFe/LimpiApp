@@ -13,6 +13,8 @@ public sealed class CleaningTask
 
     public Guid? ZoneId { get; set; }
 
+    public Zone? Zone { get; set; }
+
     public required string Title { get; set; }
 
     public int FreqValue { get; set; } = 1;

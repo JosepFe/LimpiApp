@@ -34,7 +34,7 @@ internal sealed class CleaningTaskConfiguration : IEntityTypeConfiguration<Clean
         b.HasIndex(t => new { t.HouseholdId, t.NextDue });
         b.HasOne<Household>().WithMany().HasForeignKey(t => t.HouseholdId).OnDelete(DeleteBehavior.Cascade);
         b.HasOne(t => t.Room).WithMany().HasForeignKey(t => t.RoomId).OnDelete(DeleteBehavior.Cascade);
-        b.HasOne<Zone>().WithMany().HasForeignKey(t => t.ZoneId).OnDelete(DeleteBehavior.SetNull);
+        b.HasOne(t => t.Zone).WithMany().HasForeignKey(t => t.ZoneId).OnDelete(DeleteBehavior.SetNull);
         b.HasOne<User>().WithMany().HasForeignKey(t => t.AssigneeId).OnDelete(DeleteBehavior.SetNull);
         b.HasMany(t => t.Subtasks).WithOne().HasForeignKey(s => s.TaskId).OnDelete(DeleteBehavior.Cascade);
     }

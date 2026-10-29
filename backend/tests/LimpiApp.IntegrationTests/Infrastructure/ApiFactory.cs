@@ -60,6 +60,15 @@ public class ApiFactory(PostgresFixture db) : WebApplicationFactory<Program>
         return client;
     }
 
+    /// <summary>Creates a household through the API (Europe/Madrid) and returns its id.</summary>
+    public static async Task<Guid> CreateHouseholdAsync(HttpClient client, string name = "Casa Pau y Josep", params string[] templates)
+    {
+        var response = await client.PostAsJsonAsync("/households", new { name, timeZone = "Europe/Madrid", templates }, TestContext.Current.CancellationToken);
+        response.EnsureSuccessStatusCode();
+        var body = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(TestContext.Current.CancellationToken);
+        return body.GetProperty("id").GetGuid();
+    }
+
     public AppDbContext CreateDbContext() => Services.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
 
     /// <summary>Adds GET /__test/throw at the end of the pipeline to exercise the exception handler.</summary>
