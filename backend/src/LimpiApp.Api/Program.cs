@@ -8,6 +8,7 @@ using LimpiApp.Api.Features.Completions;
 using LimpiApp.Api.Features.Health;
 using LimpiApp.Api.Features.History;
 using LimpiApp.Api.Features.Households;
+using LimpiApp.Api.Features.Members;
 using LimpiApp.Api.Features.Photos;
 using LimpiApp.Api.Features.Products;
 using LimpiApp.Api.Features.Rooms;
@@ -76,6 +77,7 @@ app.MapCompletions();
 app.MapPhotos();
 app.MapHistory();
 app.MapStats();
+app.MapMembers();
 
 await app.RunAsync();
 
