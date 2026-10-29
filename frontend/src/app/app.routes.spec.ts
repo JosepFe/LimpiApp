@@ -17,10 +17,12 @@ describe('routes', () => {
     }
   });
 
-  it('signed-in screens need a session and a household; the onboarding only a session', () => {
+  it('signed-in screens need a session and a household; the onboarding only a session', async () => {
     const shell = routes.find((r) => r.component && r.path === '')!;
     expect(shell.canActivate?.length).toBe(2);
-    expect(routes.find((r) => r.path === 'onboarding')?.canActivate?.length).toBe(1);
+    const onboarding = routes.find((r) => r.path === 'onboarding')!;
+    expect(onboarding.canActivate?.length).toBe(1);
+    expect(await (onboarding.loadComponent as () => Promise<unknown>)()).toBeTruthy();
   });
 
   it('the login lives outside the shell and loads lazily', async () => {

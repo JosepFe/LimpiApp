@@ -13,8 +13,11 @@ const placeholder = (path: string, screen: string, title: string) => ({
 
 export const routes: Routes = [
   { path: 'login', loadComponent: () => import('./features/login/login').then((m) => m.Login) },
-  // Replaced by the onboarding screen in E02/US-006.
-  { path: 'onboarding', canActivate: [authGuard], component: Placeholder, data: { screen: 'onboarding', title: 'Crea tu hogar' } },
+  {
+    path: 'onboarding',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/onboarding/onboarding').then((m) => m.Onboarding),
+  },
   {
     path: '',
     component: Shell,

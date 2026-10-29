@@ -1,0 +1,25 @@
+<section class="screen active" data-screen="screen-onboarding" data-testid="screen-onboarding">
+  <div class="content" style="max-width:640px;padding-top:var(--s8)">
+    <div>
+      <div class="step-dots" aria-label="Paso"><i class="on"></i><i [style.background]="step() === 'templates' ? 'var(--primary)' : null"></i></div>
+      @if (step() === 'name') {
+        <div>
+          <h1 style="font-size:24px;font-weight:700">Crea tu hogar</h1>
+          <p style="color:var(--text-2);margin:4px 0 var(--s6)">Dale un nombre. Podrás invitar a quien vive contigo después.</p>
+          @if (failed()) {
+            <div class="banner error" role="alert"><svg class="ic sm" aria-hidden="true"><use href="icons.svg#i-x" /></svg><span>No hemos podido crear el hogar. Inténtalo de nuevo.</span></div>
+          }
+          <div class="field" [class.invalid]="nameInvalid()"><label for="ob-name">Nombre del hogar</label>
+            <input id="ob-name" class="input" data-testid="onboarding-name" maxlength="60" [attr.aria-invalid]="nameInvalid() || null"
+                   [value]="name()" (input)="name.set($any($event.target).value)"></div>
+          <div class="field"><label for="ob-tz">Zona horaria</label>
+            <select id="ob-tz" class="select" data-testid="onboarding-timezone" (change)="timeZone.set($any($event.target).value)">
+              @for (tz of timeZones; track tz) {<option [value]="tz" [selected]="tz === timeZone()">{{ tz }}</option>}
+            </select>
+            <span class="help">Define cuándo cambia el día para recurrencias y rachas.</span></div>
+          <button type="button" class="btn btn-primary btn-block" data-testid="onboarding-next" (click)="next()">Siguiente</button>
+        </div>
+      }
+    </div>
+  </div>
+</section>
